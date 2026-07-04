@@ -38,9 +38,10 @@ src/
   domain/                 # pure TS, no React imports
     models/               # Reading, TargetRange, Unit types
     use-cases/            # createReading, updateReading, exportCsv, transformChartData...
+    repositories/         # ports: ReadingRepository, SettingsRepository (interfaces only)
   data/
     db/                   # drizzle schema, migrations, client
-    repositories/         # ReadingRepository, SettingsRepository (interface + sqlite impl)
+    repositories/         # sqlite adapters implementing the domain ports (Sqlite*Repository)
   ui/
     components/           # presentational, dumb
     hooks/                # useReadings, useSettings...
@@ -48,7 +49,7 @@ src/
   i18n/                   # vi.json, en.json, setup
 ```
 
-Layering rule (Clean Architecture, same as PRD): `app/ → src/ui/ → src/domain/ ← src/data/`. Domain layer imports nothing from React, Expo, or data. Repositories are injected into use cases.
+Layering rule (Clean Architecture, same as PRD): `app/ → src/ui/ → src/domain/ ← src/data/`. Domain layer imports nothing from React, Expo, or data. Repository **ports (interfaces)** live in `src/domain/repositories/` so use cases depend only on domain; their **sqlite adapters** live in `src/data/repositories/` and implement those ports. Repositories are injected into use cases.
 
 ## Conventions
 
