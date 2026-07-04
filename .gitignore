@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# agent tooling (local skills, not part of the app)
+.agent/
