@@ -4,7 +4,13 @@
     "tagline": "Theo dõi đường huyết đơn giản"
   },
   "common": {
-    "comingSoon": "Màn hình này sẽ hoàn thiện ở phiên tới."
+    "comingSoon": "Màn hình này sẽ hoàn thiện ở phiên tới.",
+    "ok": "Đồng ý",
+    "cancel": "Hủy",
+    "done": "Xong",
+    "errorTitle": "Đã xảy ra lỗi",
+    "dbError": "Lỗi cơ sở dữ liệu: {{message}}",
+    "saveFailed": "Không thể lưu kết quả. Vui lòng thử lại."
   },
   "tabs": {
     "log": "Ghi số",
@@ -29,6 +35,55 @@
       "title": "Không tìm thấy",
       "message": "Trang bạn tìm không tồn tại.",
       "back": "Về màn hình chính"
+    }
+  },
+  "logForm": {
+    "valuePlaceholder": "0",
+    "unitLabel": "Đơn vị hiển thị",
+    "mealTypeLabel": "Bữa ăn",
+    "mealTimingLabel": "Thời điểm đo",
+    "hoursAfterLabel": "Thời gian sau ăn",
+    "hoursSuffix": "giờ",
+    "notesLabel": "Ghi chú",
+    "notesPlaceholder": "Ví dụ: cảm thấy chóng mặt, ăn nhiều tinh bột...",
+    "recordedAtLabel": "Thời gian đo",
+    "saveButton": "Lưu kết quả",
+    "saving": "Đang lưu...",
+    "validation": {
+      "empty": "Vui lòng nhập chỉ số đường huyết.",
+      "notANumber": "Chỉ số phải là một số hợp lệ.",
+      "notInteger": "Chỉ số mg/dL phải là số nguyên.",
+      "tooPrecise": "Chỉ số mmol/L tối đa có 1 số thập phân."
+    },
+    "alerts": {
+      "outOfBoundsTitle": "Cảnh báo chỉ số",
+      "outOfBoundsMessage": "Chỉ số nhập vào nằm ngoài phạm vi thông thường (20 - 600 mg/dL). Bạn vẫn muốn lưu?",
+      "saveAnyway": "Vẫn lưu",
+      "savedTitle": "Đã lưu",
+      "savedMessage": "Đã lưu chỉ số đường huyết thành công.",
+      "rangeSavedLow": "Đã lưu. Đường huyết của bạn đang THẤP ({{value}} {{unit}}).",
+      "rangeSavedHigh": "Đã lưu. Đường huyết của bạn đang CAO ({{value}} {{unit}})."
+    },
+    "a11y": {
+      "valueInput": "Nhập chỉ số đường huyết",
+      "unitToggle": "Đơn vị {{unit}}",
+      "mealChip": "Bữa {{meal}}",
+      "timingToggle": "Thời điểm {{timing}}",
+      "hoursDecrease": "Giảm số giờ sau ăn",
+      "hoursIncrease": "Tăng số giờ sau ăn",
+      "dateButton": "Thời gian đo: {{value}}. Chạm để thay đổi.",
+      "notesToggle": "Thêm ghi chú",
+      "save": "Lưu kết quả đo"
+    },
+    "mealTypes": {
+      "Breakfast": "Ăn sáng",
+      "Lunch": "Ăn trưa",
+      "Dinner": "Ăn tối",
+      "Snack": "Ăn nhẹ"
+    },
+    "mealTimings": {
+      "Before": "Trước ăn",
+      "After": "Sau ăn"
     }
   }
 }
