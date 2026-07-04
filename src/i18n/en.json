@@ -1,0 +1,34 @@
+{
+  "app": {
+    "name": "Sugar",
+    "tagline": "Simple blood sugar tracking"
+  },
+  "common": {
+    "comingSoon": "This screen will be completed in a later session."
+  },
+  "tabs": {
+    "log": "Log",
+    "history": "History",
+    "trends": "Trends",
+    "settings": "Settings"
+  },
+  "screens": {
+    "log": { "title": "Log Blood Sugar" },
+    "history": { "title": "History" },
+    "readingDetail": { "title": "Reading Details" },
+    "editReading": { "title": "Edit Reading" },
+    "trends": { "title": "Trends" },
+    "settings": {
+      "index": { "title": "Settings" },
+      "targetRange": { "title": "Target Range" },
+      "export": { "title": "Export Data" },
+      "about": { "title": "About" }
+    },
+    "onboarding": { "title": "Welcome to Sugar" },
+    "notFound": {
+      "title": "Not Found",
+      "message": "This page doesn't exist.",
+      "back": "Go to home"
+    }
+  }
+}
