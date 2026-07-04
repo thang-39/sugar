@@ -1,9 +1,33 @@
 import type { ReactElement } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { PlaceholderScreen } from '@/ui/components/placeholder-screen';
+import { SafeAreaView, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { LogReadingForm } from '@/ui/components/log-reading-form';
+import { colors } from '@/ui/theme';
 
 export default function LogScreen(): ReactElement {
-  const { t } = useTranslation();
-  return <PlaceholderScreen title={t('screens.log.title')} subtitle={t('common.comingSoon')} />;
+  return (
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboard}
+      >
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <LogReadingForm />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  keyboard: {
+    flex: 1,
+  },
+  scroll: {
+    flexGrow: 1,
+  },
+});
+
