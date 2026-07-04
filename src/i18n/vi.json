@@ -1,0 +1,34 @@
+{
+  "app": {
+    "name": "Sugar",
+    "tagline": "Theo dõi đường huyết đơn giản"
+  },
+  "common": {
+    "comingSoon": "Màn hình này sẽ hoàn thiện ở phiên tới."
+  },
+  "tabs": {
+    "log": "Ghi số",
+    "history": "Lịch sử",
+    "trends": "Biểu đồ",
+    "settings": "Cài đặt"
+  },
+  "screens": {
+    "log": { "title": "Ghi chỉ số đường huyết" },
+    "history": { "title": "Lịch sử" },
+    "readingDetail": { "title": "Chi tiết chỉ số" },
+    "editReading": { "title": "Sửa chỉ số" },
+    "trends": { "title": "Biểu đồ xu hướng" },
+    "settings": {
+      "index": { "title": "Cài đặt" },
+      "targetRange": { "title": "Ngưỡng mục tiêu" },
+      "export": { "title": "Xuất dữ liệu" },
+      "about": { "title": "Giới thiệu" }
+    },
+    "onboarding": { "title": "Chào mừng đến với Sugar" },
+    "notFound": {
+      "title": "Không tìm thấy",
+      "message": "Trang bạn tìm không tồn tại.",
+      "back": "Về màn hình chính"
+    }
+  }
+}
