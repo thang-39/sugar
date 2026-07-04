@@ -4,7 +4,13 @@
     "tagline": "Simple blood sugar tracking"
   },
   "common": {
-    "comingSoon": "This screen will be completed in a later session."
+    "comingSoon": "This screen will be completed in a later session.",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "done": "Done",
+    "errorTitle": "Something went wrong",
+    "dbError": "Database error: {{message}}",
+    "saveFailed": "Could not save the reading. Please try again."
   },
   "tabs": {
     "log": "Log",
@@ -29,6 +35,55 @@
       "title": "Not Found",
       "message": "This page doesn't exist.",
       "back": "Go to home"
+    }
+  },
+  "logForm": {
+    "valuePlaceholder": "0",
+    "unitLabel": "Display Unit",
+    "mealTypeLabel": "Meal Context",
+    "mealTimingLabel": "Timing",
+    "hoursAfterLabel": "Time After Meal",
+    "hoursSuffix": "hr",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "e.g., felt dizzy, ate a big meal...",
+    "recordedAtLabel": "Time of Reading",
+    "saveButton": "Save Reading",
+    "saving": "Saving...",
+    "validation": {
+      "empty": "Please enter a blood sugar value.",
+      "notANumber": "Must be a valid number.",
+      "notInteger": "mg/dL value must be a whole number.",
+      "tooPrecise": "mmol/L allows at most 1 decimal place."
+    },
+    "alerts": {
+      "outOfBoundsTitle": "Range Warning",
+      "outOfBoundsMessage": "This reading is outside normal ranges (20 - 600 mg/dL). Save anyway?",
+      "saveAnyway": "Save Anyway",
+      "savedTitle": "Saved",
+      "savedMessage": "Blood sugar reading saved successfully.",
+      "rangeSavedLow": "Saved. Your blood sugar is LOW ({{value}} {{unit}}).",
+      "rangeSavedHigh": "Saved. Your blood sugar is HIGH ({{value}} {{unit}})."
+    },
+    "a11y": {
+      "valueInput": "Enter blood sugar value",
+      "unitToggle": "{{unit}} unit",
+      "mealChip": "{{meal}} meal",
+      "timingToggle": "{{timing}} timing",
+      "hoursDecrease": "Decrease hours after meal",
+      "hoursIncrease": "Increase hours after meal",
+      "dateButton": "Time of reading: {{value}}. Tap to change.",
+      "notesToggle": "Add a note",
+      "save": "Save reading"
+    },
+    "mealTypes": {
+      "Breakfast": "Breakfast",
+      "Lunch": "Lunch",
+      "Dinner": "Dinner",
+      "Snack": "Snack"
+    },
+    "mealTimings": {
+      "Before": "Before Meal",
+      "After": "After Meal"
     }
   }
 }

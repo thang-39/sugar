@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-community/datetimepicker": "9.1.0",
     "drizzle-orm": "^0.45.2",
     "expo": "~57.0.2",
     "expo-constants": "~57.0.3",
@@ -36,6 +37,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
+    "babel-plugin-inline-import": "^3.0.0",
     "better-sqlite3": "^12.11.1",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.39.4",
