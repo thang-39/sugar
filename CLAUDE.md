@@ -2,20 +2,8 @@
 
 Mobile app for logging blood sugar readings, viewing history/trends, and exporting CSV reports for doctors. Primary target audience: Vietnamese users, including elderly users measuring at home — UI must be simple, large text, minimal steps.
 
-**Source of truth for requirements:** `PRD.md` (52 user stories).
+**Source of truth for requirements:** `PRD.md` — **v1.1 is authoritative**. All tech-stack and scope deviations (Expo, Expo Router, expo-sqlite + Drizzle, sync deferred post-v1, vi+en i18n) are already baked into it; see its changelog. Do not re-document them here.
 **Source of truth for execution order:** `PLAN.md` (session-based plan). Work on ONE session at a time. Do not implement features from later sessions early.
-
-## Deviations from PRD (decided, do not revisit)
-
-| PRD said | We do instead | Why |
-|---|---|---|
-| React Native bare | **Expo (managed workflow)** | Solo dev, 3-day timeline, EAS Build, no Xcode/Gradle pain |
-| React Navigation manually | **Expo Router** (file-based, built on React Navigation) | Expo default; still bottom tabs + per-tab stacks |
-| WatermelonDB | **expo-sqlite + Drizzle ORM** | Sync is deferred; simpler, first-class Expo support |
-| Supabase auth + sync in v1 | **Deferred post-v1.** Guest mode (local-only) is the entire v1 | Sync is the highest-complexity, lowest-urgency feature |
-| English only | **Vietnamese + English (i18n from day 1)** | VN market is the differentiator; retrofitting i18n is painful |
-
-Everything else in PRD.md stands: data model fields, validation rules (20–600 mg/dL), value storage convention (always mg/dL internally, convert at display layer), two target ranges with auto-selection by mealTiming, CSV columns, chart grouping rules, disclaimer text.
 
 ## Tech Stack
 

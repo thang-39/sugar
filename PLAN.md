@@ -2,22 +2,16 @@
 
 Rule: one session per Claude Code conversation. Start each session by reading `CLAUDE.md`, this file's session block, and the referenced PRD sections. Finish with the Definition of Done in CLAUDE.md. Do not pull work from future sessions.
 
-Scope for these 3 days = PRD v1 **minus** Account & Sync (stories 12–20 deferred; guest mode stories 9–11 are in scope). Everything is local-only.
+Scope = **PRD v1.1** (authoritative — includes the "Input, Formatting & Locale Rules" and "Store & Health-App Compliance" sections). Account & Sync is already moved to Deferred inside the PRD; everything here is local-only. Where this plan and the PRD conflict, the PRD wins — flag the conflict instead of guessing.
 
 ---
 
 ## Day 1 — Foundation + Core Logging
 
-### Session 1: Scaffold + theme + navigation shell
-**Goal:** empty but navigable app with 4 tabs, theme tokens, i18n wired.
+### Session 1: Scaffold + theme + navigation shell — ✅ DONE (PR #12)
+Shipped: Expo SDK + Router, strict TS, 4-tab shell with Ionicons + i18n (vi default), theme tokens, placeholder screens, deps for later sessions, Node pinned.
 
-- `npx create-expo-app` (TypeScript template), Expo Router, ESLint + strict tsconfig per CLAUDE.md
-- Install: drizzle-orm, expo-sqlite, zustand, i18next, expo-localization, react-native-gifted-charts, react-native-svg, expo-linear-gradient
-- Tab layout: Log / History / Trends / Settings with icons + i18n'd labels (vi + en files created, vi default)
-- `src/ui/theme/` tokens: colors, spacing, typography (base 17)
-- Placeholder screens for every route in the structure from CLAUDE.md
-
-**Accept:** app boots on Expo Go, 4 tabs switch, labels render in Vietnamese, `tsc --noEmit` clean. Commit: `chore: scaffold expo app with router, i18n, theme`
+- Follow-up carried into Session 2: `chore: remove unused template assets` (react-logo*, expo-badge*, tutorial-web, tabIcons/ — tab bar uses Ionicons, these are dead files).
 
 ### Session 2: Data layer
 **Goal:** schema, repositories, domain use cases — fully tested, no UI.
@@ -25,16 +19,16 @@ Scope for these 3 days = PRD v1 **minus** Account & Sync (stories 12–20 deferr
 - Drizzle schema: `readings` + `app_settings` exactly per PRD data model (keep `syncStatus`, default `'pending'`; `userId` nullable)
 - Migration setup + db client (`src/data/db/`)
 - `ReadingRepository`: create, update, delete, getById, list(filter: dateRange, sort newest-first), count
-- `SettingsRepository`: typed get/set for `preferredUnit`, `fastingRange`, `postMealRange`, `alertsEnabled`, `onboardingDone`
-- Domain: `Reading` model, unit conversion helpers (mgdl↔mmol, PRD Value Storage Convention), validation (20–600 int), `create/update/delete-reading` use cases, target-range evaluation (`evaluateReading(reading, ranges) → 'in-range' | 'low' | 'high'` with Before/After auto-selection)
-- Tests: conversion round-trips, validation edges (19, 20, 600, 601, decimals), range evaluation for both contexts, repository CRUD + date filtering on in-memory SQLite
+- `SettingsRepository`: typed get/set for `preferredUnit`, `preferredLanguage`, `fastingRange`, `postMealRange`, `alertsEnabled`, `onboardingDone`
+- Domain: `Reading` model, unit conversion helpers per PRD "Input, Formatting & Locale Rules" (round mgdl→mmol to 1 decimal; round mmol→mgdl to nearest integer; round-trip rule must hold), validation (20–600 int mg/dL / 1.1–33.3 mmol/L), `create/update/delete-reading` use cases, target-range evaluation (`evaluateReading(reading, ranges) → 'in-range' | 'low' | 'high'` with Before/After auto-selection)
+- Tests: conversion round-trips (typed mmol value redisplays unchanged), validation edges (19, 20, 600, 601, decimals in mg/dL, comma decimal separator in mmol/L), range evaluation for both contexts, repository CRUD + date filtering on in-memory SQLite
 
 **Accept:** `npm test` green, no React imports anywhere in `src/domain`. Commit: `feat: data layer — schema, repositories, reading use cases`
 
 ### Session 3: Log Reading screen (PRD stories 1–5, 8; "Log Reading Screen" section)
 **Goal:** the core screen — logging works end to end.
 
-- Single scrollable form: numeric value (large input, keyboard numeric), unit toggle mg/dL↔mmol/L (persists preference), meal type chips, Before/After toggle, "hours after meal" appears only when After (0–6 stepper), collapsed notes (500 max), editable date/time picker defaulting to now
+- Single scrollable form: numeric value (large input, keyboard numeric; when unit = mmol/L allow one decimal and accept both `.` and `,` as separator per PRD Input Rules), unit toggle mg/dL↔mmol/L (persists preference), meal type chips, Before/After toggle, "hours after meal" appears only when After (integer stepper 0–6), collapsed notes (500 max), editable date/time picker defaulting to now
 - Smart defaults: mealType from time of day (—11h Breakfast, 11–15h Lunch, 15–18h Snack, 18h— Dinner)
 - Save → validation warn-flow for out-of-bounds → target-range check → in-app alert if out of range and alerts enabled → success confirmation → form resets
 - Everything through use cases; the screen holds no business logic
@@ -57,23 +51,25 @@ Scope for these 3 days = PRD v1 **minus** Account & Sync (stories 12–20 deferr
 
 ### Session 5: Trends chart (stories 27–32; PRD "Charts")
 - Line chart, time scales: 7d / 30d / 90d / All / custom range
-- <30 days → individual points; ≥30 days → daily averages (via `ChartDataTransformer` in domain, unit-tested)
+- <30 days → individual points; ≥30 days → daily averages (via `ChartDataTransformer` in domain, unit-tested; daily bucket boundaries in device timezone per PRD)
 - Target range as shaded band; tap point → tooltip with value + timestamp
 - Y axis respects preferred unit
 
 **Accept:** transformer tests green; band + tooltip verified manually. Commit: `feat: trends chart`
 
-### Session 6: Target ranges + alerts + settings screens (stories 33–36, 43, 46)
+### Session 6: Target ranges + alerts + settings screens (stories 33–36, 43, 46, 53–55)
 - Settings → Target Range screen: two ranges (Fasting/Before, After) editable in preferred unit, stored in mg/dL; alerts on/off toggle
-- Settings index: unit preference, language (vi/en), links to Target Range / Export / About
-- About: version + disclaimer
+- Settings index: unit preference, language switch vi/en (story 53, persists as `preferredLanguage`), links to Target Range / Export / About
+- About: version + disclaimer + privacy policy link (story 55; URL can be a placeholder until Session 10 publishes the page)
+- **Delete all data (story 54, PRD "Clear All Local Data")**: two-step confirmation (explicit permanent-loss warning → press-and-hold or typed confirm), wipes `readings`, resets `app_settings` to defaults. Lands on the Log tab for now; redirect-to-onboarding is wired in Session 8 when onboarding exists.
 
-**Accept:** changing unit re-renders history/chart/form correctly with converted values and no range migration. Commit: `feat: settings, target ranges, alerts config`
+**Accept:** changing unit re-renders history/chart/form correctly with converted values and no range migration; changing language re-renders all tabs instantly; delete-all leaves a fresh-install data state (empty history, defaults restored). Commit: `feat: settings — target ranges, language, delete all data`
 
-### Session 7: CSV export + share (stories 37, 39–41; PRD "Export")
+### Session 7: CSV export + share (stories 37, 39–41; PRD "CSV format (locked spec)")
 - Settings → Export: range picker (All / 3 months / 6 months / custom)
-- CSV columns exactly: Date, Time, Value, Unit, Meal, Timing, Hours After, Notes — generated client-side (expo-file-system), shared via expo-sharing
-- ExportService unit tests: escaping (commas/quotes/newlines in notes), date filtering, unit column matches preference
+- Implement the locked CSV spec exactly: UTF-8 with BOM, RFC 4180 escaping, columns `Date, Time, Value, Unit, Meal, Timing, Hours After, Notes`, ISO `yyyy-MM-dd` + `HH:mm` (locale-independent), value in preferred unit with `.` decimal separator, filename `sugar-export-<yyyyMMdd>-<yyyyMMdd>.csv` / `sugar-export-all-<yyyyMMdd>.csv`
+- Generated client-side (expo-file-system), shared via expo-sharing
+- ExportService unit tests: escaping (commas/quotes/newlines in notes), BOM present, date filtering, unit column matches preference, Hours After empty when timing is Before
 
 **Accept:** exported file opens correctly in Excel/Numbers with Vietnamese notes intact (UTF-8 BOM). Commit: `feat: csv export with share sheet`
 
@@ -84,8 +80,9 @@ Scope for these 3 days = PRD v1 **minus** Account & Sync (stories 12–20 deferr
 ### Session 8: Onboarding + first-run flow (stories 47–48)
 - 1 screen: tagline, unit picker, language picker, disclaimer, Get Started / Skip (skip → vi + mg/dL defaults)
 - Shown once (`onboardingDone` setting)
+- Wire Session 6's delete-all-data flow to redirect here after wipe (fresh-install experience)
 
-**Accept:** fresh install shows onboarding once; skip lands on Log tab. Commit: `feat: onboarding`
+**Accept:** fresh install shows onboarding once; skip lands on Log tab; delete-all → onboarding shows again. Commit: `feat: onboarding`
 
 ### Session 9: Polish + accessibility pass (story 52 + elderly-first goal)
 - Audit every screen at 1.3× font scale — no clipped text, no broken layouts
@@ -95,15 +92,16 @@ Scope for these 3 days = PRD v1 **minus** Account & Sync (stories 12–20 deferr
 
 **Accept:** VoiceOver/TalkBack can complete log→history→export flow. Commit: `feat: accessibility and ui polish`
 
-### Session 10: Build + store prep
+### Session 10: Build + store prep (PRD "Store & Health-App Compliance")
 - `eas build` config, production builds for iOS + Android
 - app.json: bundle IDs, permissions audit (should need none beyond storage/share), privacy strings
-- Store assets checklist: screenshots (vi), description draft (vi + en), privacy policy URL (required by both stores — generate a static page), data-safety form answers (all data on-device, nothing collected)
+- Publish privacy policy static page (GitHub Pages is fine) per PRD compliance section; wire the real URL into the About screen (replaces Session 6 placeholder)
+- Store checklist: screenshots (vi), description draft (vi + en — no diagnose/treat/manage claims, phrase as "log and track"), Google Play Data Safety (nothing collected) + Health Apps declaration, Apple App Privacy "Data Not Collected"
 
 **Accept:** installable build on a real device; store checklist complete. Commit: `chore: eas build config and store assets`
 
 ---
 
-## Deferred (post-3-days, PRD stays authoritative)
+## Deferred (post-3-days)
 
-Supabase auth + sync (stories 12–20, PRD "Sync Strategy" — schema already carries `syncStatus`/`userId` so no migration needed), push notifications, XLSX/PDF export, paid tier. Suggested next milestone: sync + "family view" (con cái xem số liệu bố mẹ) as the premium feature.
+PRD v1.1 "Deferred" section is authoritative: Supabase auth + sync (stories 12–20 — schema already carries `syncStatus`/`userId` so no migration needed), push notifications, XLSX/PDF export, paid tier. Suggested next milestone: sync + "family view" (con cái xem số liệu bố mẹ) as the premium feature.
