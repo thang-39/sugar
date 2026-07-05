@@ -128,7 +128,6 @@
       "to": "To"
     },
     "aggregatedNote": "Showing daily averages",
-    "bandLabel": "Target range (before meal)",
     "legend": {
       "inRange": "In range",
       "outOfRange": "Out of range"
