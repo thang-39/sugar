@@ -1,12 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { colors, fontSize, fontFamily } from '@/ui/theme';
 
 export default function TabsLayout(): ReactElement {
   const { t } = useTranslation();
+  const onboardingDone = useSettingsStore((s) => s.onboardingDone);
+
+  // First-run gate. TabsLayout renders inside the root navigator, so navigation
+  // hooks are safe here (unlike the root _layout). Fires on first launch and
+  // again after delete-all resets `onboardingDone` to false.
+  if (!onboardingDone) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <Tabs
