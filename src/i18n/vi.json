@@ -129,7 +129,7 @@
     },
     "aggregatedNote": "Đang hiển thị trung bình mỗi ngày",
     "legend": {
-      "inRange": "Trong ngưỡng",
+      "targetRange": "Ngưỡng mục tiêu",
       "outOfRange": "Ngoài ngưỡng"
     },
     "stats": {
