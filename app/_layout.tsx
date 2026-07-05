@@ -1,11 +1,20 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactElement } from 'react';
-import { StyleSheet, ActivityIndicator, View, Text } from 'react-native';
+import { StyleSheet, ActivityIndicator, View, Text, TextInput } from 'react-native';
+import type { TextStyle } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  useFonts,
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+} from '@expo-google-fonts/nunito';
 
 // Drizzle migrations
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
@@ -19,9 +28,22 @@ import { useSettingsStore } from '@/ui/hooks/use-settings';
 
 // Side-effect import: initializes i18next before any screen renders.
 import '@/i18n';
-import { colors, fontSize } from '@/ui/theme';
+import { colors, fontSize, fontFamily } from '@/ui/theme';
 
 type Db = ExpoSQLiteDatabase<typeof schema>;
+
+// Make Nunito the default font for any <Text>/<TextInput> not yet migrated to a
+// primitive, so nothing renders in the system font ("half old, half new"). Bold
+// text still needs an explicit fontFamily token — RN ignores fontWeight on a
+// custom font. Runs once at module load; harmless before fonts finish loading.
+type DefaultStyled = { defaultProps?: { style?: TextStyle } };
+function applyDefaultFont(): void {
+  const base: TextStyle = { fontFamily: fontFamily.regular };
+  for (const component of [Text, TextInput] as unknown as DefaultStyled[]) {
+    component.defaultProps = { ...component.defaultProps, style: base };
+  }
+}
+applyDefaultFont();
 
 export default function RootLayout(): ReactElement {
   // The database must be OPENED before migrations run. On web this is async
@@ -52,6 +74,13 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
   const { success: isDbReady, error: dbError } = useMigrations(db, migrations);
   const { isInitialized, initError, initialize: initializeSettings } = useSettingsStore();
   const { i18n } = useTranslation();
+  const [fontsLoaded] = useFonts({
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+  });
 
   useEffect(() => {
     if (!isDbReady) return;
@@ -73,7 +102,7 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
     return <BootError message={bootError} />;
   }
 
-  if (!isDbReady || !isInitialized) {
+  if (!isDbReady || !isInitialized || !fontsLoaded) {
     return <BootSpinner />;
   }
 

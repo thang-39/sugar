@@ -47,6 +47,17 @@ Shipped: Expo SDK + Router, strict TS, 4-tab shell with Ionicons + i18n (vi defa
 
 ---
 
+### Session 4.5: Design System (Evergreen) + shared UI primitives
+- Translate design tokens from `design/Sugar App.dc.html` into `src/ui/theme` (Evergreen: green `#0FA36B`, CTA ink `#1B2B24`, bg `#F7FBF8`, surface `#E9F5EF`). Semantic token names kept stable; only values change.
+- Load Nunito font (`@expo-google-fonts/nunito`) via the boot gate; bold text uses `fontFamily` tokens, not `fontWeight` (RN ignores it on custom fonts).
+- Build shared presentational primitives in `src/ui/components/ui/`: `AppText`, `Button`, `Card`, `Chip`, `SegmentedControl`, `SectionLabel`, `Stepper`, `ScreenHeader`, `IconTile`, `Badge`.
+- Retrofit already-built screens (Log, History list/detail/edit) onto the theme + primitives. No domain/data or logic changes.
+- From Session 5 on, all screens build on these primitives; see the Design System section in `CLAUDE.md`.
+
+**Accept:** `tsc`/tests green (no test changes); Log + History render Evergreen green + Nunito + pill buttons; layout holds at 1.3× font scale. Detailed plan: `docs/plans/2026-07-05-session-4.5-design-system.md`. Commit: `feat: design system — evergreen theme, shared UI primitives`
+
+---
+
 ## Day 2 — Trends, Ranges, Export
 
 ### Session 5: Trends chart (stories 27–32; PRD "Charts")
