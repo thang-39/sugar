@@ -227,7 +227,7 @@
       "subtitle": "Log a few readings to see your trend."
     },
     "a11y": {
-      "chart": "Blood sugar trend over time, {{unit}}"
+      "chart": "Blood sugar trend chart. {{count}} points. Average {{avg}} {{unit}}."
     }
   },
   "readingDetail": {
