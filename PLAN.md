@@ -85,7 +85,7 @@ Shipped: Expo SDK + Router, strict TS, 4-tab shell with Ionicons + i18n (vi defa
 - Generated client-side (expo-file-system), shared via expo-sharing
 - ExportService unit tests: escaping (commas/quotes/newlines in notes), BOM present, date filtering, unit column matches preference, Hours After empty when timing is Before
 
-**Accept:** exported file opens correctly in Excel/Numbers with Vietnamese notes intact (UTF-8 BOM). Commit: `feat: csv export with share sheet`
+**Accept:** exported file opens correctly in Excel/Numbers with Vietnamese notes intact (UTF-8 BOM). Detailed plan: `docs/plans/2026-07-05-session-7-csv-export.md`. Commit: `feat: csv export with share sheet`
 
 ---
 

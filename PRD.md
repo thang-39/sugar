@@ -4,6 +4,9 @@
 
 ## Changelog
 
+### v1.2 (2026-07-05)
+- **CSV export encoding/delimiter changed** (Session 7 follow-up). UTF-8+BOM with comma delimiter rendered Vietnamese as garbage in Excel (esp. macOS, which ignores the BOM) and, under a Vietnamese Windows locale (`;` list separator), dumped every field into one column. Locked spec now: **UTF-16LE + BOM, tab-delimited** — Excel's own "Unicode Text" format, which opens correctly across platforms and locales. Columns/dates/number format unchanged.
+
 ### v1.1 (2026-07-04)
 - **Tech stack updated to match implementation** (see table): Expo managed workflow replaces bare RN; Expo Router replaces manual React Navigation; expo-sqlite + Drizzle replaces WatermelonDB.
 - **Account & Sync (stories 12–20) moved from v1 to Deferred.** v1 ships as local-only (guest mode is the entire product). Schema keeps `userId` + `syncStatus` so sync lands later without migration.
@@ -143,8 +146,8 @@ A cross-platform (iOS & Android) mobile app for tracking blood sugar readings. T
 
 ### CSV format (locked spec)
 
-- Encoding: **UTF-8 with BOM** (required for Excel to render Vietnamese notes correctly).
-- Delimiter: comma. Fields containing commas, quotes, or newlines are double-quoted per RFC 4180.
+- Encoding: **UTF-16LE with BOM** (`FF FE`) — required for Excel to render Vietnamese correctly on every platform. UTF-8+BOM was insufficient: Excel for macOS ignores the BOM and misreads the file as a legacy codepage. See v1.2 changelog.
+- Delimiter: **tab**. Fields containing a tab, quote, or newline are double-quoted (RFC 4180 style). Comma is chosen against because Excel uses `;` as the list separator under a Vietnamese locale, which would break column splitting.
 - Columns, in order: `Date, Time, Value, Unit, Meal, Timing, Hours After, Notes`.
 - `Date`: ISO `yyyy-MM-dd`. `Time`: `HH:mm` (24h). Locale-independent on purpose — sorts correctly in any spreadsheet tool regardless of the doctor's Excel locale.
 - `Value`: in the user's preferred unit at export time. mg/dL → integer; mmol/L → one decimal **with `.` as separator** (locale-independent).
