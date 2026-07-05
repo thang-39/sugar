@@ -2,23 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Unit } from '@/domain/models/unit';
 import type { ReadingListFilter } from '@/domain/repositories/reading-repository';
+import { computeChartStats } from '@/domain/use-cases/compute-chart-stats';
+import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { transformChartData } from '@/domain/use-cases/transform-chart-data';
 import { BloodSugarChart } from '@/ui/components/blood-sugar-chart';
+import { StatCard } from '@/ui/components/stat-card';
+import { AppText, Chip, ScreenHeader } from '@/ui/components/ui';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, fontSize, fontWeight, radius, spacing } from '@/ui/theme';
+import { colors, radius, spacing } from '@/ui/theme';
 import { formatDate } from '@/ui/utils/format';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -111,6 +108,15 @@ export default function TrendsScreen(): ReactElement {
     return transformChartData(readings, spanDays);
   }, [readings, scale, customFrom, customTo]);
 
+  const stats = useMemo(
+    () => computeChartStats(chartData.points, ranges),
+    [chartData.points, ranges],
+  );
+  const avgDisplay =
+    preferredUnit === Unit.MmolL
+      ? mgdlToMmol(stats.averageMgdl).toFixed(1)
+      : String(stats.averageMgdl);
+
   const onPickDate = (event: DateTimePickerEvent, selected?: Date): void => {
     const which = activePicker;
     if (Platform.OS !== 'ios') setActivePicker(undefined);
@@ -131,7 +137,9 @@ export default function TrendsScreen(): ReactElement {
       return (
         <View style={styles.centerState}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
-          <Text style={styles.emptyTitle}>{t('trends.loadError')}</Text>
+          <AppText variant="heading" style={styles.centerText}>
+            {t('trends.loadError')}
+          </AppText>
         </View>
       );
     }
@@ -139,38 +147,49 @@ export default function TrendsScreen(): ReactElement {
       return (
         <View style={styles.centerState}>
           <Ionicons name="bar-chart-outline" size={56} color={colors.textDisabled} />
-          <Text style={styles.emptyTitle}>{t('trends.empty.title')}</Text>
-          <Text style={styles.emptySubtitle}>{t('trends.empty.subtitle')}</Text>
+          <AppText variant="heading" style={styles.centerText}>
+            {t('trends.empty.title')}
+          </AppText>
+          <AppText color={colors.textMuted} style={styles.centerText}>
+            {t('trends.empty.subtitle')}
+          </AppText>
         </View>
       );
     }
     return (
-      <BloodSugarChart
-        data={chartData}
-        unit={preferredUnit}
-        language={preferredLanguage}
-        ranges={ranges}
-      />
+      <>
+        <BloodSugarChart
+          data={chartData}
+          unit={preferredUnit}
+          language={preferredLanguage}
+          ranges={ranges}
+        />
+        <View style={styles.statsRow}>
+          <StatCard value={avgDisplay} label={t('trends.stats.average')} color={colors.accentPurple} />
+          <StatCard
+            value={`${stats.inRangePercent}%`}
+            label={t('trends.stats.inRange')}
+            color={colors.accentAmber}
+            onDark={false}
+          />
+          <StatCard
+            value={String(stats.readingCount)}
+            label={t('trends.stats.readings')}
+            color={colors.accentBlue}
+          />
+        </View>
+      </>
     );
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content}>
+        <ScreenHeader title={t('screens.trends.title')} style={styles.header} />
+
         <View style={styles.filterRow}>
           {SCALES.map((s) => (
-            <TouchableOpacity
-              key={s}
-              style={[styles.filterChip, scale === s && styles.filterChipActive]}
-              onPress={() => setScale(s)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityState={{ selected: scale === s }}
-            >
-              <Text style={[styles.filterChipText, scale === s && styles.filterChipTextActive]}>
-                {t(`trends.scales.${s}`)}
-              </Text>
-            </TouchableOpacity>
+            <Chip key={s} label={t(`trends.scales.${s}`)} selected={scale === s} onPress={() => setScale(s)} />
           ))}
         </View>
 
@@ -183,8 +202,10 @@ export default function TrendsScreen(): ReactElement {
               accessibilityRole="button"
               accessibilityLabel={`${t('trends.customRange.from')}: ${formatDate(customFrom, preferredLanguage)}`}
             >
-              <Text style={styles.customLabel}>{t('trends.customRange.from')}</Text>
-              <Text style={styles.customValue}>{formatDate(customFrom, preferredLanguage)}</Text>
+              <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+                {t('trends.customRange.from')}
+              </AppText>
+              <AppText weight="bold">{formatDate(customFrom, preferredLanguage)}</AppText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.customButton}
@@ -193,8 +214,10 @@ export default function TrendsScreen(): ReactElement {
               accessibilityRole="button"
               accessibilityLabel={`${t('trends.customRange.to')}: ${formatDate(customTo, preferredLanguage)}`}
             >
-              <Text style={styles.customLabel}>{t('trends.customRange.to')}</Text>
-              <Text style={styles.customValue}>{formatDate(customTo, preferredLanguage)}</Text>
+              <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+                {t('trends.customRange.to')}
+              </AppText>
+              <AppText weight="bold">{formatDate(customTo, preferredLanguage)}</AppText>
             </TouchableOpacity>
           </View>
         )}
@@ -223,32 +246,14 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     flexGrow: 1,
   },
+  header: {
+    marginBottom: spacing.md,
+  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
     marginBottom: spacing.md,
-  },
-  filterChip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  filterChipActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  filterChipText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textMuted,
-  },
-  filterChipTextActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
   },
   customRow: {
     flexDirection: 'row',
@@ -264,16 +269,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.xs,
   },
-  customLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: fontWeight.semibold,
-  },
-  customValue: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
   centerState: {
     flex: 1,
     alignItems: 'center',
@@ -282,15 +277,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     minHeight: 320,
   },
-  emptyTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
+  centerText: {
     textAlign: 'center',
   },
-  emptySubtitle: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-    textAlign: 'center',
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
 });
