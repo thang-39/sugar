@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { colors, fontSize, fontWeight } from '@/ui/theme';
+import { colors, fontSize, fontFamily } from '@/ui/theme';
 
 export default function SettingsStackLayout(): ReactElement {
   const { t } = useTranslation();
@@ -12,7 +12,7 @@ export default function SettingsStackLayout(): ReactElement {
       screenOptions={{
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
-        headerTitleStyle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+        headerTitleStyle: { fontSize: fontSize.lg, fontFamily: fontFamily.extrabold },
         contentStyle: { backgroundColor: colors.background },
       }}
     >

@@ -8,7 +8,6 @@ import {
   FlatList,
   Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -16,9 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { ReadingListFilter } from '@/domain/repositories/reading-repository';
 import { ReadingListItem } from '@/ui/components/reading-list-item';
+import { AppText, Chip, ScreenHeader } from '@/ui/components/ui';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, fontSize, fontWeight, radius, spacing } from '@/ui/theme';
+import { colors, radius, spacing } from '@/ui/theme';
 import { formatDate } from '@/ui/utils/format';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -97,20 +97,20 @@ export default function HistoryListScreen(): ReactElement {
 
   const renderHeader = (): ReactElement => (
     <View>
+      <ScreenHeader
+        title={t('screens.history.title')}
+        right={<AppText variant="caption">{t('history.count', { n: readings.length })}</AppText>}
+        style={styles.screenHeader}
+      />
+
       <View style={styles.filterRow}>
         {PRESETS.map((p) => (
-          <TouchableOpacity
+          <Chip
             key={p}
-            style={[styles.filterChip, preset === p && styles.filterChipActive]}
+            label={t(`history.filters.${p}`)}
+            selected={preset === p}
             onPress={() => setPreset(p)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityState={{ selected: preset === p }}
-          >
-            <Text style={[styles.filterChipText, preset === p && styles.filterChipTextActive]}>
-              {t(`history.filters.${p}`)}
-            </Text>
-          </TouchableOpacity>
+          />
         ))}
       </View>
 
@@ -123,8 +123,10 @@ export default function HistoryListScreen(): ReactElement {
             accessibilityRole="button"
             accessibilityLabel={`${t('history.customRange.from')}: ${formatDate(customFrom, preferredLanguage)}`}
           >
-            <Text style={styles.customLabel}>{t('history.customRange.from')}</Text>
-            <Text style={styles.customValue}>{formatDate(customFrom, preferredLanguage)}</Text>
+            <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+              {t('history.customRange.from')}
+            </AppText>
+            <AppText weight="bold">{formatDate(customFrom, preferredLanguage)}</AppText>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.customButton}
@@ -133,13 +135,13 @@ export default function HistoryListScreen(): ReactElement {
             accessibilityRole="button"
             accessibilityLabel={`${t('history.customRange.to')}: ${formatDate(customTo, preferredLanguage)}`}
           >
-            <Text style={styles.customLabel}>{t('history.customRange.to')}</Text>
-            <Text style={styles.customValue}>{formatDate(customTo, preferredLanguage)}</Text>
+            <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+              {t('history.customRange.to')}
+            </AppText>
+            <AppText weight="bold">{formatDate(customTo, preferredLanguage)}</AppText>
           </TouchableOpacity>
         </View>
       )}
-
-      <Text style={styles.count}>{t('history.count', { n: readings.length })}</Text>
     </View>
   );
 
@@ -149,21 +151,27 @@ export default function HistoryListScreen(): ReactElement {
       return (
         <View style={styles.centerState}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
-          <Text style={styles.emptyTitle}>{t('history.loadError')}</Text>
+          <AppText variant="heading" style={styles.centerText}>
+            {t('history.loadError')}
+          </AppText>
         </View>
       );
     }
     return (
       <View style={styles.centerState}>
         <Ionicons name="clipboard-outline" size={56} color={colors.textDisabled} />
-        <Text style={styles.emptyTitle}>{t('history.empty.title')}</Text>
-        <Text style={styles.emptySubtitle}>{t('history.empty.subtitle')}</Text>
+        <AppText variant="heading" style={styles.centerText}>
+          {t('history.empty.title')}
+        </AppText>
+        <AppText color={colors.textMuted} style={styles.centerText}>
+          {t('history.empty.subtitle')}
+        </AppText>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       {isLoading && readings.length === 0 ? (
         <View style={styles.centerState}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -208,32 +216,14 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     flexGrow: 1,
   },
+  screenHeader: {
+    marginBottom: spacing.md,
+  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
     marginBottom: spacing.md,
-  },
-  filterChip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  filterChipActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  filterChipText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textMuted,
-  },
-  filterChipTextActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
   },
   customRow: {
     flexDirection: 'row',
@@ -242,27 +232,12 @@ const styles = StyleSheet.create({
   },
   customButton: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     gap: spacing.xs,
-  },
-  customLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: fontWeight.semibold,
-  },
-  customValue: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  count: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginBottom: spacing.md,
   },
   centerState: {
     flex: 1,
@@ -271,15 +246,7 @@ const styles = StyleSheet.create({
     padding: spacing.xxl,
     gap: spacing.md,
   },
-  emptyTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
+  centerText: {
     textAlign: 'center',
   },
 });
