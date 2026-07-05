@@ -1,4 +1,4 @@
-export { AppText, type TextVariant } from './app-text';
+export { AppText, DISPLAY_MAX_FONT_SCALE, type TextVariant } from './app-text';
 export { Badge } from './badge';
 export { Button, type ButtonVariant } from './button';
 export { Card } from './card';

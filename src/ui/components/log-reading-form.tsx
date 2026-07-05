@@ -36,6 +36,7 @@ import {
   Button,
   Card,
   Chip,
+  DISPLAY_MAX_FONT_SCALE,
   Notice,
   SectionLabel,
   SegmentedControl,
@@ -277,7 +278,7 @@ export function LogReadingForm({
             placeholderTextColor={colors.textDisabled}
             keyboardType={preferredUnit === Unit.MmolL ? 'decimal-pad' : 'number-pad'}
             maxLength={6}
-            maxFontSizeMultiplier={1.3}
+            maxFontSizeMultiplier={DISPLAY_MAX_FONT_SCALE}
             accessibilityLabel={t('logForm.a11y.valueInput')}
           />
           <AppText weight="extrabold" color={colors.textFaint} style={styles.unitSuffix}>
