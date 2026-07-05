@@ -1,6 +1,6 @@
 import { useMemo, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { LineChart, type lineDataItem } from 'react-native-gifted-charts';
 
 import type { ChartData } from '@/domain/models/chart';
@@ -9,8 +9,9 @@ import type { TargetRanges } from '@/domain/models/target-range';
 import { Unit } from '@/domain/models/unit';
 import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
-import { colors, fontSize, fontWeight, radius, spacing } from '@/ui/theme';
-import { formatDateTime } from '@/ui/utils/format';
+import { AppText, Card } from '@/ui/components/ui';
+import { colors, fontSize, radius, spacing } from '@/ui/theme';
+import { formatDate, formatDateTime } from '@/ui/utils/format';
 import { statusColor } from '@/ui/utils/reading-display';
 
 const CHART_HEIGHT = 240;
@@ -95,12 +96,16 @@ export function BloodSugarChart({
     const displayText = unit === Unit.MmolL ? (item.value ?? 0).toFixed(1) : String(item.value);
     return (
       <View style={styles.tooltip}>
-        <Text style={styles.tooltipValue}>
+        <AppText variant="body" weight="extrabold" color={colors.onDark}>
           {displayText} {unit}
-        </Text>
-        <Text style={styles.tooltipMeta}>{formatDateTime(new Date(item.timestamp), language)}</Text>
+        </AppText>
+        <AppText variant="caption" color={colors.onDark}>
+          {formatDateTime(new Date(item.timestamp), language)}
+        </AppText>
         {item.count > 1 && (
-          <Text style={styles.tooltipMeta}>{t('trends.tooltip.average', { count: item.count })}</Text>
+          <AppText variant="caption" color={colors.onDark}>
+            {t('trends.tooltip.average', { count: item.count })}
+          </AppText>
         )}
       </View>
     );
@@ -108,53 +113,78 @@ export function BloodSugarChart({
 
   return (
     <View>
-      {data.aggregated && <Text style={styles.aggregatedNote}>{t('trends.aggregatedNote')}</Text>}
+      {data.aggregated && (
+        <AppText variant="caption" color={colors.textMuted} style={styles.aggregatedNote}>
+          {t('trends.aggregatedNote')}
+        </AppText>
+      )}
 
-      <View
-        style={styles.chartWrap}
-        accessibilityLabel={t('trends.a11y.chart', { unit })}
-        accessibilityRole="image"
-      >
-        {/* Shaded target-range band, sits behind the line (baseline-0 geometry). */}
+      <Card style={styles.chartCard}>
         <View
-          pointerEvents="none"
-          style={[
-            styles.band,
-            { top: chart.bandTop, height: chart.bandHeight, left: Y_AXIS_LABEL_WIDTH },
-          ]}
-        />
-        <LineChart
-          data={chart.items}
-          height={CHART_HEIGHT}
-          maxValue={chart.maxValue}
-          noOfSections={4}
-          initialSpacing={INITIAL_SPACING}
-          spacing={chart.spacingBetween}
-          yAxisLabelWidth={Y_AXIS_LABEL_WIDTH}
-          thickness={2}
-          color={colors.primary}
-          yAxisColor={colors.border}
-          xAxisColor={colors.border}
-          rulesColor={colors.divider}
-          yAxisTextStyle={styles.axisText}
-          curved
-          pointerConfig={{
-            pointerStripHeight: CHART_HEIGHT,
-            pointerStripColor: colors.textMuted,
-            pointerColor: colors.primaryDark,
-            radius: 6,
-            pointerLabelWidth: 160,
-            pointerLabelHeight: 80,
-            activatePointersOnLongPress: false,
-            autoAdjustPointerLabelPosition: true,
-            pointerLabelComponent: renderTooltip,
-          }}
-        />
-      </View>
+          style={styles.chartWrap}
+          accessibilityLabel={t('trends.a11y.chart', { unit })}
+          accessibilityRole="image"
+        >
+          {/* Shaded target-range band, sits behind the line (baseline-0 geometry). */}
+          <View
+            pointerEvents="none"
+            style={[
+              styles.band,
+              { top: chart.bandTop, height: chart.bandHeight, left: Y_AXIS_LABEL_WIDTH },
+            ]}
+          />
+          <LineChart
+            data={chart.items}
+            height={CHART_HEIGHT}
+            maxValue={chart.maxValue}
+            noOfSections={4}
+            initialSpacing={INITIAL_SPACING}
+            spacing={chart.spacingBetween}
+            yAxisLabelWidth={Y_AXIS_LABEL_WIDTH}
+            thickness={2}
+            color={colors.primary}
+            yAxisColor={colors.border}
+            xAxisColor={colors.border}
+            rulesColor={colors.divider}
+            yAxisTextStyle={styles.axisText}
+            curved
+            pointerConfig={{
+              pointerStripHeight: CHART_HEIGHT,
+              pointerStripColor: colors.textMuted,
+              pointerColor: colors.primaryDark,
+              radius: 6,
+              pointerLabelWidth: 160,
+              pointerLabelHeight: 80,
+              activatePointersOnLongPress: false,
+              autoAdjustPointerLabelPosition: true,
+              pointerLabelComponent: renderTooltip,
+            }}
+          />
+        </View>
+
+        <View style={styles.axisRow}>
+          <AppText variant="caption" color={colors.textFaint}>
+            {formatDate(new Date(data.points[0]?.timestamp ?? 0), language)}
+          </AppText>
+          <AppText variant="caption" color={colors.textFaint}>
+            {formatDate(new Date(data.points[data.points.length - 1]?.timestamp ?? 0), language)}
+          </AppText>
+        </View>
+      </Card>
 
       <View style={styles.legendRow}>
-        <View style={styles.legendSwatch} />
-        <Text style={styles.legendText}>{t('trends.bandLabel')}</Text>
+        <View style={styles.legendItem}>
+          <View style={styles.bandSwatch} />
+          <AppText variant="caption" color={colors.textMuted}>
+            {t('trends.legend.inRange')}
+          </AppText>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={styles.dotSwatch} />
+          <AppText variant="caption" color={colors.textMuted}>
+            {t('trends.legend.outOfRange')}
+          </AppText>
+        </View>
       </View>
     </View>
   );
@@ -162,10 +192,12 @@ export function BloodSugarChart({
 
 const styles = StyleSheet.create({
   aggregatedNote: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
     marginBottom: spacing.sm,
-    fontWeight: fontWeight.medium,
+  },
+  chartCard: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   chartWrap: {
     position: 'relative',
@@ -183,6 +215,12 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textMuted,
   },
+  axisRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: Y_AXIS_LABEL_WIDTH,
+    marginTop: spacing.xs,
+  },
   tooltip: {
     backgroundColor: colors.text,
     borderRadius: radius.md,
@@ -190,31 +228,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     gap: spacing.xs,
   },
-  tooltipValue: {
-    color: colors.onDark,
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-  },
-  tooltipMeta: {
-    color: colors.onDark,
-    fontSize: fontSize.xs,
-  },
   legendRow: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    marginTop: spacing.md,
+  },
+  legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginTop: spacing.md,
   },
-  legendSwatch: {
-    width: 24,
+  bandSwatch: {
+    width: 14,
     height: 14,
     borderRadius: radius.sm,
     backgroundColor: colors.inRangeBg,
     borderWidth: 1,
-    borderColor: colors.inRange,
+    borderColor: colors.borderStrong,
   },
-  legendText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
+  dotSwatch: {
+    width: 12,
+    height: 12,
+    borderRadius: radius.pill,
+    backgroundColor: colors.outOfRange,
   },
 });
