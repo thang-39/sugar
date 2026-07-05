@@ -129,6 +129,15 @@
     },
     "aggregatedNote": "Showing daily averages",
     "bandLabel": "Target range (before meal)",
+    "legend": {
+      "inRange": "In range",
+      "outOfRange": "Out of range"
+    },
+    "stats": {
+      "average": "Average",
+      "inRange": "In range",
+      "readings": "Readings"
+    },
     "tooltip": {
       "average": "Average of {{count}} readings"
     },
