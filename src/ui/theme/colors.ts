@@ -34,6 +34,11 @@ const palette = {
   amber: '#F5B301',
   orange: '#E8622C', // out-of-range / high
 
+  // Darkened status shades — used for TEXT/badges so small labels meet WCAG AA.
+  greenText: '#0A7350',
+  amberText: '#8A5D00',
+  orangeText: '#B23C10',
+
   // Status tints
   warnBg: '#FDECE4',
   amberBg: '#FCF3DE',
@@ -83,6 +88,11 @@ export const colors = {
   highBg: palette.warnBg,
   outOfRange: palette.orange,
   warnBg: palette.warnBg,
+
+  // Status TEXT colors (contrast-safe on white/tinted backgrounds; see reading-display.test)
+  inRangeText: palette.greenText,
+  lowText: palette.amberText,
+  highText: palette.orangeText,
 
   // Feedback
   error: palette.orange,
