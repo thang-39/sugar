@@ -129,6 +129,15 @@
     },
     "aggregatedNote": "Đang hiển thị trung bình mỗi ngày",
     "bandLabel": "Ngưỡng mục tiêu (trước ăn)",
+    "legend": {
+      "inRange": "Trong ngưỡng",
+      "outOfRange": "Ngoài ngưỡng"
+    },
+    "stats": {
+      "average": "Trung bình",
+      "inRange": "Đạt ngưỡng",
+      "readings": "Số lần đo"
+    },
     "tooltip": {
       "average": "Trung bình {{count}} lần đo"
     },
