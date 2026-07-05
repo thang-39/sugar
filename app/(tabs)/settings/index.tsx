@@ -19,6 +19,7 @@ import {
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { colors, spacing } from '@/ui/theme';
 import { formatValue } from '@/ui/utils/format';
+import { haptics } from '@/ui/utils/haptics';
 
 export default function SettingsScreen(): ReactElement {
   const { t } = useTranslation();
@@ -43,6 +44,7 @@ export default function SettingsScreen(): ReactElement {
   )}`;
 
   const performDelete = async (): Promise<void> => {
+    void haptics.warning();
     try {
       setIsDeleting(true);
       await clearAllData({
@@ -53,6 +55,7 @@ export default function SettingsScreen(): ReactElement {
       // false, so the tabs layout's first-run gate redirects to onboarding.
       resetToDefaults();
     } catch {
+      void haptics.error();
       Alert.alert(t('common.errorTitle'), t('screens.settings.deleteAll.failed'));
     } finally {
       setIsDeleting(false);

@@ -28,6 +28,7 @@ import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { readingUseCaseDeps } from '@/data/repositories/factory';
 import { getDefaultMealType, convertValueString } from '@/ui/utils/log-form';
 import { formatDateTime } from '@/ui/utils/format';
+import { haptics } from '@/ui/utils/haptics';
 import { mealIcon } from '@/ui/utils/meal-display';
 import { colors, spacing, radius, fontSize, fontFamily, mealColor } from '@/ui/theme';
 import {
@@ -218,9 +219,12 @@ export function LogReadingForm({
         fasting: fastingRange,
         postMeal: postMealRange,
       });
+      // Out-of-range success still saved — warn haptic; in-range → success.
+      void (evaluation === RangeEvaluation.InRange ? haptics.success() : haptics.warning());
       showSavedAlert(reading, evaluation);
     } catch (err) {
       console.error('Failed to save reading:', err);
+      void haptics.error();
       Alert.alert(t('common.errorTitle'), t('common.saveFailed'));
     } finally {
       setIsSaving(false);
@@ -237,6 +241,7 @@ export function LogReadingForm({
 
     const { mgdl, withinNormalRange } = validation;
     if (!withinNormalRange) {
+      void haptics.warning();
       // Value is numeric but outside physical bounds — warn-only, never hard-block.
       Alert.alert(t('logForm.alerts.outOfBoundsTitle'), t('logForm.alerts.outOfBoundsMessage'), [
         { text: t('common.cancel'), style: 'cancel' },
