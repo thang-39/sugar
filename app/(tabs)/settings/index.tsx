@@ -49,8 +49,9 @@ export default function SettingsScreen(): ReactElement {
         readingRepo: getReadingRepository(),
         settingsRepo: getSettingsRepository(),
       });
+      // Fresh-install experience: resetToDefaults sets onboardingDone back to
+      // false, so the tabs layout's first-run gate redirects to onboarding.
       resetToDefaults();
-      router.replace('/(tabs)');
     } catch {
       Alert.alert(t('common.errorTitle'), t('screens.settings.deleteAll.failed'));
     } finally {

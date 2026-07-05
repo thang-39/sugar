@@ -95,7 +95,20 @@
         "failed": "Could not delete the data. Please try again."
       }
     },
-    "onboarding": { "title": "Welcome to Sugar" },
+    "onboarding": {
+      "title": "Welcome to Sugar",
+      "languageLabel": "Language",
+      "unitLabel": "Preferred unit",
+      "getStarted": "Get Started",
+      "skip": "Skip",
+      "languages": { "vi": "Tiếng Việt", "en": "English" },
+      "features": {
+        "log": { "title": "Log readings", "subtitle": "with meal context" },
+        "trends": { "title": "See trends", "subtitle": "charts & targets" },
+        "export": { "title": "Export CSV", "subtitle": "share with doctor" },
+        "offline": { "title": "Works offline", "subtitle": "no internet needed" }
+      }
+    },
     "notFound": {
       "title": "Not Found",
       "message": "This page doesn't exist.",
