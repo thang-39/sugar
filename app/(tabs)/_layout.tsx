@@ -40,6 +40,7 @@ export default function TabsLayout(): ReactElement {
         name="trends"
         options={{
           title: t('tabs.trends'),
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="stats-chart-outline" color={color} size={size} />
           ),
