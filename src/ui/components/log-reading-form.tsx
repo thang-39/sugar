@@ -277,6 +277,7 @@ export function LogReadingForm({
             placeholderTextColor={colors.textDisabled}
             keyboardType={preferredUnit === Unit.MmolL ? 'decimal-pad' : 'number-pad'}
             maxLength={6}
+            maxFontSizeMultiplier={1.3}
             accessibilityLabel={t('logForm.a11y.valueInput')}
           />
           <AppText weight="extrabold" color={colors.textFaint} style={styles.unitSuffix}>
