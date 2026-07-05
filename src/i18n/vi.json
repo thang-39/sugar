@@ -48,6 +48,7 @@
     "notesPlaceholder": "Ví dụ: cảm thấy chóng mặt, ăn nhiều tinh bột...",
     "recordedAtLabel": "Thời gian đo",
     "saveButton": "Lưu kết quả",
+    "updateButton": "Cập nhật",
     "saving": "Đang lưu...",
     "validation": {
       "empty": "Vui lòng nhập chỉ số đường huyết.",
@@ -61,6 +62,7 @@
       "saveAnyway": "Vẫn lưu",
       "savedTitle": "Đã lưu",
       "savedMessage": "Đã lưu chỉ số đường huyết thành công.",
+      "updatedMessage": "Đã cập nhật kết quả.",
       "rangeSavedLow": "Đã lưu. Đường huyết của bạn đang THẤP ({{value}} {{unit}}).",
       "rangeSavedHigh": "Đã lưu. Đường huyết của bạn đang CAO ({{value}} {{unit}})."
     },
@@ -85,5 +87,46 @@
       "Before": "Trước ăn",
       "After": "Sau ăn"
     }
+  },
+  "status": {
+    "in-range": "Trong ngưỡng",
+    "low": "Thấp",
+    "high": "Cao"
+  },
+  "history": {
+    "count": "{{n}} kết quả",
+    "hoursValue": "{{n}} giờ",
+    "loadError": "Không thể tải lịch sử.",
+    "filters": {
+      "all": "Tất cả",
+      "last7": "7 ngày",
+      "last30": "30 ngày",
+      "custom": "Tùy chọn"
+    },
+    "customRange": {
+      "from": "Từ ngày",
+      "to": "Đến ngày"
+    },
+    "empty": {
+      "title": "Chưa có kết quả nào",
+      "subtitle": "Chuyển sang tab Ghi số để thêm kết quả đầu tiên."
+    },
+    "a11y": {
+      "row": "{{value}} {{unit}}, {{context}}, {{date}} {{time}}. Chạm để xem chi tiết."
+    }
+  },
+  "readingDetail": {
+    "mealLabel": "Bữa ăn",
+    "timingLabel": "Thời điểm đo",
+    "hoursAfterLabel": "Thời gian sau ăn",
+    "notesLabel": "Ghi chú",
+    "recordedAtLabel": "Thời gian đo",
+    "noNotes": "Không có ghi chú",
+    "notFound": "Không tìm thấy kết quả.",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "deleteConfirmTitle": "Xóa kết quả này?",
+    "deleteConfirmMessage": "Thao tác này không thể hoàn tác.",
+    "deleteFailed": "Không thể xóa kết quả. Vui lòng thử lại."
   }
 }
