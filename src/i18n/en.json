@@ -10,7 +10,8 @@
     "done": "Done",
     "errorTitle": "Something went wrong",
     "dbError": "Database error: {{message}}",
-    "saveFailed": "Could not save the reading. Please try again."
+    "saveFailed": "Could not save the reading. Please try again.",
+    "disclaimer": "This app is for personal wellness tracking only. It is not a medical device."
   },
   "tabs": {
     "log": "Log",
@@ -25,10 +26,56 @@
     "editReading": { "title": "Edit Reading" },
     "trends": { "title": "Trends" },
     "settings": {
-      "index": { "title": "Settings" },
-      "targetRange": { "title": "Target Range" },
+      "index": {
+        "title": "Settings",
+        "sections": {
+          "preferences": "Preferences",
+          "data": "Data"
+        },
+        "rows": {
+          "unit": "Unit",
+          "language": "Language",
+          "alerts": "Alerts",
+          "targetRanges": "Target ranges",
+          "export": "Export data",
+          "about": "About"
+        },
+        "languageShort": {
+          "vi": "VI",
+          "en": "EN"
+        }
+      },
+      "targetRange": {
+        "title": "Target Range",
+        "helper": "Values shown and edited in {{unit}}.",
+        "fasting": "Before meal (fasting)",
+        "postMeal": "After meal",
+        "min": "Low",
+        "max": "High",
+        "done": "Done",
+        "a11y": {
+          "minDecrease": "Decrease low target for {{range}}",
+          "minIncrease": "Increase low target for {{range}}",
+          "maxDecrease": "Decrease high target for {{range}}",
+          "maxIncrease": "Increase high target for {{range}}"
+        }
+      },
       "export": { "title": "Export Data" },
-      "about": { "title": "About" }
+      "about": {
+        "title": "About",
+        "version": "Version {{version}}",
+        "privacyPolicy": "Privacy policy"
+      },
+      "deleteAll": {
+        "row": "Delete all data",
+        "step1Title": "Delete all data?",
+        "step1Message": "All readings and settings will be permanently removed from this device. This cannot be undone.",
+        "continue": "Continue",
+        "step2Title": "Confirm deletion",
+        "step2Message": "Are you sure you want to delete everything? This action cannot be undone.",
+        "confirm": "Delete all",
+        "failed": "Could not delete the data. Please try again."
+      }
     },
     "onboarding": { "title": "Welcome to Sugar" },
     "notFound": {
