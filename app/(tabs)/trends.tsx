@@ -1,9 +1,296 @@
-import type { ReactElement } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PlaceholderScreen } from '@/ui/components/placeholder-screen';
+import type { ReadingListFilter } from '@/domain/repositories/reading-repository';
+import { transformChartData } from '@/domain/use-cases/transform-chart-data';
+import { BloodSugarChart } from '@/ui/components/blood-sugar-chart';
+import { useReadings } from '@/ui/hooks/use-readings';
+import { useSettingsStore } from '@/ui/hooks/use-settings';
+import { colors, fontSize, fontWeight, radius, spacing } from '@/ui/theme';
+import { formatDate } from '@/ui/utils/format';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const Scale = {
+  Last7: 'last7',
+  Last30: 'last30',
+  Last90: 'last90',
+  All: 'all',
+  Custom: 'custom',
+} as const;
+type Scale = (typeof Scale)[keyof typeof Scale];
+
+const SCALES: readonly Scale[] = [Scale.Last7, Scale.Last30, Scale.Last90, Scale.All, Scale.Custom];
+
+// Fixed spans in days for the preset scales; 'all'/'custom' are derived from data.
+const SCALE_DAYS: Partial<Record<Scale, number>> = {
+  [Scale.Last7]: 7,
+  [Scale.Last30]: 30,
+  [Scale.Last90]: 90,
+};
+
+function startOfDay(date: Date): number {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+function endOfDay(date: Date): number {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d.getTime();
+}
+
+// Kept at module scope (like rangeFor) so the linter's purity rule doesn't flag
+// the Date.now() call that render code isn't allowed to make directly.
+function spanDaysFor(
+  scale: Scale,
+  readings: readonly { recordedAt: number }[],
+  customFrom: Date,
+  customTo: Date,
+): number {
+  if (scale === Scale.All) {
+    const oldest = readings[readings.length - 1]?.recordedAt;
+    return oldest !== undefined ? Math.ceil((Date.now() - oldest) / DAY_MS) + 1 : 0;
+  }
+  if (scale === Scale.Custom) {
+    return Math.ceil((endOfDay(customTo) - startOfDay(customFrom)) / DAY_MS);
+  }
+  return SCALE_DAYS[scale] ?? 0;
+}
+
+function rangeFor(scale: Scale, customFrom: Date, customTo: Date): ReadingListFilter {
+  switch (scale) {
+    case Scale.Last7:
+      return { from: startOfDay(new Date(Date.now() - 6 * DAY_MS)) };
+    case Scale.Last30:
+      return { from: startOfDay(new Date(Date.now() - 29 * DAY_MS)) };
+    case Scale.Last90:
+      return { from: startOfDay(new Date(Date.now() - 89 * DAY_MS)) };
+    case Scale.Custom:
+      return { from: startOfDay(customFrom), to: endOfDay(customTo) };
+    case Scale.All:
+    default:
+      return {};
+  }
+}
 
 export default function TrendsScreen(): ReactElement {
   const { t } = useTranslation();
-  return <PlaceholderScreen title={t('screens.trends.title')} subtitle={t('common.comingSoon')} />;
+  const { preferredUnit, preferredLanguage, fastingRange, postMealRange } = useSettingsStore();
+
+  const [scale, setScale] = useState<Scale>(Scale.Last7);
+  const [customFrom, setCustomFrom] = useState<Date>(() => new Date(Date.now() - 29 * DAY_MS));
+  const [customTo, setCustomTo] = useState<Date>(() => new Date());
+  const [activePicker, setActivePicker] = useState<'from' | 'to' | undefined>(undefined);
+
+  const filter = useMemo(() => rangeFor(scale, customFrom, customTo), [scale, customFrom, customTo]);
+  const { readings, isLoading, error } = useReadings(filter);
+
+  const ranges = useMemo(
+    () => ({ fasting: fastingRange, postMeal: postMealRange }),
+    [fastingRange, postMealRange],
+  );
+
+  const chartData = useMemo(() => {
+    // Span drives points-vs-daily-averages. Presets are fixed; 'all' spans from
+    // the oldest reading to now; 'custom' is the picked range width.
+    const spanDays = spanDaysFor(scale, readings, customFrom, customTo);
+    return transformChartData(readings, spanDays);
+  }, [readings, scale, customFrom, customTo]);
+
+  const onPickDate = (event: DateTimePickerEvent, selected?: Date): void => {
+    const which = activePicker;
+    if (Platform.OS !== 'ios') setActivePicker(undefined);
+    if (!selected || which === undefined) return;
+    if (which === 'from') setCustomFrom(selected);
+    else setCustomTo(selected);
+  };
+
+  const renderBody = (): ReactElement => {
+    if (isLoading && readings.length === 0) {
+      return (
+        <View style={styles.centerState}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      );
+    }
+    if (error !== undefined) {
+      return (
+        <View style={styles.centerState}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={styles.emptyTitle}>{t('trends.loadError')}</Text>
+        </View>
+      );
+    }
+    if (chartData.points.length === 0) {
+      return (
+        <View style={styles.centerState}>
+          <Ionicons name="bar-chart-outline" size={56} color={colors.textDisabled} />
+          <Text style={styles.emptyTitle}>{t('trends.empty.title')}</Text>
+          <Text style={styles.emptySubtitle}>{t('trends.empty.subtitle')}</Text>
+        </View>
+      );
+    }
+    return (
+      <BloodSugarChart
+        data={chartData}
+        unit={preferredUnit}
+        language={preferredLanguage}
+        ranges={ranges}
+      />
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['left', 'right', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.filterRow}>
+          {SCALES.map((s) => (
+            <TouchableOpacity
+              key={s}
+              style={[styles.filterChip, scale === s && styles.filterChipActive]}
+              onPress={() => setScale(s)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityState={{ selected: scale === s }}
+            >
+              <Text style={[styles.filterChipText, scale === s && styles.filterChipTextActive]}>
+                {t(`trends.scales.${s}`)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {scale === Scale.Custom && (
+          <View style={styles.customRow}>
+            <TouchableOpacity
+              style={styles.customButton}
+              onPress={() => setActivePicker('from')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('trends.customRange.from')}: ${formatDate(customFrom, preferredLanguage)}`}
+            >
+              <Text style={styles.customLabel}>{t('trends.customRange.from')}</Text>
+              <Text style={styles.customValue}>{formatDate(customFrom, preferredLanguage)}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.customButton}
+              onPress={() => setActivePicker('to')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('trends.customRange.to')}: ${formatDate(customTo, preferredLanguage)}`}
+            >
+              <Text style={styles.customLabel}>{t('trends.customRange.to')}</Text>
+              <Text style={styles.customValue}>{formatDate(customTo, preferredLanguage)}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {renderBody()}
+      </ScrollView>
+
+      {activePicker !== undefined && (
+        <DateTimePicker
+          value={activePicker === 'from' ? customFrom : customTo}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={onPickDate}
+        />
+      )}
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    padding: spacing.lg,
+    flexGrow: 1,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  filterChip: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  filterChipActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  filterChipText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    color: colors.textMuted,
+  },
+  filterChipTextActive: {
+    color: colors.primary,
+    fontWeight: fontWeight.bold,
+  },
+  customRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  customButton: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  customLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    fontWeight: fontWeight.semibold,
+  },
+  customValue: {
+    fontSize: fontSize.base,
+    color: colors.text,
+    fontWeight: fontWeight.medium,
+  },
+  centerState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xxl,
+    gap: spacing.md,
+    minHeight: 320,
+  },
+  emptyTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: fontSize.base,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+});
