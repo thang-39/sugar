@@ -227,7 +227,7 @@
       "subtitle": "Ghi thêm vài kết quả để xem biểu đồ xu hướng."
     },
     "a11y": {
-      "chart": "Biểu đồ đường huyết theo thời gian, {{unit}}"
+      "chart": "Biểu đồ xu hướng đường huyết. {{count}} điểm. Trung bình {{avg}} {{unit}}."
     }
   },
   "readingDetail": {

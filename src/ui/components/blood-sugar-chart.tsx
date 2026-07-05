@@ -122,8 +122,13 @@ export function BloodSugarChart({
       <Card style={styles.chartCard}>
         <View
           style={styles.chartWrap}
-          accessibilityLabel={t('trends.a11y.chart', { unit })}
+          accessible
           accessibilityRole="image"
+          accessibilityLabel={t('trends.a11y.chart', {
+            count: data.points.length,
+            avg: '—',
+            unit,
+          })}
         >
           {/* Shaded target-range band, sits behind the line (baseline-0 geometry). */}
           <View
