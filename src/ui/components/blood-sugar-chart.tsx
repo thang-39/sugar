@@ -90,6 +90,13 @@ export function BloodSugarChart({
     return { items, maxValue, bandTop, bandHeight, spacingBetween };
   }, [data.points, ranges, unit, width]);
 
+  const avgDisplay = useMemo(() => {
+    if (data.points.length === 0) return '—';
+    const meanMgdl = data.points.reduce((sum, p) => sum + p.value, 0) / data.points.length;
+    const display = toDisplay(meanMgdl, unit);
+    return unit === Unit.MmolL ? display.toFixed(1) : String(Math.round(display));
+  }, [data.points, unit]);
+
   const renderTooltip = (items: unknown): ReactElement | null => {
     const item = Array.isArray(items) ? (items[0] as ChartItem | undefined) : undefined;
     if (!item) return null;
@@ -126,7 +133,7 @@ export function BloodSugarChart({
           accessibilityRole="image"
           accessibilityLabel={t('trends.a11y.chart', {
             count: data.points.length,
-            avg: '—',
+            avg: avgDisplay,
             unit,
           })}
         >
