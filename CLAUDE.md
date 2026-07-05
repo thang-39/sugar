@@ -78,6 +78,13 @@ Layering rule (Clean Architecture, same as PRD): `app/ → src/ui/ → src/domai
 - Support system font scaling (`allowFontScaling` stays on); test layouts at 1.3× scale.
 - Disclaimer string (onboarding + about): "This app is for personal wellness tracking only. It is not a medical device." / "Ứng dụng chỉ hỗ trợ theo dõi sức khoẻ cá nhân, không phải thiết bị y tế."
 
+**Design System (Evergreen — added Session 4.5)**
+- Visual reference: `design/Sugar App.dc.html` (Evergreen style). To change the look, edit the design in Claude Design → export over this file → have Claude diff it and update `src/ui/theme` + primitives. Never guess token values; always reconcile against the design file.
+- **Reuse the primitives** in `src/ui/components/ui/` (`AppText`, `Button`, `Card`, `Chip`, `SegmentedControl`, `SectionLabel`, `Stepper`, `ScreenHeader`, `IconTile`, `Badge`). Do NOT hand-write inline StyleSheet for cards/buttons/chips — extend a primitive if you need a new variant. Screen-specific composites (e.g. `StatCard`, `ListRow`) are added by the session that first needs them.
+- Colors/spacing/radius/font come only from `src/ui/theme` — no hardcoded hex in components.
+- Bold text uses `fontFamily` (Nunito_*), NOT `fontWeight` (RN ignores it on custom fonts). Prefer `AppText` over raw `Text`.
+- Icons: Ionicons (`@expo/vector-icons`); `src/ui/utils/meal-display.ts` maps meal types → icons.
+
 **Testing**
 - Black-box, behavior-only tests for: reading use cases (create/edit/delete/validate), unit conversion, ExportService (CSV generation + date filtering), ChartDataTransformer (grouping <30d points vs ≥30d daily averages).
 - Repository tests against in-memory SQLite. No snapshot tests.

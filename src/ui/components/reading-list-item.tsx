@@ -1,17 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { Language } from '@/domain/models/settings';
 import type { TargetRanges } from '@/domain/models/target-range';
+import { RangeEvaluation } from '@/domain/models/target-range';
 import { MealTiming } from '@/domain/models/meal';
 import type { Reading } from '@/domain/models/reading';
 import type { Unit } from '@/domain/models/unit';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
-import { colors, fontSize, fontWeight, radius, spacing } from '@/ui/theme';
+import { colors, mealColor, spacing } from '@/ui/theme';
 import { formatDate, formatTime, formatValue } from '@/ui/utils/format';
+import { mealIcon } from '@/ui/utils/meal-display';
 import { statusColor } from '@/ui/utils/reading-display';
+import { AppText, Badge, Card, IconTile } from '@/ui/components/ui';
 
 interface ReadingListItemProps {
   reading: Reading;
@@ -21,7 +24,7 @@ interface ReadingListItemProps {
   onPress: () => void;
 }
 
-/** One history row: status color, value, meal context, date/time. Presentational. */
+/** One history row: meal avatar, value + status, meal context, date/time. Presentational. */
 export function ReadingListItem({
   reading,
   unit,
@@ -31,7 +34,7 @@ export function ReadingListItem({
 }: ReadingListItemProps): ReactElement {
   const { t } = useTranslation();
   const evaluation = evaluateReading(reading, ranges);
-  const accent = statusColor(evaluation);
+  const isOutOfRange = evaluation !== RangeEvaluation.InRange;
   const recordedAt = new Date(reading.recordedAt);
 
   const meal = t(`logForm.mealTypes.${reading.mealType}`);
@@ -42,11 +45,9 @@ export function ReadingListItem({
       : `${meal} · ${timing}`;
 
   return (
-    <TouchableOpacity
-      style={styles.row}
+    <Card
       onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityRole="button"
+      style={styles.row}
       accessibilityLabel={t('history.a11y.row', {
         value: formatValue(reading.value, unit),
         unit,
@@ -55,21 +56,29 @@ export function ReadingListItem({
         time: formatTime(recordedAt, language),
       })}
     >
-      <View style={[styles.accent, { backgroundColor: accent }]} />
+      <IconTile icon={mealIcon[reading.mealType]} color={mealColor[reading.mealType]} />
       <View style={styles.main}>
-        <Text style={styles.value}>
-          {formatValue(reading.value, unit)} <Text style={styles.unit}>{unit}</Text>
-        </Text>
-        <Text style={styles.context} numberOfLines={1}>
+        <View style={styles.valueRow}>
+          <AppText variant="heading" color={statusColor(evaluation)}>
+            {formatValue(reading.value, unit)}
+          </AppText>
+          <AppText variant="caption" color={colors.textFaint}>
+            {unit}
+          </AppText>
+          {isOutOfRange && <Badge label={t(`status.${evaluation}`).toUpperCase()} />}
+        </View>
+        <AppText variant="caption" numberOfLines={1}>
           {context}
-        </Text>
+        </AppText>
       </View>
       <View style={styles.meta}>
-        <Text style={styles.date}>{formatDate(recordedAt, language)}</Text>
-        <Text style={styles.time}>{formatTime(recordedAt, language)}</Text>
+        <AppText variant="caption" color={colors.text} weight="bold">
+          {formatDate(recordedAt, language)}
+        </AppText>
+        <AppText variant="caption">{formatTime(recordedAt, language)}</AppText>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={colors.textDisabled} />
-    </TouchableOpacity>
+      <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+    </Card>
   );
 }
 
@@ -77,49 +86,23 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    gap: spacing.md,
     paddingVertical: spacing.md,
-    paddingRight: spacing.md,
-    marginBottom: spacing.sm,
-    overflow: 'hidden',
-  },
-  accent: {
-    width: 6,
-    alignSelf: 'stretch',
-    marginRight: spacing.md,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
   },
   main: {
     flex: 1,
     gap: spacing.xs,
+    minWidth: 0,
   },
-  value: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  unit: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textMuted,
-  },
-  context: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flexWrap: 'wrap',
   },
   meta: {
     alignItems: 'flex-end',
-    marginRight: spacing.sm,
-  },
-  date: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  time: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
   },
 });

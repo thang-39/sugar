@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { ReactElement, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { MealTiming } from '@/domain/models/meal';
 import { getReadingRepository } from '@/data/repositories/factory';
@@ -10,15 +10,18 @@ import { deleteReading } from '@/domain/use-cases/delete-reading';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { useReading } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, fontSize, fontWeight, radius, spacing } from '@/ui/theme';
+import { colors, fontSize, fontFamily, spacing } from '@/ui/theme';
 import { formatDateTime, formatValue } from '@/ui/utils/format';
 import { statusBgColor, statusColor } from '@/ui/utils/reading-display';
+import { AppText, Badge, Button, Card } from '@/ui/components/ui';
 
 function DetailRow({ label, children }: { label: string; children: ReactNode }): ReactElement {
   return (
     <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{children}</Text>
+      <AppText color={colors.textMuted}>{label}</AppText>
+      <AppText weight="bold" style={styles.detailValue}>
+        {children}
+      </AppText>
     </View>
   );
 }
@@ -42,7 +45,9 @@ export default function ReadingDetailScreen(): ReactElement {
     return (
       <View style={styles.centerState}>
         <Ionicons name="help-circle-outline" size={48} color={colors.textDisabled} />
-        <Text style={styles.notFound}>{t('readingDetail.notFound')}</Text>
+        <AppText variant="heading" color={colors.textMuted}>
+          {t('readingDetail.notFound')}
+        </AppText>
       </View>
     );
   }
@@ -75,16 +80,21 @@ export default function ReadingDetailScreen(): ReactElement {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* Value hero with status tint */}
       <View style={[styles.hero, { backgroundColor: statusBgColor(evaluation) }]}>
-        <Text style={[styles.heroValue, { color: statusColor(evaluation) }]}>
+        <AppText variant="display" color={statusColor(evaluation)}>
           {formatValue(reading.value, preferredUnit)}
-        </Text>
-        <Text style={styles.heroUnit}>{preferredUnit}</Text>
-        <View style={[styles.statusPill, { backgroundColor: statusColor(evaluation) }]}>
-          <Text style={styles.statusPillText}>{t(`status.${evaluation}`)}</Text>
-        </View>
+        </AppText>
+        <AppText weight="bold" color={colors.textMuted}>
+          {preferredUnit}
+        </AppText>
+        <Badge
+          label={t(`status.${evaluation}`).toUpperCase()}
+          color={colors.onPrimary}
+          backgroundColor={statusColor(evaluation)}
+          style={styles.statusBadge}
+        />
       </View>
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <DetailRow label={t('readingDetail.mealLabel')}>
           {t(`logForm.mealTypes.${reading.mealType}`)}
         </DetailRow>
@@ -99,36 +109,30 @@ export default function ReadingDetailScreen(): ReactElement {
         <DetailRow label={t('readingDetail.recordedAtLabel')}>
           {formatDateTime(recordedAt, preferredLanguage)}
         </DetailRow>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
-        <Text style={styles.detailLabel}>{t('readingDetail.notesLabel')}</Text>
-        <Text style={[styles.notes, reading.notes === undefined && styles.notesEmpty]}>
+      <Card style={styles.card}>
+        <AppText color={colors.textMuted}>{t('readingDetail.notesLabel')}</AppText>
+        <AppText
+          style={styles.notes}
+          color={reading.notes === undefined ? colors.textDisabled : colors.text}
+        >
           {reading.notes ?? t('readingDetail.noNotes')}
-        </Text>
-      </View>
+        </AppText>
+      </Card>
 
-      <TouchableOpacity
-        style={styles.editButton}
+      <Button
+        label={t('readingDetail.edit')}
         onPress={() => router.push({ pathname: '/history/[id]/edit', params: { id: reading.id } })}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel={t('readingDetail.edit')}
-      >
-        <Ionicons name="create-outline" size={22} color={colors.onPrimary} style={styles.buttonIcon} />
-        <Text style={styles.editButtonText}>{t('readingDetail.edit')}</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.deleteButton}
+        icon="create-outline"
+        uppercase={false}
+      />
+      <Button
+        label={t('readingDetail.delete')}
         onPress={confirmDelete}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel={t('readingDetail.delete')}
-      >
-        <Ionicons name="trash-outline" size={22} color={colors.error} style={styles.buttonIcon} />
-        <Text style={styles.deleteButtonText}>{t('readingDetail.delete')}</Text>
-      </TouchableOpacity>
+        variant="dangerOutline"
+        icon="trash-outline"
+      />
     </ScrollView>
   );
 }
@@ -150,43 +154,18 @@ const styles = StyleSheet.create({
     padding: spacing.xxl,
     gap: spacing.md,
   },
-  notFound: {
-    fontSize: fontSize.lg,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
   hero: {
     alignItems: 'center',
-    borderRadius: radius.lg,
+    borderRadius: 20,
     paddingVertical: spacing.xl,
     gap: spacing.xs,
   },
-  heroValue: {
-    fontSize: fontSize.display,
-    fontWeight: fontWeight.bold,
-  },
-  heroUnit: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  statusPill: {
+  statusBadge: {
     marginTop: spacing.sm,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-  },
-  statusPillText: {
-    color: colors.onPrimary,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
   },
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.lg,
     gap: spacing.sm,
   },
   detailRow: {
@@ -195,55 +174,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  detailLabel: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
   detailValue: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
     flexShrink: 1,
     textAlign: 'right',
   },
   notes: {
-    fontSize: fontSize.base,
-    color: colors.text,
     marginTop: spacing.xs,
-  },
-  notesEmpty: {
-    color: colors.textDisabled,
-    fontStyle: 'italic',
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    height: 56,
-  },
-  editButtonText: {
+    fontFamily: fontFamily.regular,
     fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.onPrimary,
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.error,
-    borderRadius: radius.md,
-    height: 56,
-  },
-  deleteButtonText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.error,
-  },
-  buttonIcon: {
-    marginRight: spacing.sm,
   },
 });
