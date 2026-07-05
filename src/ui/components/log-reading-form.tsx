@@ -35,9 +35,9 @@ import {
   Button,
   Card,
   Chip,
+  Notice,
   SectionLabel,
   SegmentedControl,
-  Stepper,
 } from '@/ui/components/ui';
 
 const VALIDATION_KEY: Record<ValueValidationError, string> = {
@@ -53,6 +53,8 @@ const MEAL_TYPES: readonly MealType[] = [
   MealType.Dinner,
   MealType.Snack,
 ];
+
+const HOUR_OPTIONS: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 
 interface LogReadingFormProps {
   /** When provided, the form runs in edit mode: prefilled and saving via updateReading. */
@@ -256,26 +258,33 @@ export function LogReadingForm({
     <View style={styles.container}>
       {/* Value Input Card */}
       <Card style={styles.valueCard}>
-        <SectionLabel>{t('screens.log.title')}</SectionLabel>
-        <TextInput
-          style={styles.valueInput}
-          value={valueStr}
-          onChangeText={(text) => {
-            setValueStr(text);
-            if (inputError) setInputError(null);
-          }}
-          placeholder={t('logForm.valuePlaceholder')}
-          placeholderTextColor={colors.textDisabled}
-          keyboardType={preferredUnit === Unit.MmolL ? 'decimal-pad' : 'number-pad'}
-          maxLength={6}
-          accessibilityLabel={t('logForm.a11y.valueInput')}
-        />
+        <SectionLabel>{t('logForm.valueLabel')}</SectionLabel>
+
+        <View style={styles.valueRow}>
+          <TextInput
+            style={styles.valueInput}
+            value={valueStr}
+            onChangeText={(text) => {
+              setValueStr(text);
+              if (inputError) setInputError(null);
+            }}
+            placeholder={t('logForm.valuePlaceholder')}
+            placeholderTextColor={colors.textDisabled}
+            keyboardType={preferredUnit === Unit.MmolL ? 'decimal-pad' : 'number-pad'}
+            maxLength={6}
+            accessibilityLabel={t('logForm.a11y.valueInput')}
+          />
+          <AppText weight="extrabold" color={colors.textFaint} style={styles.unitSuffix}>
+            {preferredUnit}
+          </AppText>
+        </View>
 
         <SegmentedControl
           value={preferredUnit}
           onChange={(unit) => {
             void handleUnitChange(unit);
           }}
+          activeColor={colors.primaryButton}
           segments={[
             {
               value: Unit.MgDl,
@@ -291,11 +300,7 @@ export function LogReadingForm({
           style={styles.unitToggle}
         />
 
-        {inputError && (
-          <AppText color={colors.error} style={styles.validationError}>
-            {inputError}
-          </AppText>
-        )}
+        {inputError && <Notice message={inputError} tone="warn" style={styles.validationError} />}
       </Card>
 
       {/* Meal Context Section */}
@@ -319,9 +324,11 @@ export function LogReadingForm({
         </View>
 
         {/* Before / After Meal Timing Switch */}
+        <SectionLabel style={styles.timingLabel}>{t('logForm.mealTimingLabel')}</SectionLabel>
         <SegmentedControl
           value={mealTiming}
           onChange={setMealTiming}
+          activeColor={colors.primaryButton}
           segments={[
             {
               value: MealTiming.Before,
@@ -341,19 +348,25 @@ export function LogReadingForm({
           style={styles.timing}
         />
 
-        {/* Hours After Meal Stepper */}
+        {/* Hours After Meal — chip row (design 0h–6h) */}
         {mealTiming === MealTiming.After && (
-          <Stepper
-            value={hoursAfterMeal}
-            min={0}
-            max={6}
-            onChange={setHoursAfterMeal}
-            label={t('logForm.hoursAfterLabel')}
-            formatValue={(h) => `${h} ${t('logForm.hoursSuffix')}`}
-            decrementAccessibilityLabel={t('logForm.a11y.hoursDecrease')}
-            incrementAccessibilityLabel={t('logForm.a11y.hoursIncrease')}
-            style={styles.stepper}
-          />
+          <View style={styles.hoursSection}>
+            <AppText variant="caption" weight="bold" color={colors.textMuted}>
+              {t('logForm.hoursAfterLabel')}
+            </AppText>
+            <View style={styles.hoursGrid}>
+              {HOUR_OPTIONS.map((h) => (
+                <Chip
+                  key={h}
+                  label={t('logForm.hoursChip', { h })}
+                  selected={hoursAfterMeal === h}
+                  activeColor={colors.primaryButton}
+                  onPress={() => setHoursAfterMeal(h)}
+                  accessibilityLabel={t('logForm.a11y.hoursChip', { hours: h })}
+                />
+              ))}
+            </View>
+          </View>
         )}
       </View>
 
@@ -413,7 +426,6 @@ export function LogReadingForm({
         onPress={() => {
           void onSave();
         }}
-        icon="checkmark-circle-outline"
         isLoading={isSaving}
         accessibilityLabel={t('logForm.a11y.save')}
         style={styles.saveButton}
@@ -460,25 +472,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   valueCard: {
-    alignItems: 'center',
     marginBottom: spacing.lg,
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   valueInput: {
     fontSize: fontSize.display,
     fontFamily: fontFamily.black,
     color: colors.text,
-    textAlign: 'center',
-    minWidth: 170,
-    marginVertical: spacing.sm,
+    minWidth: 120,
+    flexShrink: 1,
     paddingVertical: Platform.OS === 'ios' ? spacing.sm : 0,
   },
+  unitSuffix: {
+    fontSize: fontSize.base,
+  },
   unitToggle: {
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
     alignSelf: 'stretch',
   },
   validationError: {
     marginTop: spacing.sm,
-    textAlign: 'center',
   },
   section: {
     marginBottom: spacing.lg,
@@ -494,11 +512,20 @@ const styles = StyleSheet.create({
     flexBasis: '46%',
     minHeight: 52,
   },
+  timingLabel: {
+    marginTop: spacing.lg,
+  },
   timing: {
+    marginTop: spacing.sm,
+  },
+  hoursSection: {
     marginTop: spacing.md,
   },
-  stepper: {
-    marginTop: spacing.md,
+  hoursGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   dateTimeButton: {
     flexDirection: 'row',
