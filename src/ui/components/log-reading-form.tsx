@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { Unit } from '@/domain/models/unit';
 import { MealType, MealTiming } from '@/domain/models/meal';
+import type { Reading } from '@/domain/models/reading';
 import { RangeEvaluation } from '@/domain/models/target-range';
 import {
   validateReadingValue,
@@ -24,11 +25,11 @@ import {
 } from '@/domain/use-cases/validate-reading-value';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { createReading } from '@/domain/use-cases/create-reading';
+import { updateReading } from '@/domain/use-cases/update-reading';
 import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
-import { SqliteReadingRepository } from '@/data/repositories/sqlite-reading-repository';
-import { getDb } from '@/data/db/client';
-import { generateId } from '@/data/id';
+import { readingUseCaseDeps } from '@/data/repositories/factory';
 import { getDefaultMealType, convertValueString } from '@/ui/utils/log-form';
+import { formatDateTime } from '@/ui/utils/format';
 import { colors, spacing, radius, fontSize, fontWeight } from '@/ui/theme';
 
 const VALIDATION_KEY: Record<ValueValidationError, string> = {
@@ -45,7 +46,22 @@ const MEAL_TYPES: readonly MealType[] = [
   MealType.Snack,
 ];
 
-export function LogReadingForm(): React.JSX.Element {
+interface LogReadingFormProps {
+  /** When provided, the form runs in edit mode: prefilled and saving via updateReading. */
+  initialReading?: Reading;
+  /** Called after a successful save in edit mode (create mode resets the form instead). */
+  onSaved?: (reading: Reading) => void;
+}
+
+/** Stored mg/dL → the string to prefill the value input in the preferred unit. */
+function initialValueString(mgdl: number, unit: Unit): string {
+  return unit === Unit.MmolL ? mgdlToMmol(mgdl).toString() : mgdl.toString();
+}
+
+export function LogReadingForm({
+  initialReading,
+  onSaved,
+}: LogReadingFormProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const {
     preferredUnit,
@@ -56,19 +72,33 @@ export function LogReadingForm(): React.JSX.Element {
     updateSetting,
   } = useSettingsStore();
 
-  // Form state
-  const [valueStr, setValueStr] = useState('');
-  const [mealType, setMealType] = useState<MealType>(() => getDefaultMealType(new Date()));
-  const [isMealTypeManual, setIsMealTypeManual] = useState(false);
-  const [mealTiming, setMealTiming] = useState<MealTiming>(MealTiming.Before);
-  const [hoursAfterMeal, setHoursAfterMeal] = useState(2);
-  const [notes, setNotes] = useState('');
-  const [recordedAt, setRecordedAt] = useState<Date>(() => new Date());
+  const isEdit = initialReading !== undefined;
+
+  // Form state — prefilled from initialReading when editing.
+  const [valueStr, setValueStr] = useState(() =>
+    initialReading ? initialValueString(initialReading.value, preferredUnit) : '',
+  );
+  const [mealType, setMealType] = useState<MealType>(
+    () => initialReading?.mealType ?? getDefaultMealType(new Date()),
+  );
+  // Editing counts as an explicit meal-type choice, so changing the time never
+  // clobbers the stored value.
+  const [isMealTypeManual, setIsMealTypeManual] = useState(isEdit);
+  const [mealTiming, setMealTiming] = useState<MealTiming>(
+    initialReading?.mealTiming ?? MealTiming.Before,
+  );
+  const [hoursAfterMeal, setHoursAfterMeal] = useState(initialReading?.hoursAfterMeal ?? 2);
+  const [notes, setNotes] = useState(initialReading?.notes ?? '');
+  const [recordedAt, setRecordedAt] = useState<Date>(() =>
+    initialReading ? new Date(initialReading.recordedAt) : new Date(),
+  );
 
   // UI flow state
   const [inputError, setInputError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [isNotesExpanded, setIsNotesExpanded] = useState(
+    () => (initialReading?.notes ?? '').length > 0,
+  );
 
   // Date/time picker state
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -134,13 +164,21 @@ export function LogReadingForm(): React.JSX.Element {
     setInputError(null);
   };
 
-  const showSavedAlert = (mgdlValue: number, evaluation: RangeEvaluation): void => {
-    const okButton = [{ text: t('common.ok'), onPress: resetForm }];
+  const showSavedAlert = (reading: Reading, evaluation: RangeEvaluation): void => {
+    // Create mode resets for the next entry; edit mode hands control back to the caller.
+    const onDone = (): void => {
+      if (isEdit) onSaved?.(reading);
+      else resetForm();
+    };
+    const okButton = [{ text: t('common.ok'), onPress: onDone }];
+    const baseMessage = isEdit
+      ? t('logForm.alerts.updatedMessage')
+      : t('logForm.alerts.savedMessage');
     if (!alertsEnabled || evaluation === RangeEvaluation.InRange) {
-      Alert.alert(t('logForm.alerts.savedTitle'), t('logForm.alerts.savedMessage'), okButton);
+      Alert.alert(t('logForm.alerts.savedTitle'), baseMessage, okButton);
       return;
     }
-    const displayVal = preferredUnit === Unit.MmolL ? mgdlToMmol(mgdlValue) : mgdlValue;
+    const displayVal = preferredUnit === Unit.MmolL ? mgdlToMmol(reading.value) : reading.value;
     const messageKey = evaluation === RangeEvaluation.Low ? 'rangeSavedLow' : 'rangeSavedHigh';
     Alert.alert(
       t('logForm.alerts.savedTitle'),
@@ -152,23 +190,25 @@ export function LogReadingForm(): React.JSX.Element {
   const performSave = async (mgdl: number): Promise<void> => {
     try {
       setIsSaving(true);
-      const reading = await createReading(
-        {
-          value: mgdl,
-          mealType,
-          mealTiming,
-          hoursAfterMeal: mealTiming === MealTiming.After ? hoursAfterMeal : undefined,
-          notes: notes.trim() || undefined,
-          recordedAt: recordedAt.getTime(),
-        },
-        { repository: new SqliteReadingRepository(getDb()), generateId, now: Date.now },
-      );
+      const input = {
+        value: mgdl,
+        mealType,
+        mealTiming,
+        hoursAfterMeal: mealTiming === MealTiming.After ? hoursAfterMeal : undefined,
+        notes: notes.trim() || undefined,
+        recordedAt: recordedAt.getTime(),
+      };
+      // updateReading preserves createdAt and bumps updatedAt; createReading stamps both.
+      const reading =
+        initialReading !== undefined
+          ? await updateReading(initialReading.id, input, readingUseCaseDeps())
+          : await createReading(input, readingUseCaseDeps());
 
       const evaluation = evaluateReading(reading, {
         fasting: fastingRange,
         postMeal: postMealRange,
       });
-      showSavedAlert(reading.value, evaluation);
+      showSavedAlert(reading, evaluation);
     } catch (err) {
       console.error('Failed to save reading:', err);
       Alert.alert(t('common.errorTitle'), t('common.saveFailed'));
@@ -202,19 +242,7 @@ export function LogReadingForm(): React.JSX.Element {
     await performSave(mgdl);
   };
 
-  const formatRecordedAt = (date: Date): string => {
-    const pad = (n: number): string => n.toString().padStart(2, '0');
-    if (preferredLanguage === 'vi') {
-      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    }
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const formatRecordedAt = (date: Date): string => formatDateTime(date, preferredLanguage);
 
   return (
     <View style={styles.container}>
@@ -439,7 +467,11 @@ export function LogReadingForm(): React.JSX.Element {
           />
         )}
         <Text style={styles.saveButtonText}>
-          {isSaving ? t('logForm.saving') : t('logForm.saveButton')}
+          {isSaving
+            ? t('logForm.saving')
+            : isEdit
+              ? t('logForm.updateButton')
+              : t('logForm.saveButton')}
         </Text>
       </TouchableOpacity>
 
