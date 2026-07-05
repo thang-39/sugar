@@ -115,6 +115,32 @@
       "row": "{{value}} {{unit}}, {{context}}, {{date}} {{time}}. Chạm để xem chi tiết."
     }
   },
+  "trends": {
+    "scales": {
+      "last7": "7 ngày",
+      "last30": "30 ngày",
+      "last90": "90 ngày",
+      "all": "Tất cả",
+      "custom": "Tùy chọn"
+    },
+    "customRange": {
+      "from": "Từ ngày",
+      "to": "Đến ngày"
+    },
+    "aggregatedNote": "Đang hiển thị trung bình mỗi ngày",
+    "bandLabel": "Ngưỡng mục tiêu (trước ăn)",
+    "tooltip": {
+      "average": "Trung bình {{count}} lần đo"
+    },
+    "loadError": "Không thể tải biểu đồ.",
+    "empty": {
+      "title": "Chưa có dữ liệu để vẽ",
+      "subtitle": "Ghi thêm vài kết quả để xem biểu đồ xu hướng."
+    },
+    "a11y": {
+      "chart": "Biểu đồ đường huyết theo thời gian, {{unit}}"
+    }
+  },
   "readingDetail": {
     "mealLabel": "Bữa ăn",
     "timingLabel": "Thời điểm đo",
