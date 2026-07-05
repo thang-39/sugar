@@ -112,7 +112,7 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>

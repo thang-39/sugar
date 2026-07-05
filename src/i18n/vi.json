@@ -95,7 +95,20 @@
         "failed": "Không thể xoá dữ liệu. Vui lòng thử lại."
       }
     },
-    "onboarding": { "title": "Chào mừng đến với Sugar" },
+    "onboarding": {
+      "title": "Chào mừng đến với Sugar",
+      "languageLabel": "Ngôn ngữ",
+      "unitLabel": "Đơn vị đo",
+      "getStarted": "Bắt đầu",
+      "skip": "Bỏ qua",
+      "languages": { "vi": "Tiếng Việt", "en": "English" },
+      "features": {
+        "log": { "title": "Ghi số đo", "subtitle": "kèm bữa ăn" },
+        "trends": { "title": "Xem xu hướng", "subtitle": "biểu đồ & mục tiêu" },
+        "export": { "title": "Xuất CSV", "subtitle": "gửi cho bác sĩ" },
+        "offline": { "title": "Hoạt động offline", "subtitle": "không cần mạng" }
+      }
+    },
     "notFound": {
       "title": "Không tìm thấy",
       "message": "Trang bạn tìm không tồn tại.",
