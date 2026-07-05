@@ -25,4 +25,8 @@ export class SqliteSettingsRepository implements SettingsRepository {
       })
       .run();
   }
+
+  async clear(): Promise<void> {
+    this.db.delete(appSettings).run();
+  }
 }

@@ -21,6 +21,9 @@ class FakeReadingRepository implements ReadingRepository {
   async delete(id: string): Promise<void> {
     this.store.delete(id);
   }
+  async deleteAll(): Promise<void> {
+    this.store.clear();
+  }
   async getById(id: string): Promise<Reading | undefined> {
     const found = this.store.get(id);
     return found ? { ...found } : undefined;
