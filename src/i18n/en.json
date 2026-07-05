@@ -117,11 +117,13 @@
   },
   "logForm": {
     "valuePlaceholder": "0",
+    "valueLabel": "Blood sugar",
     "unitLabel": "Display Unit",
     "mealTypeLabel": "Meal Context",
     "mealTimingLabel": "Timing",
     "hoursAfterLabel": "Time After Meal",
     "hoursSuffix": "hr",
+    "hoursChip": "{{h}}h",
     "notesLabel": "Notes",
     "notesPlaceholder": "e.g., felt dizzy, ate a big meal...",
     "recordedAtLabel": "Time of Reading",
@@ -151,6 +153,7 @@
       "timingToggle": "{{timing}} timing",
       "hoursDecrease": "Decrease hours after meal",
       "hoursIncrease": "Increase hours after meal",
+      "hoursChip": "{{hours}} hours after meal",
       "dateButton": "Time of reading: {{value}}. Tap to change.",
       "notesToggle": "Add a note",
       "save": "Save reading"

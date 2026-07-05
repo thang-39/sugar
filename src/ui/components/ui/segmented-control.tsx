@@ -20,6 +20,8 @@ interface SegmentedControlProps<T extends string> {
   segments: readonly Segment<T>[];
   value: T;
   onChange: (value: T) => void;
+  /** Fill color for the active segment (default: primary green). */
+  activeColor?: string;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -28,6 +30,7 @@ export function SegmentedControl<T extends string>({
   segments,
   value,
   onChange,
+  activeColor = colors.primary,
   style,
 }: SegmentedControlProps<T>): ReactElement {
   return (
@@ -37,7 +40,7 @@ export function SegmentedControl<T extends string>({
         return (
           <TouchableOpacity
             key={segment.value}
-            style={[styles.segment, isActive && styles.segmentActive]}
+            style={[styles.segment, isActive && { backgroundColor: activeColor }]}
             onPress={() => onChange(segment.value)}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -77,8 +80,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.sm,
-  },
-  segmentActive: {
-    backgroundColor: colors.primary,
   },
 });
