@@ -117,11 +117,13 @@
   },
   "logForm": {
     "valuePlaceholder": "0",
+    "valueLabel": "Đường huyết",
     "unitLabel": "Đơn vị hiển thị",
     "mealTypeLabel": "Bữa ăn",
     "mealTimingLabel": "Thời điểm đo",
     "hoursAfterLabel": "Thời gian sau ăn",
     "hoursSuffix": "giờ",
+    "hoursChip": "{{h}}h",
     "notesLabel": "Ghi chú",
     "notesPlaceholder": "Ví dụ: cảm thấy chóng mặt, ăn nhiều tinh bột...",
     "recordedAtLabel": "Thời gian đo",
@@ -151,6 +153,7 @@
       "timingToggle": "Thời điểm {{timing}}",
       "hoursDecrease": "Giảm số giờ sau ăn",
       "hoursIncrease": "Tăng số giờ sau ăn",
+      "hoursChip": "{{hours}} giờ sau ăn",
       "dateButton": "Thời gian đo: {{value}}. Chạm để thay đổi.",
       "notesToggle": "Thêm ghi chú",
       "save": "Lưu kết quả đo"

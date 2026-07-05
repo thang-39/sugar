@@ -4,6 +4,7 @@ export { Button, type ButtonVariant } from './button';
 export { Card } from './card';
 export { Chip } from './chip';
 export { IconTile } from './icon-tile';
+export { Notice, type NoticeTone } from './notice';
 export { ScreenHeader } from './screen-header';
 export { SectionLabel } from './section-label';
 export { SegmentedControl } from './segmented-control';
