@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
   Platform,
   Modal,
-  ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -30,7 +28,17 @@ import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { readingUseCaseDeps } from '@/data/repositories/factory';
 import { getDefaultMealType, convertValueString } from '@/ui/utils/log-form';
 import { formatDateTime } from '@/ui/utils/format';
-import { colors, spacing, radius, fontSize, fontWeight } from '@/ui/theme';
+import { mealIcon } from '@/ui/utils/meal-display';
+import { colors, spacing, radius, fontSize, fontFamily, mealColor } from '@/ui/theme';
+import {
+  AppText,
+  Button,
+  Card,
+  Chip,
+  SectionLabel,
+  SegmentedControl,
+  Stepper,
+} from '@/ui/components/ui';
 
 const VALIDATION_KEY: Record<ValueValidationError, string> = {
   empty: 'empty',
@@ -247,160 +255,111 @@ export function LogReadingForm({
   return (
     <View style={styles.container}>
       {/* Value Input Card */}
-      <View style={styles.valueCard}>
-        <Text style={styles.valueCardLabel}>{t('screens.log.title').toUpperCase()}</Text>
-        <View style={styles.valueInputRow}>
-          <TextInput
-            style={styles.valueInput}
-            value={valueStr}
-            onChangeText={(text) => {
-              setValueStr(text);
-              if (inputError) setInputError(null);
-            }}
-            placeholder={t('logForm.valuePlaceholder')}
-            placeholderTextColor={colors.textDisabled}
-            keyboardType={preferredUnit === Unit.MmolL ? 'decimal-pad' : 'number-pad'}
-            maxLength={6}
-            accessibilityLabel={t('logForm.a11y.valueInput')}
-          />
-        </View>
+      <Card style={styles.valueCard}>
+        <SectionLabel>{t('screens.log.title')}</SectionLabel>
+        <TextInput
+          style={styles.valueInput}
+          value={valueStr}
+          onChangeText={(text) => {
+            setValueStr(text);
+            if (inputError) setInputError(null);
+          }}
+          placeholder={t('logForm.valuePlaceholder')}
+          placeholderTextColor={colors.textDisabled}
+          keyboardType={preferredUnit === Unit.MmolL ? 'decimal-pad' : 'number-pad'}
+          maxLength={6}
+          accessibilityLabel={t('logForm.a11y.valueInput')}
+        />
 
-        {/* Unit Toggle Segmented Control */}
-        <View style={styles.unitToggleContainer}>
-          <TouchableOpacity
-            style={[styles.unitTab, preferredUnit === Unit.MgDl && styles.activeUnitTab]}
-            onPress={() => handleUnitChange(Unit.MgDl)}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityState={{ selected: preferredUnit === Unit.MgDl }}
-            accessibilityLabel={t('logForm.a11y.unitToggle', { unit: 'mg/dL' })}
-          >
-            <Text
-              style={[styles.unitTabText, preferredUnit === Unit.MgDl && styles.activeUnitTabText]}
-            >
-              mg/dL
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.unitTab, preferredUnit === Unit.MmolL && styles.activeUnitTab]}
-            onPress={() => handleUnitChange(Unit.MmolL)}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityState={{ selected: preferredUnit === Unit.MmolL }}
-            accessibilityLabel={t('logForm.a11y.unitToggle', { unit: 'mmol/L' })}
-          >
-            <Text
-              style={[styles.unitTabText, preferredUnit === Unit.MmolL && styles.activeUnitTabText]}
-            >
-              mmol/L
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <SegmentedControl
+          value={preferredUnit}
+          onChange={(unit) => {
+            void handleUnitChange(unit);
+          }}
+          segments={[
+            {
+              value: Unit.MgDl,
+              label: 'mg/dL',
+              accessibilityLabel: t('logForm.a11y.unitToggle', { unit: 'mg/dL' }),
+            },
+            {
+              value: Unit.MmolL,
+              label: 'mmol/L',
+              accessibilityLabel: t('logForm.a11y.unitToggle', { unit: 'mmol/L' }),
+            },
+          ]}
+          style={styles.unitToggle}
+        />
 
-        {inputError && <Text style={styles.validationErrorText}>{inputError}</Text>}
-      </View>
+        {inputError && (
+          <AppText color={colors.error} style={styles.validationError}>
+            {inputError}
+          </AppText>
+        )}
+      </Card>
 
       {/* Meal Context Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>{t('logForm.mealTypeLabel')}</Text>
+        <SectionLabel>{t('logForm.mealTypeLabel')}</SectionLabel>
         <View style={styles.mealTypeGrid}>
           {MEAL_TYPES.map((type) => (
-            <TouchableOpacity
+            <Chip
               key={type}
-              style={[styles.mealChip, mealType === type && styles.activeMealChip]}
+              label={t(`logForm.mealTypes.${type}`)}
+              icon={mealIcon[type]}
+              selected={mealType === type}
+              activeColor={mealColor[type]}
               onPress={() => selectMealType(type)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityState={{ selected: mealType === type }}
               accessibilityLabel={t('logForm.a11y.mealChip', {
                 meal: t(`logForm.mealTypes.${type}`),
               })}
-            >
-              <Text style={[styles.mealChipText, mealType === type && styles.activeMealChipText]}>
-                {t(`logForm.mealTypes.${type}`)}
-              </Text>
-            </TouchableOpacity>
+              style={styles.mealChip}
+            />
           ))}
         </View>
 
         {/* Before / After Meal Timing Switch */}
-        <View style={styles.timingContainer}>
-          <TouchableOpacity
-            style={[styles.timingButton, mealTiming === MealTiming.Before && styles.activeTimingButton]}
-            onPress={() => setMealTiming(MealTiming.Before)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityState={{ selected: mealTiming === MealTiming.Before }}
-            accessibilityLabel={t('logForm.a11y.timingToggle', {
-              timing: t('logForm.mealTimings.Before'),
-            })}
-          >
-            <Text
-              style={[
-                styles.timingButtonText,
-                mealTiming === MealTiming.Before && styles.activeTimingButtonText,
-              ]}
-            >
-              {t('logForm.mealTimings.Before')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.timingButton, mealTiming === MealTiming.After && styles.activeTimingButton]}
-            onPress={() => setMealTiming(MealTiming.After)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityState={{ selected: mealTiming === MealTiming.After }}
-            accessibilityLabel={t('logForm.a11y.timingToggle', {
-              timing: t('logForm.mealTimings.After'),
-            })}
-          >
-            <Text
-              style={[
-                styles.timingButtonText,
-                mealTiming === MealTiming.After && styles.activeTimingButtonText,
-              ]}
-            >
-              {t('logForm.mealTimings.After')}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <SegmentedControl
+          value={mealTiming}
+          onChange={setMealTiming}
+          segments={[
+            {
+              value: MealTiming.Before,
+              label: t('logForm.mealTimings.Before'),
+              accessibilityLabel: t('logForm.a11y.timingToggle', {
+                timing: t('logForm.mealTimings.Before'),
+              }),
+            },
+            {
+              value: MealTiming.After,
+              label: t('logForm.mealTimings.After'),
+              accessibilityLabel: t('logForm.a11y.timingToggle', {
+                timing: t('logForm.mealTimings.After'),
+              }),
+            },
+          ]}
+          style={styles.timing}
+        />
 
         {/* Hours After Meal Stepper */}
         {mealTiming === MealTiming.After && (
-          <View style={styles.stepperContainer}>
-            <Text style={styles.stepperLabel}>{t('logForm.hoursAfterLabel')}</Text>
-            <View style={styles.stepperControls}>
-              <TouchableOpacity
-                style={[styles.stepperButton, hoursAfterMeal <= 0 && styles.stepperButtonDisabled]}
-                disabled={hoursAfterMeal <= 0}
-                onPress={() => setHoursAfterMeal((h) => Math.max(0, h - 1))}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: hoursAfterMeal <= 0 }}
-                accessibilityLabel={t('logForm.a11y.hoursDecrease')}
-              >
-                <Ionicons name="remove" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <Text style={styles.stepperValueText}>
-                {hoursAfterMeal} {t('logForm.hoursSuffix')}
-              </Text>
-              <TouchableOpacity
-                style={[styles.stepperButton, hoursAfterMeal >= 6 && styles.stepperButtonDisabled]}
-                disabled={hoursAfterMeal >= 6}
-                onPress={() => setHoursAfterMeal((h) => Math.min(6, h + 1))}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: hoursAfterMeal >= 6 }}
-                accessibilityLabel={t('logForm.a11y.hoursIncrease')}
-              >
-                <Ionicons name="add" size={24} color={colors.text} />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <Stepper
+            value={hoursAfterMeal}
+            min={0}
+            max={6}
+            onChange={setHoursAfterMeal}
+            label={t('logForm.hoursAfterLabel')}
+            formatValue={(h) => `${h} ${t('logForm.hoursSuffix')}`}
+            decrementAccessibilityLabel={t('logForm.a11y.hoursDecrease')}
+            incrementAccessibilityLabel={t('logForm.a11y.hoursIncrease')}
+            style={styles.stepper}
+          />
         )}
       </View>
 
       {/* Date Time Picker Button */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>{t('logForm.recordedAtLabel')}</Text>
+        <SectionLabel>{t('logForm.recordedAtLabel')}</SectionLabel>
         <TouchableOpacity
           style={styles.dateTimeButton}
           onPress={triggerPicker}
@@ -409,7 +368,9 @@ export function LogReadingForm({
           accessibilityLabel={t('logForm.a11y.dateButton', { value: formatRecordedAt(recordedAt) })}
         >
           <Ionicons name="calendar-outline" size={22} color={colors.primary} />
-          <Text style={styles.dateTimeButtonText}>{formatRecordedAt(recordedAt)}</Text>
+          <AppText weight="bold" style={styles.dateTimeText}>
+            {formatRecordedAt(recordedAt)}
+          </AppText>
         </TouchableOpacity>
       </View>
 
@@ -422,12 +383,14 @@ export function LogReadingForm({
           accessibilityRole="button"
           accessibilityLabel={t('logForm.a11y.notesToggle')}
         >
-          <Ionicons name="create-outline" size={20} color={colors.primary} />
-          <Text style={styles.notesCollapsedText}>{t('logForm.notesLabel')}</Text>
+          <Ionicons name="add" size={20} color={colors.primary} />
+          <AppText weight="extrabold" color={colors.primary}>
+            {t('logForm.notesLabel')}
+          </AppText>
         </TouchableOpacity>
       ) : (
-        <View style={styles.notesExpandedContainer}>
-          <Text style={styles.sectionLabel}>{t('logForm.notesLabel')}</Text>
+        <View style={styles.notesExpanded}>
+          <SectionLabel>{t('logForm.notesLabel')}</SectionLabel>
           <TextInput
             style={styles.notesInput}
             value={notes}
@@ -438,42 +401,23 @@ export function LogReadingForm({
             placeholderTextColor={colors.textDisabled}
             accessibilityLabel={t('logForm.notesLabel')}
           />
-          <Text style={styles.charCount}>{notes.length}/500</Text>
+          <AppText variant="caption" style={styles.charCount}>
+            {notes.length}/500
+          </AppText>
         </View>
       )}
 
       {/* Save Button */}
-      <TouchableOpacity
-        style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-        onPress={onSave}
-        disabled={isSaving}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: isSaving, busy: isSaving }}
+      <Button
+        label={isEdit ? t('logForm.updateButton') : t('logForm.saveButton')}
+        onPress={() => {
+          void onSave();
+        }}
+        icon="checkmark-circle-outline"
+        isLoading={isSaving}
         accessibilityLabel={t('logForm.a11y.save')}
-      >
-        {isSaving ? (
-          <ActivityIndicator
-            size="small"
-            color={colors.onPrimary}
-            style={styles.saveButtonIcon}
-          />
-        ) : (
-          <Ionicons
-            name="checkmark-circle-outline"
-            size={22}
-            color={colors.onPrimary}
-            style={styles.saveButtonIcon}
-          />
-        )}
-        <Text style={styles.saveButtonText}>
-          {isSaving
-            ? t('logForm.saving')
-            : isEdit
-              ? t('logForm.updateButton')
-              : t('logForm.saveButton')}
-        </Text>
-      </TouchableOpacity>
+        style={styles.saveButton}
+      />
 
       {/* iOS Date Picker Modal */}
       {showDatePicker && Platform.OS === 'ios' && (
@@ -486,14 +430,11 @@ export function LogReadingForm({
                 display="spinner"
                 onChange={onChangeDateTime}
               />
-              <TouchableOpacity
-                style={styles.modalCloseButton}
+              <Button
+                label={t('common.done')}
                 onPress={() => setShowDatePicker(false)}
-                accessibilityRole="button"
-                accessibilityLabel={t('common.done')}
-              >
-                <Text style={styles.modalCloseButtonText}>{t('common.done')}</Text>
-              </TouchableOpacity>
+                style={styles.modalDone}
+              />
             </View>
           </View>
         </Modal>
@@ -515,253 +456,95 @@ export function LogReadingForm({
 const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
+    paddingTop: spacing.md,
     backgroundColor: colors.background,
   },
   valueCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
     alignItems: 'center',
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  valueCardLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: fontWeight.semibold,
-    letterSpacing: 1,
-    marginBottom: spacing.xs,
-  },
-  valueInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: spacing.sm,
   },
   valueInput: {
     fontSize: fontSize.display,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.black,
     color: colors.text,
     textAlign: 'center',
-    minWidth: 150,
+    minWidth: 170,
+    marginVertical: spacing.sm,
     paddingVertical: Platform.OS === 'ios' ? spacing.sm : 0,
   },
-  unitToggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.border,
-    borderRadius: radius.pill,
-    padding: 2,
-    marginTop: spacing.md,
+  unitToggle: {
+    marginTop: spacing.sm,
+    alignSelf: 'stretch',
   },
-  unitTab: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    borderRadius: radius.pill,
-  },
-  activeUnitTab: {
-    backgroundColor: colors.background,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 2,
-  },
-  unitTabText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
-  },
-  activeUnitTabText: {
-    color: colors.primary,
-  },
-  validationErrorText: {
-    color: colors.error,
-    fontSize: fontSize.sm,
+  validationError: {
     marginTop: spacing.sm,
     textAlign: 'center',
   },
   section: {
     marginBottom: spacing.lg,
   },
-  sectionLabel: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
   mealTypeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   mealChip: {
-    flex: 1,
-    minWidth: '40%',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexGrow: 1,
+    flexBasis: '46%',
+    minHeight: 52,
   },
-  activeMealChip: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  mealChipText: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  activeMealChipText: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  timingContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
+  timing: {
     marginTop: spacing.md,
   },
-  timingButton: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeTimingButton: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  timingButtonText: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  activeTimingButtonText: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  stepperContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    height: 56,
+  stepper: {
     marginTop: spacing.md,
-  },
-  stepperLabel: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  stepperControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-  },
-  stepperButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepperButtonDisabled: {
-    opacity: 0.5,
-  },
-  stepperValueText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    minWidth: 50,
-    textAlign: 'center',
   },
   dateTimeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    gap: spacing.sm,
+    backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
-    height: 56,
-    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    minHeight: 56,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
-  dateTimeButtonText: {
-    fontSize: fontSize.base,
+  dateTimeText: {
     color: colors.text,
-    marginLeft: spacing.sm,
-    fontWeight: fontWeight.medium,
   },
   notesCollapsed: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md,
     gap: spacing.sm,
-    marginBottom: spacing.xl,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.lg,
   },
-  notesCollapsedText: {
-    fontSize: fontSize.base,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-  },
-  notesExpandedContainer: {
-    marginBottom: spacing.xl,
+  notesExpanded: {
+    marginBottom: spacing.lg,
   },
   notesInput: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
+    backgroundColor: colors.card,
+    borderWidth: 1.5,
+    borderColor: colors.borderStrong,
+    borderRadius: radius.lg,
     padding: spacing.md,
     fontSize: fontSize.base,
+    fontFamily: fontFamily.semibold,
     color: colors.text,
-    height: 100,
+    minHeight: 100,
     textAlignVertical: 'top',
     marginTop: spacing.sm,
   },
   charCount: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
     textAlign: 'right',
     marginTop: spacing.xs,
   },
   saveButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+    marginTop: spacing.sm,
     marginBottom: spacing.xxl,
-  },
-  saveButtonDisabled: {
-    backgroundColor: colors.textDisabled,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  saveButtonIcon: {
-    marginRight: spacing.sm,
-  },
-  saveButtonText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.onPrimary,
   },
   modalContainer: {
     flex: 1,
@@ -770,22 +553,12 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: colors.background,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     padding: spacing.lg,
     paddingBottom: Platform.OS === 'ios' ? spacing.xxl : spacing.lg,
   },
-  modalCloseButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
+  modalDone: {
     marginTop: spacing.md,
-  },
-  modalCloseButtonText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.onPrimary,
   },
 });

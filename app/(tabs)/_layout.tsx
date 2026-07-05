@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { colors, fontSize, fontWeight } from '@/ui/theme';
+import { colors, fontSize, fontFamily } from '@/ui/theme';
 
 export default function TabsLayout(): ReactElement {
   const { t } = useTranslation();
@@ -13,16 +13,18 @@ export default function TabsLayout(): ReactElement {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: { fontSize: fontSize.xs, fontWeight: fontWeight.medium },
+        tabBarLabelStyle: { fontSize: fontSize.xs, fontFamily: fontFamily.bold },
+        tabBarStyle: { backgroundColor: colors.background, borderTopColor: colors.border },
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
-        headerTitleStyle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+        headerTitleStyle: { fontSize: fontSize.lg, fontFamily: fontFamily.extrabold },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: t('tabs.log'),
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="add-circle" color={color} size={size} />,
         }}
       />
