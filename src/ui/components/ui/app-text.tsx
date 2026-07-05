@@ -23,6 +23,17 @@ interface AppTextProps extends TextProps {
 }
 
 /**
+ * Max font-scale multiplier per variant. Huge single-line hero text (the value
+ * display, screen titles, stat numbers) caps so it never clips; body, label,
+ * and caption text stay uncapped for full accessibility scaling.
+ */
+const MAX_SCALE: Partial<Record<TextVariant, number>> = {
+  display: 1.3,
+  title: 1.4,
+  heading: 1.5,
+};
+
+/**
  * Nunito-backed Text. Every user-facing string should render through this (or a
  * primitive that uses it) so the app never falls back to fontWeight — which RN
  * ignores on a custom font.
@@ -40,7 +51,11 @@ export function AppText({
   if (color) override.color = color;
 
   return (
-    <Text style={[styles[variant], override, style]} {...rest}>
+    <Text
+      style={[styles[variant], override, style]}
+      maxFontSizeMultiplier={MAX_SCALE[variant]}
+      {...rest}
+    >
       {children}
     </Text>
   );
