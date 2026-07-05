@@ -60,7 +60,7 @@ export function BloodSugarChart({
     const items: ChartItem[] = data.points.map((p) => {
       const displayValue = toDisplay(p.value, unit);
       
-      let color = colors.primary;
+      let color: string = colors.primary;
       if (p.mealTiming !== undefined) {
         const evaluation = evaluateReading({ value: p.value, mealTiming: p.mealTiming }, ranges);
         color = evaluation === RangeEvaluation.InRange ? colors.primary : colors.outOfRange;

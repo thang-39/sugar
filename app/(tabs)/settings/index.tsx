@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   segment: {
-    minWidth: 150,
+    minWidth: 180,
   },
   deleteButton: {
     marginTop: spacing.xl,
