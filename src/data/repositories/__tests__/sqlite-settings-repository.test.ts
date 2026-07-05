@@ -42,4 +42,19 @@ describe('SqliteSettingsRepository', () => {
     await repo.set('alertsEnabled', true);
     expect(await repo.get('alertsEnabled')).toBe(true);
   });
+
+  it('clear resets every key back to its default', async () => {
+    const repo = newRepo();
+    await repo.set('preferredUnit', Unit.MmolL);
+    await repo.set('preferredLanguage', Language.English);
+    await repo.set('alertsEnabled', false);
+    await repo.set('fastingRange', { low: 80, high: 120 });
+
+    await repo.clear();
+
+    expect(await repo.get('preferredUnit')).toBe(Unit.MgDl);
+    expect(await repo.get('preferredLanguage')).toBe(Language.Vietnamese);
+    expect(await repo.get('alertsEnabled')).toBe(true);
+    expect(await repo.get('fastingRange')).toEqual({ low: 70, high: 100 });
+  });
 });

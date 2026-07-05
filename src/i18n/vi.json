@@ -10,7 +10,8 @@
     "done": "Xong",
     "errorTitle": "Đã xảy ra lỗi",
     "dbError": "Lỗi cơ sở dữ liệu: {{message}}",
-    "saveFailed": "Không thể lưu kết quả. Vui lòng thử lại."
+    "saveFailed": "Không thể lưu kết quả. Vui lòng thử lại.",
+    "disclaimer": "Ứng dụng chỉ hỗ trợ theo dõi sức khoẻ cá nhân, không phải thiết bị y tế."
   },
   "tabs": {
     "log": "Ghi số",
@@ -25,10 +26,56 @@
     "editReading": { "title": "Sửa chỉ số" },
     "trends": { "title": "Biểu đồ xu hướng" },
     "settings": {
-      "index": { "title": "Cài đặt" },
-      "targetRange": { "title": "Ngưỡng mục tiêu" },
+      "index": {
+        "title": "Cài đặt",
+        "sections": {
+          "preferences": "Tuỳ chọn",
+          "data": "Dữ liệu"
+        },
+        "rows": {
+          "unit": "Đơn vị",
+          "language": "Ngôn ngữ",
+          "alerts": "Cảnh báo",
+          "targetRanges": "Ngưỡng mục tiêu",
+          "export": "Xuất dữ liệu",
+          "about": "Giới thiệu"
+        },
+        "languageShort": {
+          "vi": "VI",
+          "en": "EN"
+        }
+      },
+      "targetRange": {
+        "title": "Ngưỡng mục tiêu",
+        "helper": "Giá trị hiển thị và chỉnh theo đơn vị {{unit}}.",
+        "fasting": "Trước ăn (lúc đói)",
+        "postMeal": "Sau ăn",
+        "min": "Thấp nhất",
+        "max": "Cao nhất",
+        "done": "Xong",
+        "a11y": {
+          "minDecrease": "Giảm ngưỡng thấp nhất {{range}}",
+          "minIncrease": "Tăng ngưỡng thấp nhất {{range}}",
+          "maxDecrease": "Giảm ngưỡng cao nhất {{range}}",
+          "maxIncrease": "Tăng ngưỡng cao nhất {{range}}"
+        }
+      },
       "export": { "title": "Xuất dữ liệu" },
-      "about": { "title": "Giới thiệu" }
+      "about": {
+        "title": "Giới thiệu",
+        "version": "Phiên bản {{version}}",
+        "privacyPolicy": "Chính sách bảo mật"
+      },
+      "deleteAll": {
+        "row": "Xoá toàn bộ dữ liệu",
+        "step1Title": "Xoá toàn bộ dữ liệu?",
+        "step1Message": "Toàn bộ chỉ số và cài đặt sẽ bị xoá vĩnh viễn khỏi thiết bị. Không thể hoàn tác.",
+        "continue": "Tiếp tục",
+        "step2Title": "Xác nhận xoá",
+        "step2Message": "Bạn chắc chắn muốn xoá tất cả? Hành động này không thể hoàn tác.",
+        "confirm": "Xoá tất cả",
+        "failed": "Không thể xoá dữ liệu. Vui lòng thử lại."
+      }
     },
     "onboarding": { "title": "Chào mừng đến với Sugar" },
     "notFound": {
