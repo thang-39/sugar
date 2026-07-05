@@ -281,9 +281,6 @@ export function LogReadingForm({
             maxFontSizeMultiplier={DISPLAY_MAX_FONT_SCALE}
             accessibilityLabel={t('logForm.a11y.valueInput')}
           />
-          <AppText weight="extrabold" color={colors.textFaint} style={styles.unitSuffix}>
-            {preferredUnit}
-          </AppText>
         </View>
 
         <SegmentedControl
@@ -305,6 +302,7 @@ export function LogReadingForm({
             },
           ]}
           style={styles.unitToggle}
+          segmentStyle={styles.unitToggleSegment}
         />
 
         {inputError && <Notice message={inputError} tone="warn" style={styles.validationError} />}
@@ -483,24 +481,25 @@ const styles = StyleSheet.create({
   },
   valueRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: spacing.sm,
   },
   valueInput: {
     fontSize: fontSize.display,
     fontFamily: fontFamily.black,
     color: colors.text,
-    minWidth: 120,
+    textAlign: 'center',
+    minWidth: 150,
     flexShrink: 1,
     paddingVertical: Platform.OS === 'ios' ? spacing.sm : 0,
-  },
-  unitSuffix: {
-    fontSize: fontSize.base,
   },
   unitToggle: {
     marginTop: spacing.md,
     alignSelf: 'stretch',
+  },
+  unitToggleSegment: {
+    minHeight: 52,
   },
   validationError: {
     marginTop: spacing.sm,

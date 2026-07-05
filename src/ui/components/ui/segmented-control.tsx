@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
   type StyleProp,
+  type TextStyle,
   type ViewStyle,
 } from 'react-native';
 
@@ -23,6 +24,9 @@ interface SegmentedControlProps<T extends string> {
   /** Fill color for the active segment (default: primary green). */
   activeColor?: string;
   style?: StyleProp<ViewStyle>;
+  segmentStyle?: StyleProp<ViewStyle>;
+  activeSegmentStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
 }
 
 /** 2+ segment pill switch (unit toggle, Before/After timing). Presentational. */
@@ -32,6 +36,9 @@ export function SegmentedControl<T extends string>({
   onChange,
   activeColor = colors.primary,
   style,
+  segmentStyle,
+  activeSegmentStyle,
+  labelStyle,
 }: SegmentedControlProps<T>): ReactElement {
   return (
     <View style={[styles.track, style]}>
@@ -40,7 +47,12 @@ export function SegmentedControl<T extends string>({
         return (
           <TouchableOpacity
             key={segment.value}
-            style={[styles.segment, isActive && { backgroundColor: activeColor }]}
+            style={[
+              styles.segment,
+              segmentStyle,
+              isActive && { backgroundColor: activeColor },
+              isActive && activeSegmentStyle,
+            ]}
             onPress={() => onChange(segment.value)}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -50,6 +62,9 @@ export function SegmentedControl<T extends string>({
             <AppText
               weight={isActive ? 'extrabold' : 'bold'}
               color={isActive ? colors.onPrimary : colors.textMuted}
+              style={labelStyle}
+              numberOfLines={1}
+              adjustsFontSizeToFit
             >
               {segment.label}
             </AppText>
