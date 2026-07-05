@@ -5,14 +5,13 @@ import { LineChart, type lineDataItem } from 'react-native-gifted-charts';
 
 import type { ChartData } from '@/domain/models/chart';
 import type { Language } from '@/domain/models/settings';
-import type { TargetRanges } from '@/domain/models/target-range';
+import { RangeEvaluation, type TargetRanges } from '@/domain/models/target-range';
 import { Unit } from '@/domain/models/unit';
 import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { AppText, Card } from '@/ui/components/ui';
 import { colors, fontSize, radius, spacing } from '@/ui/theme';
 import { formatDate, formatDateTime } from '@/ui/utils/format';
-import { statusColor } from '@/ui/utils/reading-display';
 
 const CHART_HEIGHT = 240;
 const Y_AXIS_LABEL_WIDTH = 44;
@@ -60,10 +59,13 @@ export function BloodSugarChart({
 
     const items: ChartItem[] = data.points.map((p) => {
       const displayValue = toDisplay(p.value, unit);
-      const color =
-        p.mealTiming !== undefined
-          ? statusColor(evaluateReading({ value: p.value, mealTiming: p.mealTiming }, ranges))
-          : colors.primary;
+      
+      let color = colors.primary;
+      if (p.mealTiming !== undefined) {
+        const evaluation = evaluateReading({ value: p.value, mealTiming: p.mealTiming }, ranges);
+        color = evaluation === RangeEvaluation.InRange ? colors.primary : colors.outOfRange;
+      }
+
       return {
         value: displayValue,
         timestamp: p.timestamp,
@@ -83,11 +85,14 @@ export function BloodSugarChart({
 
     // Space points to fill the available width when few, letting the chart scroll
     // horizontally once they get dense.
-    const plotWidth = width - Y_AXIS_LABEL_WIDTH - INITIAL_SPACING - spacing.lg * 2;
+    const containerWidth = width - spacing.lg * 2 - spacing.md * 2;
+    const chartWidth = containerWidth - Y_AXIS_LABEL_WIDTH;
+    const endSpacing = 16;
+    const plotWidth = chartWidth - INITIAL_SPACING - endSpacing;
     const spacingBetween =
       items.length > 1 ? Math.max(24, plotWidth / (items.length - 1)) : plotWidth;
 
-    return { items, maxValue, bandTop, bandHeight, spacingBetween };
+    return { items, maxValue, bandTop, bandHeight, spacingBetween, chartWidth, endSpacing };
   }, [data.points, ranges, unit, width]);
 
   const avgDisplay = useMemo(() => {
@@ -148,9 +153,11 @@ export function BloodSugarChart({
           <LineChart
             data={chart.items}
             height={CHART_HEIGHT}
+            width={chart.chartWidth}
             maxValue={chart.maxValue}
             noOfSections={4}
             initialSpacing={INITIAL_SPACING}
+            endSpacing={chart.endSpacing}
             spacing={chart.spacingBetween}
             yAxisLabelWidth={Y_AXIS_LABEL_WIDTH}
             thickness={2}
