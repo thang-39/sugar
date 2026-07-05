@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  type AccessibilityRole,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -26,6 +27,7 @@ interface ButtonProps {
   /** UPPERCASE the label (design uses caps for the two solid CTAs). */
   uppercase?: boolean;
   accessibilityLabel?: string;
+  accessibilityRole?: AccessibilityRole;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -64,6 +66,7 @@ export function Button({
   disabled = false,
   uppercase,
   accessibilityLabel,
+  accessibilityRole = 'button',
   style,
 }: ButtonProps): ReactElement {
   const isDisabled = disabled || isLoading;
@@ -82,7 +85,7 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.85}
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
       accessibilityState={{ disabled: isDisabled, busy: isLoading }}
       accessibilityLabel={accessibilityLabel ?? label}
     >
