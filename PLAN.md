@@ -65,8 +65,11 @@ Shipped: Expo SDK + Router, strict TS, 4-tab shell with Ionicons + i18n (vi defa
 - <30 days → individual points; ≥30 days → daily averages (via `ChartDataTransformer` in domain, unit-tested; daily bucket boundaries in device timezone per PRD)
 - Target range as shaded band; tap point → tooltip with value + timestamp
 - Y axis respects preferred unit
+- Summary stat tiles (Average / In-range % / Readings) via `computeChartStats` domain use case, unit-tested
 
 **Accept:** transformer tests green; band + tooltip verified manually. Commit: `feat: trends chart`
+
+**Session 5 design retrofit (post-implementation):** Session 5 was first built with inline styles, before the Evergreen design system. Retrofit onto the shared primitives (`ScreenHeader`, `Chip`, `Card`, `AppText`) + add the design's 3 stat tiles and 2-item legend, reconciled against `design/Sugar App.dc.html`. UI-only (plus the pure `computeChartStats` use case); no domain/data or other-session changes. Detailed plan: `docs/plans/2026-07-05-session-5-trends-design.md`. Commit: `feat: apply evergreen design to trends screen`
 
 ### Session 6: Target ranges + alerts + settings screens (stories 33–36, 43, 46, 53–55)
 - Settings → Target Range screen: two ranges (Fasting/Before, After) editable in preferred unit, stored in mg/dL; alerts on/off toggle
