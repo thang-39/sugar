@@ -18,6 +18,8 @@ interface SettingsStore extends AppSettings {
   initError?: string;
   initialize: () => Promise<void>;
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => Promise<void>;
+  /** Reset in-memory settings to defaults (call after wiping the settings rows). */
+  resetToDefaults: () => void;
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -59,5 +61,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     if (key === 'preferredLanguage') {
       void i18n.changeLanguage(value as Language);
     }
+  },
+  resetToDefaults: () => {
+    set({ ...DEFAULT_SETTINGS });
+    void i18n.changeLanguage(DEFAULT_SETTINGS.preferredLanguage);
   },
 }));

@@ -8,3 +8,4 @@ export { ScreenHeader } from './screen-header';
 export { SectionLabel } from './section-label';
 export { SegmentedControl } from './segmented-control';
 export { Stepper } from './stepper';
+export { Toggle } from './toggle';

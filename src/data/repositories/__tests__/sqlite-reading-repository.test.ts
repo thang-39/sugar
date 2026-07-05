@@ -136,4 +136,19 @@ describe('SqliteReadingRepository', () => {
     expect(await repo.count()).toBe(0);
     expect(await repo.getById('ghost')).toBeUndefined();
   });
+
+  it('deleteAll removes every reading', async () => {
+    const repo = newRepo();
+    await repo.create(makeReading({ id: 'a' }));
+    await repo.create(makeReading({ id: 'b' }));
+    await repo.deleteAll();
+    expect(await repo.count()).toBe(0);
+    expect(await repo.list()).toEqual([]);
+  });
+
+  it('deleteAll on an empty repo is a no-op', async () => {
+    const repo = newRepo();
+    await expect(repo.deleteAll()).resolves.toBeUndefined();
+    expect(await repo.count()).toBe(0);
+  });
 });

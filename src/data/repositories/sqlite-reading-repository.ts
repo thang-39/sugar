@@ -63,6 +63,10 @@ export class SqliteReadingRepository implements ReadingRepository {
     this.db.delete(readings).where(eq(readings.id, id)).run();
   }
 
+  async deleteAll(): Promise<void> {
+    this.db.delete(readings).run();
+  }
+
   async getById(id: string): Promise<Reading | undefined> {
     const row = this.db.select().from(readings).where(eq(readings.id, id)).get();
     return row ? toDomain(row) : undefined;

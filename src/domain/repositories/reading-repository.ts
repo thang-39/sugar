@@ -13,4 +13,6 @@ export interface ReadingRepository {
   /** Newest-first by recordedAt. */
   list(filter?: ReadingListFilter): Promise<Reading[]>;
   count(filter?: ReadingListFilter): Promise<number>;
+  /** Remove every reading (used by the "delete all data" flow). */
+  deleteAll(): Promise<void>;
 }
