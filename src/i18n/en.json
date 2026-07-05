@@ -60,7 +60,25 @@
           "maxIncrease": "Increase high target for {{range}}"
         }
       },
-      "export": { "title": "Export Data" },
+      "export": {
+        "title": "Export Data",
+        "description": "Create a CSV file to share with your doctor or open in Excel.",
+        "rangeLabel": "Time range",
+        "ranges": {
+          "all": "All",
+          "last3m": "3 months",
+          "last6m": "6 months",
+          "custom": "Custom"
+        },
+        "from": "From",
+        "to": "To",
+        "summary": "{{n}} readings will be exported",
+        "exportButton": "Export CSV",
+        "exporting": "Exporting...",
+        "empty": "No readings in this time range.",
+        "shareUnavailable": "Sharing is not available on this device.",
+        "failed": "Could not export data. Please try again."
+      },
       "about": {
         "title": "About",
         "version": "Version {{version}}",
