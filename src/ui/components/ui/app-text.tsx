@@ -27,8 +27,11 @@ interface AppTextProps extends TextProps {
  * display, screen titles, stat numbers) caps so it never clips; body, label,
  * and caption text stay uncapped for full accessibility scaling.
  */
+/** Font-scale cap for the huge value display (shared with the raw value TextInput). */
+export const DISPLAY_MAX_FONT_SCALE = 1.3;
+
 const MAX_SCALE: Partial<Record<TextVariant, number>> = {
-  display: 1.3,
+  display: DISPLAY_MAX_FONT_SCALE,
   title: 1.4,
   heading: 1.5,
 };
