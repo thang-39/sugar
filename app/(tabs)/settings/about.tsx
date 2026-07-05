@@ -45,7 +45,6 @@ export default function AboutScreen(): ReactElement {
         onPress={() => void openPrivacy()}
         isLoading={isOpening}
         accessibilityRole="link"
-        accessibilityLabel={t('screens.settings.about.privacyPolicy')}
       />
     </ScrollView>
   );
