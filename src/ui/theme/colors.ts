@@ -89,10 +89,10 @@ export const colors = {
   success: palette.green,
 } as const;
 
-/** Per-meal accent color (avatars in history, tiles). */
+/** Per-meal accent color (avatars in history, tiles) — the 4 onboarding accents. */
 export const mealColor = {
   Breakfast: palette.amber,
-  Lunch: palette.green,
+  Lunch: palette.blue,
   Dinner: palette.purple,
   Snack: palette.orange,
 } as const;
