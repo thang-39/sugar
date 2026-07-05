@@ -13,7 +13,7 @@ import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { colors, mealColor, spacing } from '@/ui/theme';
 import { formatDate, formatTime, formatValue } from '@/ui/utils/format';
 import { mealIcon } from '@/ui/utils/meal-display';
-import { statusColor } from '@/ui/utils/reading-display';
+import { statusBadge, statusColor } from '@/ui/utils/reading-display';
 import { AppText, Badge, Card, IconTile } from '@/ui/components/ui';
 
 interface ReadingListItemProps {
@@ -65,7 +65,9 @@ export function ReadingListItem({
           <AppText variant="caption" color={colors.textFaint}>
             {unit}
           </AppText>
-          {isOutOfRange && <Badge label={t(`status.${evaluation}`).toUpperCase()} />}
+          {isOutOfRange && (
+            <Badge label={t(`status.${evaluation}`).toUpperCase()} {...statusBadge(evaluation)} />
+          )}
         </View>
         <AppText variant="caption" numberOfLines={1}>
           {context}
