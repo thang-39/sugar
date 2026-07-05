@@ -230,6 +230,7 @@ Root: onboarding (first run only)
 - X-axis grouping: individual data points for <30 days; daily averages for 30+ days (daily bucket boundaries in device timezone).
 - Target range shown as a shaded band.
 - Tap data point → tooltip showing exact value (preferred unit) and timestamp.
+- Summary stat tiles above/below the chart for the selected scale: average value (preferred unit), in-range percentage, and reading count.
 
 ### Data Model (Drizzle / SQLite)
 
