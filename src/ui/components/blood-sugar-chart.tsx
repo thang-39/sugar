@@ -176,7 +176,7 @@ export function BloodSugarChart({
         <View style={styles.legendItem}>
           <View style={styles.bandSwatch} />
           <AppText variant="caption" color={colors.textMuted}>
-            {t('trends.legend.inRange')}
+            {t('trends.legend.targetRange')}
           </AppText>
         </View>
         <View style={styles.legendItem}>
