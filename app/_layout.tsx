@@ -140,7 +140,7 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
       return;
     }
     router.push({
-      pathname: '/(tabs)',
+      pathname: '/(tabs)/log',
       params: toLogParams({
         mealType: payload.mealType,
         mealTiming: payload.mealTiming,
