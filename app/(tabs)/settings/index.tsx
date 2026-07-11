@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { getReadingRepository, getSettingsRepository } from '@/data/repositories/factory';
+import { ConditionType } from '@/domain/models/condition';
 import { Language } from '@/domain/models/settings';
 import { Unit } from '@/domain/models/unit';
 import { clearAllData } from '@/domain/use-cases/clear-all-data';
@@ -30,10 +31,16 @@ export default function SettingsScreen(): ReactElement {
     alertsEnabled,
     fastingRange,
     postMealRange,
+    conditionType,
     updateSetting,
     resetToDefaults,
   } = useSettingsStore();
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const modeLabel =
+    conditionType === ConditionType.Gestational
+      ? t('screens.settings.index.trackingModeValues.gestational')
+      : t('screens.settings.index.trackingModeValues.general');
 
   const rangeSummary = `${formatValue(fastingRange.low, preferredUnit)}–${formatValue(
     fastingRange.high,
@@ -96,6 +103,13 @@ export default function SettingsScreen(): ReactElement {
         {t('screens.settings.index.sections.preferences')}
       </SectionLabel>
       <Card style={styles.group}>
+        <SettingRow
+          icon="options"
+          iconColor={colors.accentPurple}
+          label={t('screens.settings.index.rows.trackingMode')}
+          value={modeLabel}
+          onPress={() => router.push('/(tabs)/settings/tracking-mode')}
+        />
         <SettingRow
           icon="resize"
           iconColor={colors.primary}
