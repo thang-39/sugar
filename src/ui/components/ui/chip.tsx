@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps, ReactElement } from 'react';
+import { useMemo, type ComponentProps, type ReactElement } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radius, spacing } from '@/ui/theme';
+import { radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { AppText } from './app-text';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -30,17 +30,20 @@ export function Chip({
   selected,
   onPress,
   icon,
-  activeColor = colors.primary,
+  activeColor,
   accessibilityLabel,
   style,
 }: ChipProps): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const fill = activeColor ?? colors.primary;
   const fg = selected ? colors.onPrimary : colors.textMuted;
 
   return (
     <TouchableOpacity
       style={[
         styles.chip,
-        selected ? { backgroundColor: activeColor, borderColor: activeColor } : styles.inactive,
+        selected ? { backgroundColor: fill, borderColor: fill } : styles.inactive,
         style,
       ]}
       onPress={onPress}
@@ -59,25 +62,26 @@ export function Chip({
   );
 }
 
-const styles = StyleSheet.create({
-  chip: {
-    minHeight: 40,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-    borderWidth: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  inactive: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    marginRight: spacing.xs,
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    chip: {
+      minHeight: 40,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radius.pill,
+      borderWidth: 1.5,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    inactive: {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    icon: {
+      marginRight: spacing.xs,
+    },
+  });
