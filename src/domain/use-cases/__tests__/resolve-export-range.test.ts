@@ -38,3 +38,23 @@ describe('resolveExportRange', () => {
     expect(resolveExportRange(ExportRangePreset.Custom, { now })).toEqual({});
   });
 });
+
+// 15 Jul 2026, 10:30 local
+const NOW = new Date(2026, 6, 15, 10, 30).getTime();
+const startOfDay = (y: number, m: number, d: number): number => new Date(y, m, d, 0, 0, 0, 0).getTime();
+
+describe('resolveExportRange — day presets', () => {
+  it('Last14Days spans the last 14 calendar days inclusive (no upper bound)', () => {
+    const filter = resolveExportRange(ExportRangePreset.Last14Days, { now: NOW });
+    // 15 Jul minus 13 days = 2 Jul (14 days inclusive of today), from start-of-day.
+    expect(filter.from).toBe(startOfDay(2026, 6, 2));
+    expect(filter.to).toBeUndefined();
+  });
+
+  it('Last30Days spans the last 30 calendar days inclusive', () => {
+    const filter = resolveExportRange(ExportRangePreset.Last30Days, { now: NOW });
+    // 15 Jul minus 29 days = 16 Jun.
+    expect(filter.from).toBe(startOfDay(2026, 5, 16));
+    expect(filter.to).toBeUndefined();
+  });
+});
