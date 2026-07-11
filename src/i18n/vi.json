@@ -20,11 +20,21 @@
     "settings": "Cài đặt"
   },
   "screens": {
-    "log": { "title": "Ghi chỉ số đường huyết" },
-    "history": { "title": "Lịch sử" },
-    "readingDetail": { "title": "Chi tiết chỉ số" },
-    "editReading": { "title": "Sửa chỉ số" },
-    "trends": { "title": "Biểu đồ xu hướng" },
+    "log": {
+      "title": "Ghi chỉ số đường huyết"
+    },
+    "history": {
+      "title": "Lịch sử"
+    },
+    "readingDetail": {
+      "title": "Chi tiết chỉ số"
+    },
+    "editReading": {
+      "title": "Sửa chỉ số"
+    },
+    "trends": {
+      "title": "Biểu đồ xu hướng"
+    },
     "settings": {
       "index": {
         "title": "Cài đặt",
@@ -38,11 +48,16 @@
           "alerts": "Cảnh báo",
           "targetRanges": "Ngưỡng mục tiêu",
           "export": "Xuất dữ liệu",
-          "about": "Giới thiệu"
+          "about": "Giới thiệu",
+          "trackingMode": "Chế độ theo dõi"
         },
         "languageShort": {
           "vi": "VI",
           "en": "EN"
+        },
+        "trackingModeValues": {
+          "gestational": "Thai kỳ",
+          "general": "Thường ngày"
         }
       },
       "targetRange": {
@@ -93,6 +108,20 @@
         "step2Message": "Bạn chắc chắn muốn xoá tất cả? Hành động này không thể hoàn tác.",
         "confirm": "Xoá tất cả",
         "failed": "Không thể xoá dữ liệu. Vui lòng thử lại."
+      },
+      "trackingMode": {
+        "title": "Chế độ theo dõi",
+        "gestational": {
+          "title": "Tiểu đường thai kỳ",
+          "subtitle": "Ngưỡng thai kỳ + giao diện hồng"
+        },
+        "general": {
+          "title": "Theo dõi thường ngày",
+          "subtitle": "Ngưỡng mặc định + giao diện xanh"
+        },
+        "confirmTitle": "Đổi chế độ theo dõi?",
+        "confirmMessage": "Ngưỡng mặc định và giao diện sẽ đổi theo chế độ mới — dữ liệu đã ghi giữ nguyên.",
+        "confirm": "Đổi chế độ"
       }
     },
     "onboarding": {
@@ -101,12 +130,56 @@
       "unitLabel": "Đơn vị đo",
       "getStarted": "Bắt đầu",
       "skip": "Bỏ qua",
-      "languages": { "vi": "Tiếng Việt", "en": "English" },
+      "languages": {
+        "vi": "Tiếng Việt",
+        "en": "English"
+      },
       "features": {
-        "log": { "title": "Ghi số đo", "subtitle": "kèm bữa ăn" },
-        "trends": { "title": "Xem xu hướng", "subtitle": "biểu đồ & mục tiêu" },
-        "export": { "title": "Xuất CSV", "subtitle": "gửi cho bác sĩ" },
-        "offline": { "title": "Hoạt động offline", "subtitle": "không cần mạng" }
+        "log": {
+          "title": "Ghi số đo",
+          "subtitle": "kèm bữa ăn"
+        },
+        "trends": {
+          "title": "Xem xu hướng",
+          "subtitle": "biểu đồ & mục tiêu"
+        },
+        "export": {
+          "title": "Xuất CSV",
+          "subtitle": "gửi cho bác sĩ"
+        },
+        "offline": {
+          "title": "Hoạt động offline",
+          "subtitle": "không cần mạng"
+        }
+      },
+      "condition": {
+        "title": "Bạn đang theo dõi đường huyết cho ai?",
+        "gestational": {
+          "title": "Tiểu đường thai kỳ",
+          "subtitle": "Đo 4 lần/ngày theo lịch bác sĩ dặn"
+        },
+        "general": {
+          "title": "Theo dõi thường ngày",
+          "subtitle": "Ghi đường huyết bất cứ khi nào bạn cần"
+        }
+      },
+      "gdm": {
+        "title": "Đôi điều về thai kỳ của bạn",
+        "dueDateLabel": "Ngày dự sinh",
+        "protocolQuestion": "Bác sĩ dặn đo sau ăn khi nào?",
+        "protocols": {
+          "1h": "1 giờ sau ăn",
+          "2h": "2 giờ sau ăn",
+          "1h+2h": "1 giờ, đo lại lúc 2 giờ nếu cao"
+        },
+        "labels": {
+          "fasting": "Đói",
+          "after1h": "Sau ăn 1h",
+          "after2h": "2h"
+        },
+        "previewTitle": "Ngưỡng đặt theo chuẩn thai kỳ",
+        "previewAdjust": "Điều chỉnh trong Cài đặt nếu bác sĩ dặn khác.",
+        "start": "Bắt đầu theo dõi"
       }
     },
     "notFound": {
