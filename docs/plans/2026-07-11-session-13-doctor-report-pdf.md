@@ -1,0 +1,1725 @@
+# Session 13 — Doctor Report PDF + Unified Export Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Ship the doctor report screen — a printable A4 PDF that replaces the paper log the hospital hands out — and fold the existing CSV export into that one screen, removing the standalone Export screen.
+
+**Architecture:** A pure domain use case (`buildReport`) projects readings onto a day-by-day grid (reusing Session 10's `getDaySlots` + `evaluateReading`). A pure HTML template (`renderReportHtml`) turns that model into an A4-styled document. A data-layer service (`generateAndSharePdf`) renders it via `expo-print` and opens the native share sheet — mirroring the existing `generateAndShareCsv`. One screen (`app/(tabs)/settings/report.tsx`) carries a shared time-range picker, a live preview table, and both **Share PDF** + **Export CSV** buttons. The old Export screen and route are deleted; Settings + Today link to the new screen. `readings` schema is untouched; `reportCount` is a new JSON-kv setting (no migration).
+
+**Tech Stack:** TypeScript (strict), Expo Router, `expo-print` (new), `expo-sharing` + `expo-file-system` (existing), Jest + RNTL, i18next (vi/en), theme via `useTheme()`.
+
+---
+
+## Progress / Handoff (updated 2026-07-12)
+
+**Branch:** `feature/session-13-pdf-and-combine-csv`.
+
+**✅ Done (Tasks 1–4)** — each committed separately, `tsc --noEmit` + relevant tests green:
+- **Task 1** — `expo-print@~15.0.8` installed (`chore: add expo-print for doctor report pdf`). Note: `npx expo install` needed `-- --legacy-peer-deps` due to a pre-existing react/jest-preset peer conflict in the repo; run installs that way here.
+- **Task 2** — `Last14Days`/`Last30Days` presets + `daysAgo` resolver, 7 tests pass (`feat: add 14/30-day export range presets`).
+- **Task 3** — `reportCount` setting (model default 0 + read in `use-settings` store), settings-repo test pass. Test was adapted to the file's `newRepo()` pattern (there is no shared `beforeEach` `repo`) (`feat: add reportCount setting`).
+- **Task 4** — `report.ts` model + pure `buildReport` use case, 7 tests pass (`feat: buildReport domain use case for doctor report grid`). Note: the plan's test `opts` helper needed an explicit `protocol: AfterMealProtocol` param annotation, otherwise TS narrowed the default to the `'1h'` literal and `tsc` failed on the `1h+2h`/`2h` calls — apply the same fix if regenerating.
+
+**⏳ Remaining (Tasks 5–10)** for the next session, in order:
+- **Task 5** — `renderReportHtml` template + test (`src/data/report/report-html.ts`).
+- **Task 6** — `generateAndSharePdf` service (no unit test; verified on device in Task 10).
+- **Task 7** — `ReportPreviewTable` component.
+- **Task 8** — i18n `report` strings + remove `export` strings (vi/en). Watch the `rg` guard in Step 4: leave `screens.onboarding...export`.
+- **Task 9** — report screen + route wiring; delete `app/(tabs)/settings/export.tsx`; repoint Settings + Today links.
+- **Task 10** — full tsc/test/lint + manual device smoke (PDF diacritics, watermark, CSV byte-identical, reportCount increments).
+
+All shared types Tasks 5–9 depend on (`ReportModel`/`ReportRow`/`MealCell`/`SubCell`, `BuildReportOptions`) already exist from Task 4. `ExportRangePreset.Last14Days/Last30Days` and `reportCount` (Tasks 2–3) are also in place, so Task 9's screen can consume them directly.
+
+---
+
+## Design decisions locked before coding
+
+1. **Report rows = only days that have ≥1 reading in the selected range**, sorted chronologically. No empty-day padding (avoids blowups on "All"-style ranges) — pagination is 14 rows per A4 page.
+2. **No standalone Fasting column.** The fasting reading IS the "before breakfast" sub-cell — a dedicated column would duplicate it. Grid columns are the **3 meals: Sáng / Trưa / Tối**. Each meal column splits into sub-cells:
+   - protocol `1h` or `2h` → **2 sub-cells: `Trước` | `Sau`**;
+   - protocol `1h+2h` → **3 sub-cells: `Trước` | `1h` | `2h`**.
+   The sub-cell count is uniform across all rows in a report (driven by `model.hasSecondHour`, derived from the protocol). **Snack is never a column** — `getDaySlots` routes it to `extras`, which the grid ignores. Snack still counts in the footer stats.
+3. **After-meal slot timing follows the protocol:** `1h` and `1h+2h` → after-slot `hoursAfterMeal=1` (so `getDaySlots` captures the 2h re-check as `followUp`); `2h` → after-slot `hoursAfterMeal=2` (no follow-up).
+4. **2h sub-cell (1h+2h only) is filled only when the 1h reading is out of range** and a 2h re-check reading exists; otherwise it renders "—". Each sub-cell (`before`, `after`/`1h`, `2h`) is colored **independently** by its own `evaluateReading` result — there is no combined per-meal status rule. `before` readings (all meals) evaluate against the fasting range, consistent with `evaluateReading`'s existing behavior.
+5. **Stats** are computed over **all** readings in the range (Snack included), each run through `evaluateReading`. `percentInRange = round(inRange / total * 100)`.
+6. **Watermark seam for Session 16:** `renderReportHtml` shows the footer watermark only when a `watermark` string is passed. Session 13 always passes it (no gating built now); Session 16 flips it off for Pro.
+7. **`reportCount` is incremented by the screen** (via the settings store) on a successful PDF share — the data-layer service stays free of settings writes.
+8. **PDF font:** use the system stack in the HTML (`-apple-system, 'Roboto', 'Noto Sans', sans-serif`). `printToFileAsync` renders through a system WebView, which handles Vietnamese diacritics on both platforms. Base64 Nunito embedding is deferred unless a real device renders wrong (per PLAN-2 §13).
+9. **Route placement:** the report screen lives in the Settings stack (`app/(tabs)/settings/report.tsx`), exactly where `export.tsx` was linked from Today today. Both Today and Settings push `/(tabs)/settings/report`.
+
+---
+
+## File Structure
+
+**Create:**
+- `src/domain/models/report.ts` — `ReportModel`, `ReportRow`, `MealCell`, `SubCell`, `ReportStats` types.
+- `src/domain/use-cases/build-report.ts` — pure `buildReport(readings, opts) → ReportModel`.
+- `src/domain/use-cases/__tests__/build-report.test.ts` — cell mapping, duplicates, 1h+2h render + status rule, Snack excluded, stats math.
+- `src/data/report/report-html.ts` — pure `renderReportHtml(model, opts) → string`.
+- `src/data/report/__tests__/report-html.test.ts` — watermark toggle, out-of-range cell styling, pagination chunking.
+- `src/data/report/share-pdf.ts` — `generateAndSharePdf(deps)` side-effect service.
+- `src/ui/components/report-preview-table.tsx` — presentational preview grid (theme tokens only).
+- `app/(tabs)/settings/report.tsx` — the report screen.
+
+**Modify:**
+- `src/domain/models/export.ts` — add `Last14Days`, `Last30Days` presets.
+- `src/domain/use-cases/resolve-export-range.ts` — handle the two new presets.
+- `src/domain/use-cases/__tests__/resolve-export-range.test.ts` — cover the two new presets (create if missing).
+- `src/domain/models/settings.ts` — add `reportCount` key + default.
+- `src/ui/hooks/use-settings.ts` — read/set `reportCount` in `initialize`.
+- `app/(tabs)/settings/_layout.tsx` — register `report`, drop `export`.
+- `app/(tabs)/settings/index.tsx` — rename the "export" row → "report", route to report screen.
+- `app/(tabs)/index.tsx` — point `today.exportReport` at the report screen.
+- `src/i18n/vi.json`, `src/i18n/en.json` — add `screens.settings.report.*` + `rows.report`; remove `screens.settings.export.*` + `rows.export`.
+- `package.json` / lockfile — `expo-print`.
+
+**Delete:**
+- `app/(tabs)/settings/export.tsx`.
+
+---
+
+### Task 1: Install expo-print
+
+**Files:**
+- Modify: `package.json` (+ lockfile) via the Expo installer.
+
+- [x] **Step 1: Install the SDK-pinned version**
+
+Run: `npx expo install expo-print`
+Expected: `package.json` gains `"expo-print": "~<version>"` matching Expo SDK 54; no peer-dep errors.
+
+- [x] **Step 2: Type check still passes**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [x] **Step 3: Commit**
+
+```bash
+git add package.json package-lock.json
+git commit -m "chore: add expo-print for doctor report pdf"
+```
+
+---
+
+### Task 2: Add `Last14Days` / `Last30Days` export presets
+
+**Files:**
+- Modify: `src/domain/models/export.ts`
+- Modify: `src/domain/use-cases/resolve-export-range.ts`
+- Test: `src/domain/use-cases/__tests__/resolve-export-range.test.ts`
+
+- [x] **Step 1: Write the failing test**
+
+Create/append `src/domain/use-cases/__tests__/resolve-export-range.test.ts`:
+
+```ts
+import { ExportRangePreset } from '@/domain/models/export';
+import { resolveExportRange } from '@/domain/use-cases/resolve-export-range';
+
+// 15 Jul 2026, 10:30 local
+const NOW = new Date(2026, 6, 15, 10, 30).getTime();
+const startOfDay = (y: number, m: number, d: number): number => new Date(y, m, d, 0, 0, 0, 0).getTime();
+
+describe('resolveExportRange — day presets', () => {
+  it('Last14Days spans the last 14 calendar days inclusive (no upper bound)', () => {
+    const filter = resolveExportRange(ExportRangePreset.Last14Days, { now: NOW });
+    // 15 Jul minus 13 days = 2 Jul (14 days inclusive of today), from start-of-day.
+    expect(filter.from).toBe(startOfDay(2026, 6, 2));
+    expect(filter.to).toBeUndefined();
+  });
+
+  it('Last30Days spans the last 30 calendar days inclusive', () => {
+    const filter = resolveExportRange(ExportRangePreset.Last30Days, { now: NOW });
+    // 15 Jul minus 29 days = 16 Jun.
+    expect(filter.from).toBe(startOfDay(2026, 5, 16));
+    expect(filter.to).toBeUndefined();
+  });
+});
+```
+
+- [x] **Step 2: Run the test to verify it fails**
+
+Run: `npm test -- resolve-export-range`
+Expected: FAIL — `ExportRangePreset.Last14Days` is `undefined`.
+
+- [x] **Step 3: Add the presets to the model**
+
+In `src/domain/models/export.ts`, extend the `ExportRangePreset` object:
+
+```ts
+export const ExportRangePreset = {
+  All: 'all',
+  Last14Days: 'last14d',
+  Last30Days: 'last30d',
+  Last3Months: 'last3m',
+  Last6Months: 'last6m',
+  Custom: 'custom',
+} as const;
+export type ExportRangePreset = (typeof ExportRangePreset)[keyof typeof ExportRangePreset];
+```
+
+- [x] **Step 4: Handle them in the resolver**
+
+In `src/domain/use-cases/resolve-export-range.ts`, add a `daysAgo` helper and two cases. Insert the helper after `monthsAgo`:
+
+```ts
+function daysAgo(ts: number, days: number): number {
+  const d = new Date(ts);
+  d.setDate(d.getDate() - days);
+  return startOfDay(d.getTime());
+}
+```
+
+Add the cases at the top of the `switch` (before `Last3Months`):
+
+```ts
+    case ExportRangePreset.Last14Days:
+      return { from: daysAgo(opts.now, 13) };
+    case ExportRangePreset.Last30Days:
+      return { from: daysAgo(opts.now, 29) };
+```
+
+- [x] **Step 5: Run the test to verify it passes**
+
+Run: `npm test -- resolve-export-range`
+Expected: PASS.
+
+- [x] **Step 6: Commit**
+
+```bash
+git add src/domain/models/export.ts src/domain/use-cases/resolve-export-range.ts src/domain/use-cases/__tests__/resolve-export-range.test.ts
+git commit -m "feat: add 14/30-day export range presets"
+```
+
+---
+
+### Task 3: Add `reportCount` setting
+
+**Files:**
+- Modify: `src/domain/models/settings.ts`
+- Modify: `src/ui/hooks/use-settings.ts`
+- Test: `src/data/repositories/__tests__/sqlite-settings-repository.test.ts`
+
+- [x] **Step 1: Write the failing test**
+
+Append to `src/data/repositories/__tests__/sqlite-settings-repository.test.ts` (inside the existing top-level `describe`):
+
+```ts
+it('defaults reportCount to 0 and round-trips an incremented value', async () => {
+  expect(await repo.get('reportCount')).toBe(0);
+  await repo.set('reportCount', 3);
+  expect(await repo.get('reportCount')).toBe(3);
+});
+```
+
+> Note: `repo` is the in-memory `SqliteSettingsRepository` already constructed in that file's `beforeEach`. Match the existing variable name if it differs.
+
+- [x] **Step 2: Run the test to verify it fails**
+
+Run: `npm test -- sqlite-settings-repository`
+Expected: FAIL — `reportCount` is not a key of `AppSettings` (type error) or returns `undefined`.
+
+- [x] **Step 3: Add the key to the model**
+
+In `src/domain/models/settings.ts`, add to `AppSettings` (after `smartAfterMeal`):
+
+```ts
+  // --- Session 13: doctor report ---
+  /** Number of successful PDF report exports. Session 16 gates on it. */
+  reportCount: number;
+```
+
+And to `DEFAULT_SETTINGS` (after `smartAfterMeal`):
+
+```ts
+  reportCount: 0,
+```
+
+- [x] **Step 4: Read it in the store**
+
+In `src/ui/hooks/use-settings.ts`, add `reportCount` to the parallel read. Add to the destructured array (after `smartAfterMeal`):
+
+```ts
+      reportCount,
+```
+
+Add to the `Promise.all` list (after the `smartAfterMeal` get):
+
+```ts
+      getSettingsRepo().get('reportCount'),
+```
+
+Add to the `set({ ... })` payload (after `smartAfterMeal,`):
+
+```ts
+      reportCount,
+```
+
+- [x] **Step 5: Run the test to verify it passes**
+
+Run: `npm test -- sqlite-settings-repository`
+Expected: PASS.
+
+- [x] **Step 6: Type check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [x] **Step 7: Commit**
+
+```bash
+git add src/domain/models/settings.ts src/ui/hooks/use-settings.ts src/data/repositories/__tests__/sqlite-settings-repository.test.ts
+git commit -m "feat: add reportCount setting"
+```
+
+---
+
+### Task 4: Domain `buildReport` (report model)
+
+**Files:**
+- Create: `src/domain/models/report.ts`
+- Create: `src/domain/use-cases/build-report.ts`
+- Test: `src/domain/use-cases/__tests__/build-report.test.ts`
+
+- [x] **Step 1: Write the model types**
+
+Create `src/domain/models/report.ts`:
+
+```ts
+import type { RangeEvaluation } from './target-range';
+
+/** One measurement cell (before / after / 2h) within a meal column. */
+export interface SubCell {
+  /** Reading value formatted in the preferred unit. Undefined = no reading (renders "—"). */
+  value?: string;
+  /** Status; `'none'` when there is no reading. */
+  status: RangeEvaluation | 'none';
+  /** True when the cell should be flagged out-of-range (low or high). */
+  isOutOfRange: boolean;
+}
+
+/** One meal column on one day: before-meal + after-meal (+ optional 2h re-check). */
+export interface MealCell {
+  before: SubCell;
+  after: SubCell;
+  /** 2h re-check. Empty unless the protocol is 1h+2h AND the 1h reading was out of range. */
+  after2h: SubCell;
+}
+
+export interface ReportRow {
+  /** Localized day label, e.g. "11/07". */
+  date: string;
+  /** Exactly 3 meal columns: breakfast, lunch, dinner. */
+  meals: MealCell[];
+}
+
+export interface ReportStats {
+  total: number;
+  inRange: number;
+  /** 0–100, rounded. */
+  percentInRange: number;
+}
+
+export interface ReportModel {
+  rows: ReportRow[];
+  stats: ReportStats;
+  /** True under the 1h+2h protocol — adds the 2h sub-cell per meal column. */
+  hasSecondHour: boolean;
+}
+```
+
+- [x] **Step 2: Write the failing test**
+
+Create `src/domain/use-cases/__tests__/build-report.test.ts`:
+
+```ts
+import { AfterMealProtocol } from '@/domain/models/condition';
+import { MealTiming, MealType } from '@/domain/models/meal';
+import type { Reading } from '@/domain/models/reading';
+import { SyncStatus } from '@/domain/models/reading';
+import { RangeEvaluation, type TargetRanges } from '@/domain/models/target-range';
+import { buildReport } from '@/domain/use-cases/build-report';
+
+const RANGES: TargetRanges = {
+  fasting: { low: 70, high: 95 },
+  postMeal: { low: 70, high: 140 },
+  postMeal2h: { low: 70, high: 120 },
+};
+
+// Format mg/dL as-is (integer) — tests assert on canonical values.
+const fmtValue = (mgdl: number): string => String(mgdl);
+const fmtDay = (ts: number): string => {
+  const d = new Date(ts);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
+function r(partial: Partial<Reading> & { id: string; recordedAt: number }): Reading {
+  return {
+    value: 100,
+    mealType: MealType.Breakfast,
+    mealTiming: MealTiming.Before,
+    hoursAfterMeal: undefined,
+    notes: undefined,
+    createdAt: partial.recordedAt,
+    updatedAt: partial.recordedAt,
+    syncStatus: SyncStatus.Pending,
+    ...partial,
+  };
+}
+
+const at = (day: number, h: number, m = 0): number => new Date(2026, 6, day, h, m).getTime();
+
+const opts = (protocol = AfterMealProtocol.OneHour) => ({
+  unit: 'mg/dL' as const,
+  ranges: RANGES,
+  protocol,
+  formatValue: fmtValue,
+  formatDay: fmtDay,
+});
+
+// Meal column order in a row: 0 = breakfast, 1 = lunch, 2 = dinner.
+describe('buildReport', () => {
+  it('maps a day onto 3 meal columns with before + after sub-cells (protocol 1h)', () => {
+    const readings = [
+      r({ id: 'bf', mealType: MealType.Breakfast, mealTiming: MealTiming.Before, value: 88, recordedAt: at(11, 6, 30) }),
+      r({ id: 'ba', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 130, recordedAt: at(11, 8, 30) }),
+      r({ id: 'la', mealType: MealType.Lunch, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 155, recordedAt: at(11, 13, 30) }),
+    ];
+    const { rows, hasSecondHour } = buildReport(readings, opts());
+    expect(hasSecondHour).toBe(false);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.date).toBe('11/07');
+    // Breakfast: before = fasting reading, after = 1h.
+    expect(rows[0]?.meals[0]?.before.value).toBe('88');
+    expect(rows[0]?.meals[0]?.before.status).toBe(RangeEvaluation.InRange);
+    expect(rows[0]?.meals[0]?.after.value).toBe('130');
+    // Lunch after 155 > 140 → high, flagged.
+    expect(rows[0]?.meals[1]?.after.value).toBe('155');
+    expect(rows[0]?.meals[1]?.after.isOutOfRange).toBe(true);
+    // Lunch before missing, dinner entirely missing.
+    expect(rows[0]?.meals[1]?.before.status).toBe('none');
+    expect(rows[0]?.meals[2]?.after.status).toBe('none');
+    // 2h sub-cell is always empty when protocol is not 1h+2h.
+    expect(rows[0]?.meals[0]?.after2h.status).toBe('none');
+  });
+
+  it('fills the 2h sub-cell only when the 1h reading is out of range (1h+2h)', () => {
+    const readings = [
+      // Breakfast: 1h high (150) → 2h re-check present (110) → shown.
+      r({ id: 'ba1', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 150, recordedAt: at(11, 8, 30) }),
+      r({ id: 'ba2', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 2, value: 110, recordedAt: at(11, 9, 30) }),
+      // Lunch: 1h in range (130) → 2h re-check present (125) but must NOT be shown.
+      r({ id: 'la1', mealType: MealType.Lunch, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 130, recordedAt: at(11, 13, 30) }),
+      r({ id: 'la2', mealType: MealType.Lunch, mealTiming: MealTiming.After, hoursAfterMeal: 2, value: 125, recordedAt: at(11, 14, 30) }),
+    ];
+    const { rows, hasSecondHour } = buildReport(readings, opts(AfterMealProtocol.OneThenTwo));
+    expect(hasSecondHour).toBe(true);
+    // Breakfast 1h high, each sub-cell colored independently.
+    expect(rows[0]?.meals[0]?.after.value).toBe('150');
+    expect(rows[0]?.meals[0]?.after.isOutOfRange).toBe(true);
+    expect(rows[0]?.meals[0]?.after2h.value).toBe('110'); // within 70–120 → in range
+    expect(rows[0]?.meals[0]?.after2h.status).toBe(RangeEvaluation.InRange);
+    // Lunch 1h in range → 2h hidden despite a recorded 125.
+    expect(rows[0]?.meals[1]?.after.status).toBe(RangeEvaluation.InRange);
+    expect(rows[0]?.meals[1]?.after2h.value).toBeUndefined();
+    expect(rows[0]?.meals[1]?.after2h.status).toBe('none');
+  });
+
+  it('leaves the 2h sub-cell empty when 1h is out of range but no 2h was recorded', () => {
+    const readings = [
+      r({ id: 'ba1', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 150, recordedAt: at(11, 8, 30) }),
+    ];
+    const { rows } = buildReport(readings, opts(AfterMealProtocol.OneThenTwo));
+    expect(rows[0]?.meals[0]?.after.isOutOfRange).toBe(true);
+    expect(rows[0]?.meals[0]?.after2h.value).toBeUndefined();
+  });
+
+  it('uses the 2h reading as the after value under the 2h-only protocol', () => {
+    const readings = [
+      r({ id: 'ba', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 2, value: 118, recordedAt: at(11, 9, 30) }),
+    ];
+    const { rows, hasSecondHour } = buildReport(readings, opts(AfterMealProtocol.TwoHours));
+    expect(hasSecondHour).toBe(false);
+    expect(rows[0]?.meals[0]?.after.value).toBe('118');
+    expect(rows[0]?.meals[0]?.after2h.status).toBe('none');
+  });
+
+  it('excludes Snack from the grid but counts it in the stats', () => {
+    const readings = [
+      r({ id: 'bf', mealType: MealType.Breakfast, mealTiming: MealTiming.Before, value: 88, recordedAt: at(11, 6, 30) }),
+      r({ id: 'snack', mealType: MealType.Snack, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 200, recordedAt: at(11, 10, 0) }),
+    ];
+    const { rows, stats } = buildReport(readings, opts());
+    // Snack appears in no meal sub-cell.
+    const allValues = rows[0]?.meals.flatMap((m) => [m.before.value, m.after.value, m.after2h.value]) ?? [];
+    expect(allValues).not.toContain('200');
+    expect(stats.total).toBe(2);
+    expect(stats.inRange).toBe(1); // fasting 88 in range, snack 200 high
+    expect(stats.percentInRange).toBe(50);
+  });
+
+  it('produces one chronological row per day that has readings', () => {
+    const readings = [
+      r({ id: 'd2', mealType: MealType.Breakfast, mealTiming: MealTiming.Before, value: 90, recordedAt: at(12, 6, 30) }),
+      r({ id: 'd1', mealType: MealType.Breakfast, mealTiming: MealTiming.Before, value: 85, recordedAt: at(11, 6, 30) }),
+    ];
+    const { rows } = buildReport(readings, opts());
+    expect(rows.map((row) => row.date)).toEqual(['11/07', '12/07']);
+  });
+
+  it('returns zeroed stats and no rows for an empty range', () => {
+    const { rows, stats } = buildReport([], opts());
+    expect(rows).toEqual([]);
+    expect(stats).toEqual({ total: 0, inRange: 0, percentInRange: 0 });
+  });
+});
+```
+
+- [x] **Step 3: Run the test to verify it fails**
+
+Run: `npm test -- build-report`
+Expected: FAIL — `buildReport` is not defined.
+
+- [x] **Step 4: Implement `buildReport`**
+
+Create `src/domain/use-cases/build-report.ts`:
+
+```ts
+import { AfterMealProtocol } from '../models/condition';
+import { MealTiming, MealType } from '../models/meal';
+import type { Reading } from '../models/reading';
+import type { MealCell, ReportModel, ReportRow, ReportStats, SubCell } from '../models/report';
+import { RangeEvaluation, type TargetRanges } from '../models/target-range';
+import type { Unit } from '../models/unit';
+import { evaluateReading } from './evaluate-reading';
+import { getDaySlots, type SlotDef } from './get-day-slots';
+
+export interface BuildReportOptions {
+  unit: Unit;
+  ranges: TargetRanges;
+  protocol: AfterMealProtocol;
+  /** Format a canonical mg/dL value in the preferred unit. */
+  formatValue: (mgdl: number) => string;
+  /** Format a day timestamp as a short localized label, e.g. "11/07". */
+  formatDay: (ts: number) => string;
+}
+
+/** Column order: breakfast, lunch, dinner. */
+const MEALS: readonly MealType[] = [MealType.Breakfast, MealType.Lunch, MealType.Dinner];
+const EMPTY_CELL: SubCell = { status: 'none', isOutOfRange: false };
+
+/** before + after slot defs per meal. after-slot timing follows the protocol. */
+function reportSlotDefs(protocol: AfterMealProtocol): SlotDef[] {
+  // 2h-only protocol makes the 2h reading the after value; otherwise the 1h
+  // reading is primary and getDaySlots captures a 2h re-check as followUp.
+  const afterHours = protocol === AfterMealProtocol.TwoHours ? 2 : 1;
+  return MEALS.flatMap((meal) => [
+    { id: `before-${meal}`, mealType: meal, mealTiming: MealTiming.Before },
+    { id: `after-${meal}`, mealType: meal, mealTiming: MealTiming.After, hoursAfterMeal: afterHours },
+  ]);
+}
+
+/** Local-midnight timestamp for a reading's day (device timezone). */
+function dayStart(ts: number): number {
+  const d = new Date(ts);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+/**
+ * Project readings onto a day-by-day doctor's grid. Pure — all formatting is
+ * injected. One row per calendar day that has readings, chronological. Three
+ * meal columns, each with before + after (+ a 2h re-check under 1h+2h). Snack
+ * and other unmatched readings never appear in the grid but count in the stats.
+ */
+export function buildReport(readings: readonly Reading[], opts: BuildReportOptions): ReportModel {
+  const hasSecondHour = opts.protocol === AfterMealProtocol.OneThenTwo;
+  const defs = reportSlotDefs(opts.protocol);
+
+  const dayTimestamps = [...new Set(readings.map((reading) => dayStart(reading.recordedAt)))].sort(
+    (a, b) => a - b,
+  );
+
+  const rows: ReportRow[] = dayTimestamps.map((ts) => {
+    const { slots } = getDaySlots(readings, new Date(ts), defs);
+    const byId = new Map(slots.map((slot) => [slot.def.id, slot]));
+    const meals: MealCell[] = MEALS.map((meal) => {
+      const before = byId.get(`before-${meal}`);
+      const after = byId.get(`after-${meal}`);
+      return buildMealCell(before?.reading, after?.reading, after?.followUp, hasSecondHour, opts);
+    });
+    return { date: opts.formatDay(ts), meals };
+  });
+
+  return { rows, stats: computeStats(readings, opts.ranges), hasSecondHour };
+}
+
+function subCell(reading: Reading | undefined, opts: BuildReportOptions): SubCell {
+  if (!reading) return EMPTY_CELL;
+  const status = evaluateReading(reading, opts.ranges);
+  return {
+    value: opts.formatValue(reading.value),
+    status,
+    isOutOfRange: status !== RangeEvaluation.InRange,
+  };
+}
+
+function buildMealCell(
+  before: Reading | undefined,
+  after: Reading | undefined,
+  followUp: Reading | undefined,
+  hasSecondHour: boolean,
+  opts: BuildReportOptions,
+): MealCell {
+  const afterCell = subCell(after, opts);
+  // The 2h sub-cell shows only under 1h+2h AND when the 1h reading was out of range.
+  const show2h = hasSecondHour && afterCell.isOutOfRange && followUp !== undefined;
+  return {
+    before: subCell(before, opts),
+    after: afterCell,
+    after2h: show2h ? subCell(followUp, opts) : EMPTY_CELL,
+  };
+}
+
+function computeStats(readings: readonly Reading[], ranges: TargetRanges): ReportStats {
+  const total = readings.length;
+  const inRange = readings.filter(
+    (reading) => evaluateReading(reading, ranges) === RangeEvaluation.InRange,
+  ).length;
+  const percentInRange = total === 0 ? 0 : Math.round((inRange / total) * 100);
+  return { total, inRange, percentInRange };
+}
+```
+
+- [x] **Step 5: Run the test to verify it passes**
+
+Run: `npm test -- build-report`
+Expected: PASS (all 7 cases).
+
+- [x] **Step 6: Type check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [x] **Step 7: Commit**
+
+```bash
+git add src/domain/models/report.ts src/domain/use-cases/build-report.ts src/domain/use-cases/__tests__/build-report.test.ts
+git commit -m "feat: buildReport domain use case for doctor report grid"
+```
+
+---
+
+### Task 5: HTML template `renderReportHtml`
+
+**Files:**
+- Create: `src/data/report/report-html.ts`
+- Test: `src/data/report/__tests__/report-html.test.ts`
+
+- [ ] **Step 1: Write the failing test**
+
+Create `src/data/report/__tests__/report-html.test.ts`:
+
+```ts
+import type { MealCell, ReportModel, SubCell } from '@/domain/models/report';
+import { RangeEvaluation } from '@/domain/models/target-range';
+import { renderReportHtml, type RenderReportHtmlOptions } from '@/data/report/report-html';
+
+const OPTS: RenderReportHtmlOptions = {
+  title: 'Nhật ký đường huyết',
+  subhead: 'Tuần thai 28 · Ngưỡng: đói 70–95, sau ăn 70–140',
+  labels: {
+    date: 'Ngày',
+    breakfast: 'Sáng',
+    lunch: 'Trưa',
+    dinner: 'Tối',
+    before: 'Trước',
+    after: 'Sau',
+    hour1: '1h',
+    hour2: '2h',
+  },
+  statsText: '86% trong ngưỡng · 52 lần đo',
+  watermark: 'Tạo bởi app Sugar',
+};
+
+const inRange = (value: string): SubCell => ({ value, status: RangeEvaluation.InRange, isOutOfRange: false });
+const high = (value: string): SubCell => ({ value, status: RangeEvaluation.High, isOutOfRange: true });
+const empty: SubCell = { status: 'none', isOutOfRange: false };
+
+function meal(before: SubCell, after: SubCell, after2h: SubCell = empty): MealCell {
+  return { before, after, after2h };
+}
+
+function model(rowCount: number, hasSecondHour = false): ReportModel {
+  const rows = Array.from({ length: rowCount }, (_, i) => ({
+    date: `${String(i + 1).padStart(2, '0')}/07`,
+    meals: [
+      meal(inRange('88'), high('150'), hasSecondHour ? inRange('110') : empty), // breakfast: 1h high, 2h recovered
+      meal(inRange('85'), inRange('130'), empty), // lunch: 1h in range
+      meal(empty, empty, empty), // dinner: no readings
+    ],
+  }));
+  return { rows, stats: { total: 52, inRange: 45, percentInRange: 86 }, hasSecondHour };
+}
+
+describe('renderReportHtml', () => {
+  it('includes the title, subhead and stats text', () => {
+    const html = renderReportHtml(model(1), OPTS);
+    expect(html).toContain('Nhật ký đường huyết');
+    expect(html).toContain('Tuần thai 28');
+    expect(html).toContain('86% trong ngưỡng · 52 lần đo');
+  });
+
+  it('renders the 3 meal group headers', () => {
+    const html = renderReportHtml(model(1), OPTS);
+    expect(html).toContain('Sáng');
+    expect(html).toContain('Trưa');
+    expect(html).toContain('Tối');
+  });
+
+  it('shows 2 sub-columns (Trước/Sau) when there is no 2h', () => {
+    const html = renderReportHtml(model(1, false), OPTS);
+    expect(html).toContain('>Trước<');
+    expect(html).toContain('>Sau<');
+    expect(html).not.toContain('>2h<');
+  });
+
+  it('shows 3 sub-columns (Trước/1h/2h) under the 1h+2h protocol', () => {
+    const html = renderReportHtml(model(1, true), OPTS);
+    expect(html).toContain('>Trước<');
+    expect(html).toContain('>1h<');
+    expect(html).toContain('>2h<');
+    expect(html).toContain('110'); // the recovered 2h value is rendered
+  });
+
+  it('renders an em-dash for empty sub-cells', () => {
+    const html = renderReportHtml(model(1), OPTS);
+    expect(html).toContain('—'); // dinner column is all empty
+  });
+
+  it('applies the out-of-range style to flagged cells only', () => {
+    const html = renderReportHtml(model(1), OPTS);
+    // The breakfast 1h cell (150) carries the out-of-range background.
+    expect(html).toContain('#FDECE4');
+    expect(html).toContain('#B23C10');
+  });
+
+  it('shows the watermark when provided and omits it when not', () => {
+    expect(renderReportHtml(model(1), OPTS)).toContain('Tạo bởi app Sugar');
+    const noWatermark = renderReportHtml(model(1), { ...OPTS, watermark: undefined });
+    expect(noWatermark).not.toContain('Tạo bởi app Sugar');
+  });
+
+  it('chunks rows into pages of 14', () => {
+    const html = renderReportHtml(model(30), OPTS);
+    // 30 rows → 3 page tables (14 + 14 + 2).
+    expect((html.match(/data-report-page/g) ?? []).length).toBe(3);
+  });
+});
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `npm test -- report-html`
+Expected: FAIL — `renderReportHtml` is not defined.
+
+- [ ] **Step 3: Implement the template**
+
+Create `src/data/report/report-html.ts`:
+
+```ts
+import type { MealCell, ReportModel, ReportRow, SubCell } from '@/domain/models/report';
+
+export interface RenderReportHtmlOptions {
+  title: string;
+  subhead: string;
+  labels: {
+    date: string;
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+    before: string;
+    /** After-meal sub-header for the 1h / 2h protocols (single after cell). */
+    after: string;
+    /** After-meal sub-headers for the 1h+2h protocol. */
+    hour1: string;
+    hour2: string;
+  };
+  statsText: string;
+  /** Footer watermark; omit to drop it (Pro). */
+  watermark?: string;
+}
+
+const ROWS_PER_PAGE = 14;
+
+const CELL_BASE = 'border:1px solid #E2EDE7; padding:5px 3px;';
+const CELL_OUT = `${CELL_BASE} background:#FDECE4; color:#B23C10; font-weight:800;`;
+const TH_BASE =
+  'border:1px solid #E2EDE7; padding:5px 3px; font-weight:800; color:#5C6F66; font-size:9px; text-transform:uppercase; letter-spacing:.3px;';
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function subCellHtml(cell: SubCell): string {
+  const style = cell.isOutOfRange ? CELL_OUT : CELL_BASE;
+  const text = cell.value === undefined ? '—' : escapeHtml(cell.value);
+  return `<td style="${style}">${text}</td>`;
+}
+
+function mealCellsHtml(meal: MealCell, hasSecondHour: boolean): string {
+  const cells = hasSecondHour ? [meal.before, meal.after, meal.after2h] : [meal.before, meal.after];
+  return cells.map(subCellHtml).join('');
+}
+
+function rowHtml(row: ReportRow, hasSecondHour: boolean): string {
+  const dateCell = `<td style="${CELL_BASE} color:#5C6F66; font-weight:600;">${escapeHtml(row.date)}</td>`;
+  return `<tr>${dateCell}${row.meals.map((meal) => mealCellsHtml(meal, hasSecondHour)).join('')}</tr>`;
+}
+
+function headHtml(opts: RenderReportHtmlOptions, hasSecondHour: boolean): string {
+  const span = hasSecondHour ? 3 : 2;
+  const meals = [opts.labels.breakfast, opts.labels.lunch, opts.labels.dinner];
+  const subHeaders = hasSecondHour
+    ? [opts.labels.before, opts.labels.hour1, opts.labels.hour2]
+    : [opts.labels.before, opts.labels.after];
+  const groupTh = meals
+    .map((meal) => `<th colspan="${span}" style="${TH_BASE}">${escapeHtml(meal)}</th>`)
+    .join('');
+  const subTh = meals
+    .map(() => subHeaders.map((s) => `<th style="${TH_BASE}">${escapeHtml(s)}</th>`).join(''))
+    .join('');
+  return `<thead>
+      <tr><th rowspan="2" style="${TH_BASE}">${escapeHtml(opts.labels.date)}</th>${groupTh}</tr>
+      <tr>${subTh}</tr>
+    </thead>`;
+}
+
+function pageHtml(rows: ReportRow[], opts: RenderReportHtmlOptions, hasSecondHour: boolean): string {
+  return `
+    <table data-report-page style="width:100%; border-collapse:collapse; margin-top:12px; font-size:11px; page-break-after:always;">
+      ${headHtml(opts, hasSecondHour)}
+      <tbody style="text-align:center; font-weight:700;">
+        ${rows.map((row) => rowHtml(row, hasSecondHour)).join('')}
+      </tbody>
+    </table>`;
+}
+
+function chunk(rows: readonly ReportRow[], size: number): ReportRow[][] {
+  const out: ReportRow[][] = [];
+  for (let i = 0; i < rows.length; i += size) out.push(rows.slice(i, i + size));
+  return out;
+}
+
+/**
+ * Render the doctor report model as a self-contained A4 HTML document for
+ * expo-print. Pure — no i18n/clock; all labels are injected. Each meal column
+ * spans 2 sub-columns (Trước/Sau) or 3 (Trước/1h/2h) under the 1h+2h protocol,
+ * driven by `model.hasSecondHour`. Out-of-range cells get a tinted background
+ * plus bold text (grayscale-safe when printed).
+ */
+export function renderReportHtml(model: ReportModel, opts: RenderReportHtmlOptions): string {
+  const pages = chunk(model.rows, ROWS_PER_PAGE)
+    .map((rows) => pageHtml(rows, opts, model.hasSecondHour))
+    .join('');
+  const watermark =
+    opts.watermark !== undefined
+      ? `<div style="font-size:9.5px; font-weight:600; color:#B7C7BE; text-align:center; margin-top:10px;">${escapeHtml(opts.watermark)}</div>`
+      : '';
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { font-family: -apple-system, 'Roboto', 'Noto Sans', sans-serif; color: #1B2B24; margin: 0; }
+    .title { font-size: 16px; font-weight: 900; text-align: center; }
+    .subhead { font-size: 11px; font-weight: 700; color: #5C6F66; text-align: center; margin-top: 4px; }
+    .stats { font-size: 13px; font-weight: 700; color: #5C6F66; text-align: center; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="title">${escapeHtml(opts.title)}</div>
+  <div class="subhead">${escapeHtml(opts.subhead)}</div>
+  ${pages}
+  <div class="stats">${escapeHtml(opts.statsText)}</div>
+  ${watermark}
+</body>
+</html>`;
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run: `npm test -- report-html`
+Expected: PASS (all 5 cases).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/data/report/report-html.ts src/data/report/__tests__/report-html.test.ts
+git commit -m "feat: doctor report html template"
+```
+
+---
+
+### Task 6: Data-layer `generateAndSharePdf`
+
+**Files:**
+- Create: `src/data/report/share-pdf.ts`
+
+> No unit test: this is thin side-effect glue over pure, already-tested pieces (mirrors `share-csv.ts`, which is also untested). It is verified manually on a device in Task 10.
+
+- [ ] **Step 1: Implement the service**
+
+Create `src/data/report/share-pdf.ts`:
+
+```ts
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+
+import { AfterMealProtocol } from '@/domain/models/condition';
+import type { ReadingListFilter, ReadingRepository } from '@/domain/repositories/reading-repository';
+import type { TargetRanges } from '@/domain/models/target-range';
+import type { Unit } from '@/domain/models/unit';
+import { buildReport } from '@/domain/use-cases/build-report';
+import { renderReportHtml, type RenderReportHtmlOptions } from './report-html';
+
+export interface GenerateAndSharePdfDeps {
+  readingRepo: ReadingRepository;
+  filter: ReadingListFilter;
+  unit: Unit;
+  ranges: TargetRanges;
+  protocol: AfterMealProtocol;
+  formatValue: (mgdl: number) => string;
+  formatDay: (ts: number) => string;
+  /** Localized labels + subhead + stats text + optional watermark. */
+  html: Omit<RenderReportHtmlOptions, 'subhead' | 'statsText'> & {
+    subhead: string;
+    statsText: (percentInRange: number, total: number) => string;
+  };
+}
+
+export const SharePdfStatus = {
+  Shared: 'shared',
+  Empty: 'empty',
+  Unavailable: 'unavailable',
+} as const;
+export type SharePdfStatus = (typeof SharePdfStatus)[keyof typeof SharePdfStatus];
+
+export interface GenerateAndSharePdfResult {
+  status: SharePdfStatus;
+  count: number;
+}
+
+/**
+ * Build the report model, render it to a PDF via expo-print, and open the native
+ * share sheet. The report/HTML computation is pure (tested); this performs only
+ * the print + share side effects. Callers increment `reportCount` on `Shared`.
+ */
+export async function generateAndSharePdf(
+  deps: GenerateAndSharePdfDeps,
+): Promise<GenerateAndSharePdfResult> {
+  // Repository lists newest-first; the report reads chronologically.
+  const readings = (await deps.readingRepo.list(deps.filter)).slice().reverse();
+  if (readings.length === 0) {
+    return { status: SharePdfStatus.Empty, count: 0 };
+  }
+
+  const model = buildReport(readings, {
+    unit: deps.unit,
+    ranges: deps.ranges,
+    protocol: deps.protocol,
+    formatValue: deps.formatValue,
+    formatDay: deps.formatDay,
+  });
+
+  const html = renderReportHtml(model, {
+    title: deps.html.title,
+    subhead: deps.html.subhead,
+    labels: deps.html.labels,
+    statsText: deps.html.statsText(model.stats.percentInRange, model.stats.total),
+    watermark: deps.html.watermark,
+  });
+
+  const { uri } = await Print.printToFileAsync({ html });
+
+  if (!(await Sharing.isAvailableAsync())) {
+    return { status: SharePdfStatus.Unavailable, count: readings.length };
+  }
+
+  await Sharing.shareAsync(uri, {
+    mimeType: 'application/pdf',
+    UTI: 'com.adobe.pdf',
+    dialogTitle: deps.html.title,
+  });
+  return { status: SharePdfStatus.Shared, count: readings.length };
+}
+```
+
+- [ ] **Step 2: Type check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/data/report/share-pdf.ts
+git commit -m "feat: generateAndSharePdf report service"
+```
+
+---
+
+### Task 7: Preview table component
+
+**Files:**
+- Create: `src/ui/components/report-preview-table.tsx`
+
+> Presentational-only; colors come from `useTheme()`. No test (dumb component; covered by the manual smoke in Task 10).
+
+- [ ] **Step 1: Implement the component**
+
+Create `src/ui/components/report-preview-table.tsx`:
+
+```tsx
+import type { ReactElement } from 'react';
+import { StyleSheet, View } from 'react-native';
+
+import type { MealCell, ReportModel, SubCell } from '@/domain/models/report';
+import { RangeEvaluation } from '@/domain/models/target-range';
+import { AppText } from '@/ui/components/ui';
+import { radius, spacing, useTheme } from '@/ui/theme';
+
+/** Same shape as the report i18n `columns` block (see Task 8). */
+export interface ReportPreviewLabels {
+  date: string;
+  breakfast: string;
+  lunch: string;
+  dinner: string;
+  before: string;
+  after: string;
+  hour1: string;
+  hour2: string;
+}
+
+interface ReportPreviewTableProps {
+  model: ReportModel;
+  labels: ReportPreviewLabels;
+}
+
+const OUT_BG = '#FDECE4';
+const OUT_FG = '#B23C10';
+const DATE_FLEX = 1.1;
+
+export function ReportPreviewTable({ model, labels }: ReportPreviewTableProps): ReactElement {
+  const colors = useTheme();
+  const { hasSecondHour } = model;
+  const mealNames = [labels.breakfast, labels.lunch, labels.dinner];
+  const subLabels = hasSecondHour
+    ? [labels.before, labels.hour1, labels.hour2]
+    : [labels.before, labels.after];
+  const subCount = subLabels.length;
+
+  const subCellsOf = (meal: MealCell): SubCell[] =>
+    hasSecondHour ? [meal.before, meal.after, meal.after2h] : [meal.before, meal.after];
+
+  return (
+    <View style={[styles.table, { borderColor: colors.border }]}>
+      {/* Group header: meal names spanning their sub-columns. */}
+      <View style={styles.row}>
+        <View style={[styles.dateCol, styles.headCell]} />
+        {mealNames.map((name) => (
+          <View key={name} style={[styles.mealGroup, { flex: subCount }]}>
+            <View style={styles.headCell}>
+              <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+                {name}
+              </AppText>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Sub header: Trước / Sau (or Trước / 1h / 2h). */}
+      <View style={[styles.row, styles.borderTop, { borderColor: colors.border }]}>
+        <View style={[styles.dateCol, styles.headCell]}>
+          <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+            {labels.date}
+          </AppText>
+        </View>
+        {mealNames.map((name) => (
+          <View key={name} style={[styles.subRow, { flex: subCount }]}>
+            {subLabels.map((s, i) => (
+              <View key={i} style={styles.subCell}>
+                <AppText variant="caption" weight="bold" color={colors.textFaint}>
+                  {s}
+                </AppText>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+
+      {/* Data rows. */}
+      {model.rows.map((row) => (
+        <View key={row.date} style={[styles.row, styles.borderTop, { borderColor: colors.border }]}>
+          <View style={[styles.dateCol, styles.subCell]}>
+            <AppText variant="caption" color={colors.textMuted}>
+              {row.date}
+            </AppText>
+          </View>
+          {row.meals.map((meal, mi) => (
+            <View key={mi} style={[styles.subRow, { flex: subCount }]}>
+              {subCellsOf(meal).map((cell, ci) => {
+                const out = cell.isOutOfRange;
+                return (
+                  <View key={ci} style={[styles.subCell, out && { backgroundColor: OUT_BG }]}>
+                    <AppText
+                      variant="caption"
+                      weight={out ? 'extrabold' : 'bold'}
+                      color={
+                        out
+                          ? OUT_FG
+                          : cell.status === RangeEvaluation.InRange
+                            ? colors.text
+                            : colors.textFaint
+                      }
+                    >
+                      {cell.value ?? '—'}
+                    </AppText>
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  table: {
+    borderWidth: 1,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  borderTop: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  dateCol: {
+    flex: DATE_FLEX,
+  },
+  mealGroup: {
+    alignItems: 'center',
+  },
+  subRow: {
+    flexDirection: 'row',
+  },
+  headCell: {
+    paddingVertical: spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subCell: {
+    flex: 1,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+- [ ] **Step 2: Type check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/ui/components/report-preview-table.tsx
+git commit -m "feat: report preview table component"
+```
+
+---
+
+### Task 8: i18n strings — add `report`, remove `export`
+
+**Files:**
+- Modify: `src/i18n/vi.json`
+- Modify: `src/i18n/en.json`
+
+- [ ] **Step 1: Add the `report` block to `vi.json`**
+
+In `src/i18n/vi.json`, replace the `screens.settings.export` block with a `report` block:
+
+```json
+      "report": {
+        "title": "Báo cáo cho bác sĩ",
+        "description": "Tạo báo cáo PDF hoặc tệp CSV để đưa cho bác sĩ.",
+        "rangeLabel": "Khoảng thời gian",
+        "ranges": {
+          "last14d": "14 ngày",
+          "last30d": "30 ngày",
+          "custom": "Tuỳ chọn"
+        },
+        "from": "Từ ngày",
+        "to": "Đến ngày",
+        "docTitle": "Nhật ký đường huyết",
+        "columns": {
+          "date": "Ngày",
+          "breakfast": "Sáng",
+          "lunch": "Trưa",
+          "dinner": "Tối",
+          "before": "Trước",
+          "after": "Sau",
+          "hour1": "1h",
+          "hour2": "2h"
+        },
+        "subheadGdm": "Tuần thai {{week}} · Ngưỡng: đói {{fasting}}, sau ăn {{postMeal}} ({{unit}})",
+        "subheadGeneral": "Ngưỡng: đói {{fasting}}, sau ăn {{postMeal}} ({{unit}})",
+        "stats": "{{percent}}% trong ngưỡng · {{count}} lần đo",
+        "watermark": "Tạo bởi app Sugar",
+        "sharePdf": "Chia sẻ PDF",
+        "exportCsv": "Xuất CSV",
+        "watermarkNote": "Bản miễn phí có thêm dòng \"Tạo bởi app Sugar\".",
+        "empty": "Không có chỉ số nào trong khoảng thời gian này.",
+        "shareUnavailable": "Thiết bị không hỗ trợ chia sẻ tệp.",
+        "failed": "Không thể tạo báo cáo. Vui lòng thử lại."
+      },
+```
+
+- [ ] **Step 2: Rename the settings row key in `vi.json`**
+
+In `screens.settings.index.rows`, replace `"export": "Xuất dữ liệu",` with:
+
+```json
+          "report": "Báo cáo cho bác sĩ",
+```
+
+- [ ] **Step 3: Mirror in `en.json`**
+
+Replace the `screens.settings.export` block with:
+
+```json
+      "report": {
+        "title": "Doctor report",
+        "description": "Create a PDF report or CSV file to give your doctor.",
+        "rangeLabel": "Time range",
+        "ranges": {
+          "last14d": "14 days",
+          "last30d": "30 days",
+          "custom": "Custom"
+        },
+        "from": "From",
+        "to": "To",
+        "docTitle": "Blood Sugar Log",
+        "columns": {
+          "date": "Date",
+          "breakfast": "Breakfast",
+          "lunch": "Lunch",
+          "dinner": "Dinner",
+          "before": "Before",
+          "after": "After",
+          "hour1": "1h",
+          "hour2": "2h"
+        },
+        "subheadGdm": "Pregnancy week {{week}} · Targets: fasting {{fasting}}, after-meal {{postMeal}} ({{unit}})",
+        "subheadGeneral": "Targets: fasting {{fasting}}, after-meal {{postMeal}} ({{unit}})",
+        "stats": "{{percent}}% in range · {{count}} readings",
+        "watermark": "Generated by Sugar app",
+        "sharePdf": "Share PDF",
+        "exportCsv": "Export CSV",
+        "watermarkNote": "The free version adds a \"Generated by Sugar\" footer.",
+        "empty": "No readings in this time range.",
+        "shareUnavailable": "This device cannot share files.",
+        "failed": "Could not create the report. Please try again."
+      },
+```
+
+And in `en.json` `screens.settings.index.rows`, replace `"export"` with:
+
+```json
+          "report": "Doctor report",
+```
+
+- [ ] **Step 4: Verify no other reference to the old key remains**
+
+Run: `rg --color=never --no-heading -n "settings.export|rows.export" src/ app/`
+Expected: no matches (the onboarding feature card uses `screens.onboarding...export` — a different block — leave it; confirm the matches you see are NOT under `screens.settings`).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/i18n/vi.json src/i18n/en.json
+git commit -m "feat: report i18n strings, drop export screen strings"
+```
+
+---
+
+### Task 9: Report screen + route wiring
+
+**Files:**
+- Create: `app/(tabs)/settings/report.tsx`
+- Modify: `app/(tabs)/settings/_layout.tsx`
+- Modify: `app/(tabs)/settings/index.tsx`
+- Modify: `app/(tabs)/index.tsx`
+- Delete: `app/(tabs)/settings/export.tsx`
+
+- [ ] **Step 1: Create the report screen**
+
+Create `app/(tabs)/settings/report.tsx`:
+
+```tsx
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useMemo, useState, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { generateAndShareCsv, ShareCsvStatus } from '@/data/export/share-csv';
+import { getReadingRepository } from '@/data/repositories/factory';
+import { generateAndSharePdf, SharePdfStatus } from '@/data/report/share-pdf';
+import { ConditionType } from '@/domain/models/condition';
+import { ExportRangePreset } from '@/domain/models/export';
+import { MealType } from '@/domain/models/meal';
+import type { ReadingListFilter } from '@/domain/repositories/reading-repository';
+import type { TargetRanges } from '@/domain/models/target-range';
+import { buildReport } from '@/domain/use-cases/build-report';
+import { pregnancyWeek } from '@/domain/use-cases/pregnancy-week';
+import { resolveExportRange } from '@/domain/use-cases/resolve-export-range';
+import { AppText, Button, Card, Chip, ScreenHeader } from '@/ui/components/ui';
+import { ReportPreviewTable } from '@/ui/components/report-preview-table';
+import { useReadings } from '@/ui/hooks/use-readings';
+import { useSettingsStore } from '@/ui/hooks/use-settings';
+import { radius, spacing, useTheme } from '@/ui/theme';
+import { formatDate, formatValue } from '@/ui/utils/format';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const PRESETS: readonly ExportRangePreset[] = [
+  ExportRangePreset.Last14Days,
+  ExportRangePreset.Last30Days,
+  ExportRangePreset.Custom,
+];
+
+export default function ReportScreen(): ReactElement {
+  const { t } = useTranslation();
+  const colors = useTheme();
+  const {
+    preferredUnit,
+    preferredLanguage,
+    conditionType,
+    dueDate,
+    afterMealProtocol,
+    fastingRange,
+    postMealRange,
+    postMeal2hRange,
+    reportCount,
+    updateSetting,
+  } = useSettingsStore();
+
+  const [preset, setPreset] = useState<ExportRangePreset>(ExportRangePreset.Last14Days);
+  const [customFrom, setCustomFrom] = useState<Date>(() => new Date(Date.now() - 13 * DAY_MS));
+  const [customTo, setCustomTo] = useState<Date>(() => new Date());
+  const [activePicker, setActivePicker] = useState<'from' | 'to' | undefined>(undefined);
+  const [isSharingPdf, setIsSharingPdf] = useState(false);
+  const [isSharingCsv, setIsSharingCsv] = useState(false);
+
+  const filter = useMemo<ReadingListFilter>(
+    () =>
+      resolveExportRange(preset, {
+        now: Date.now(),
+        customFrom: customFrom.getTime(),
+        customTo: customTo.getTime(),
+      }),
+    [preset, customFrom, customTo],
+  );
+
+  const { readings } = useReadings(filter);
+  const count = readings.length;
+
+  const ranges: TargetRanges = useMemo(
+    () => ({ fasting: fastingRange, postMeal: postMealRange, postMeal2h: postMeal2hRange ?? undefined }),
+    [fastingRange, postMealRange, postMeal2hRange],
+  );
+
+  const mealLabels = useMemo<Record<MealType, string>>(
+    () => ({
+      [MealType.Breakfast]: t('logForm.mealTypes.Breakfast'),
+      [MealType.Lunch]: t('logForm.mealTypes.Lunch'),
+      [MealType.Dinner]: t('logForm.mealTypes.Dinner'),
+      [MealType.Snack]: t('logForm.mealTypes.Snack'),
+    }),
+    [t],
+  );
+
+  const formatVal = useMemo(() => (mgdl: number) => formatValue(mgdl, preferredUnit), [preferredUnit]);
+  const formatDay = useMemo(
+    () => (ts: number) => {
+      const d = new Date(ts);
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+    },
+    [],
+  );
+
+  const labels = useMemo(
+    () => ({
+      date: t('screens.settings.report.columns.date'),
+      breakfast: t('screens.settings.report.columns.breakfast'),
+      lunch: t('screens.settings.report.columns.lunch'),
+      dinner: t('screens.settings.report.columns.dinner'),
+      before: t('screens.settings.report.columns.before'),
+      after: t('screens.settings.report.columns.after'),
+      hour1: t('screens.settings.report.columns.hour1'),
+      hour2: t('screens.settings.report.columns.hour2'),
+    }),
+    [t],
+  );
+
+  // Readings arrive newest-first; the report reads chronologically.
+  const model = useMemo(
+    () =>
+      buildReport(readings.slice().reverse(), {
+        unit: preferredUnit,
+        ranges,
+        protocol: afterMealProtocol,
+        formatValue: formatVal,
+        formatDay,
+      }),
+    [readings, preferredUnit, ranges, afterMealProtocol, formatVal, formatDay],
+  );
+
+  const rangeStr = (r: { low: number; high: number }): string =>
+    `${formatValue(r.low, preferredUnit)}–${formatValue(r.high, preferredUnit)}`;
+
+  const subhead = useMemo(() => {
+    const isGdm = conditionType === ConditionType.Gestational && dueDate !== null;
+    const params = {
+      fasting: rangeStr(fastingRange),
+      postMeal: rangeStr(postMealRange),
+      unit: preferredUnit,
+    };
+    if (isGdm && dueDate !== null) {
+      return t('screens.settings.report.subheadGdm', {
+        ...params,
+        week: pregnancyWeek(dueDate, Date.now()),
+      });
+    }
+    return t('screens.settings.report.subheadGeneral', params);
+  }, [conditionType, dueDate, fastingRange, postMealRange, preferredUnit, t]);
+
+  const onPickDate = (_event: DateTimePickerEvent, selected?: Date): void => {
+    const which = activePicker;
+    if (Platform.OS !== 'ios') setActivePicker(undefined);
+    if (!selected || which === undefined) return;
+    if (which === 'from') setCustomFrom(selected);
+    else setCustomTo(selected);
+  };
+
+  const onSharePdf = async (): Promise<void> => {
+    try {
+      setIsSharingPdf(true);
+      const result = await generateAndSharePdf({
+        readingRepo: getReadingRepository(),
+        filter,
+        unit: preferredUnit,
+        ranges,
+        protocol: afterMealProtocol,
+        formatValue: formatVal,
+        formatDay,
+        html: {
+          title: t('screens.settings.report.docTitle'),
+          subhead,
+          labels,
+          watermark: t('screens.settings.report.watermark'),
+          statsText: (percent, total) =>
+            t('screens.settings.report.stats', { percent, count: total }),
+        },
+      });
+      if (result.status === SharePdfStatus.Shared) {
+        void updateSetting('reportCount', reportCount + 1);
+      } else if (result.status === SharePdfStatus.Unavailable) {
+        Alert.alert(t('screens.settings.report.title'), t('screens.settings.report.shareUnavailable'));
+      }
+    } catch {
+      Alert.alert(t('common.errorTitle'), t('screens.settings.report.failed'));
+    } finally {
+      setIsSharingPdf(false);
+    }
+  };
+
+  const onExportCsv = async (): Promise<void> => {
+    try {
+      setIsSharingCsv(true);
+      const result = await generateAndShareCsv({
+        readingRepo: getReadingRepository(),
+        filter,
+        unit: preferredUnit,
+        mealLabels,
+        now: Date.now(),
+      });
+      if (result.status === ShareCsvStatus.Unavailable) {
+        Alert.alert(t('screens.settings.report.title'), t('screens.settings.report.shareUnavailable'));
+      }
+    } catch {
+      Alert.alert(t('common.errorTitle'), t('screens.settings.report.failed'));
+    } finally {
+      setIsSharingCsv(false);
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.content}>
+      <ScreenHeader title={t('screens.settings.report.title')} style={styles.header} />
+
+      <AppText color={colors.textMuted} style={styles.description}>
+        {t('screens.settings.report.description')}
+      </AppText>
+
+      <View style={styles.presetRow}>
+        {PRESETS.map((p) => (
+          <Chip
+            key={p}
+            label={t(`screens.settings.report.ranges.${p}`)}
+            selected={preset === p}
+            onPress={() => setPreset(p)}
+          />
+        ))}
+      </View>
+
+      {preset === ExportRangePreset.Custom && (
+        <View style={styles.customRow}>
+          <TouchableOpacity
+            style={[styles.customButton, { backgroundColor: colors.surface }]}
+            onPress={() => setActivePicker('from')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('screens.settings.report.from')}: ${formatDate(customFrom, preferredLanguage)}`}
+          >
+            <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+              {t('screens.settings.report.from')}
+            </AppText>
+            <AppText weight="bold">{formatDate(customFrom, preferredLanguage)}</AppText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.customButton, { backgroundColor: colors.surface }]}
+            onPress={() => setActivePicker('to')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('screens.settings.report.to')}: ${formatDate(customTo, preferredLanguage)}`}
+          >
+            <AppText variant="caption" weight="extrabold" color={colors.textMuted}>
+              {t('screens.settings.report.to')}
+            </AppText>
+            <AppText weight="bold">{formatDate(customTo, preferredLanguage)}</AppText>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {count === 0 ? (
+        <Card style={styles.summaryCard}>
+          <AppText color={colors.textMuted}>{t('screens.settings.report.empty')}</AppText>
+        </Card>
+      ) : (
+        <Card style={styles.previewCard}>
+          <AppText weight="extrabold" style={styles.previewTitle}>
+            {t('screens.settings.report.docTitle')}
+          </AppText>
+          <AppText variant="caption" color={colors.textMuted} style={styles.previewSubhead}>
+            {subhead}
+          </AppText>
+          <ReportPreviewTable model={model} labels={labels} />
+          <AppText variant="caption" weight="bold" color={colors.textMuted} style={styles.statsText}>
+            {t('screens.settings.report.stats', {
+              percent: model.stats.percentInRange,
+              count: model.stats.total,
+            })}
+          </AppText>
+        </Card>
+      )}
+
+      <View style={styles.buttonRow}>
+        <Button
+          label={t('screens.settings.report.sharePdf')}
+          icon="document-text-outline"
+          onPress={() => void onSharePdf()}
+          isLoading={isSharingPdf}
+          disabled={count === 0 || isSharingCsv}
+          style={styles.pdfButton}
+        />
+        <Button
+          label={t('screens.settings.report.exportCsv')}
+          variant="ghost"
+          onPress={() => void onExportCsv()}
+          isLoading={isSharingCsv}
+          disabled={count === 0 || isSharingPdf}
+          style={styles.csvButton}
+        />
+      </View>
+
+      <AppText variant="caption" color={colors.textFaint} style={styles.watermarkNote}>
+        {t('screens.settings.report.watermarkNote')}
+      </AppText>
+
+      {activePicker !== undefined && (
+        <DateTimePicker
+          value={activePicker === 'from' ? customFrom : customTo}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={onPickDate}
+        />
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: { padding: spacing.lg, gap: spacing.sm },
+  header: { marginBottom: spacing.xs },
+  description: { marginBottom: spacing.md, lineHeight: 22 },
+  presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  customRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  customButton: { flex: 1, borderRadius: radius.md, padding: spacing.md, gap: spacing.xs },
+  summaryCard: { marginTop: spacing.md },
+  previewCard: { marginTop: spacing.md, gap: spacing.xs },
+  previewTitle: { textAlign: 'center' },
+  previewSubhead: { textAlign: 'center', marginBottom: spacing.sm },
+  statsText: { textAlign: 'center', marginTop: spacing.sm },
+  buttonRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+  pdfButton: { flex: 1.4 },
+  csvButton: { flex: 1 },
+  watermarkNote: { textAlign: 'center', marginTop: spacing.md, lineHeight: 18 },
+});
+```
+
+> **Primitive props (already reconciled against the codebase):** `Button` variants are `'primary' | 'accent' | 'ghost' | 'dangerOutline'` (there is no `secondary`) — the CSV button uses `ghost`. `formatValue(mgdl, unit)` is exported from `src/ui/utils/format.ts`. `pregnancyWeek(dueDate, now)` matches the call here. `Chip` takes `{ label, selected, onPress }` (see the deleted `export.tsx` for reference). Do not invent a variant.
+
+- [ ] **Step 2: Register the route, drop `export`**
+
+In `app/(tabs)/settings/_layout.tsx`, replace the `export` screen line:
+
+```tsx
+      <Stack.Screen name="report" options={{ title: t('screens.settings.report.title') }} />
+```
+
+(Remove the `<Stack.Screen name="export" ... />` line.)
+
+- [ ] **Step 3: Point the Settings row at the report screen**
+
+In `app/(tabs)/settings/index.tsx`, change the data-section row (currently the "export" row):
+
+```tsx
+        <SettingRow
+          icon="document-text"
+          iconColor={colors.accentBlue}
+          label={t('screens.settings.index.rows.report')}
+          onPress={() => router.push('/(tabs)/settings/report')}
+        />
+```
+
+- [ ] **Step 4: Point the Today link at the report screen**
+
+In `app/(tabs)/index.tsx`, change the `exportReport` button's `onPress`:
+
+```tsx
+          onPress={() => router.push('/(tabs)/settings/report')}
+```
+
+- [ ] **Step 5: Delete the old Export screen**
+
+Run: `git rm "app/(tabs)/settings/export.tsx"`
+Expected: file removed.
+
+- [ ] **Step 6: Confirm nothing still imports the export screen**
+
+Run: `rg --color=never --no-heading -n "settings/export" app/ src/`
+Expected: no matches.
+
+- [ ] **Step 7: Type check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add "app/(tabs)/settings/report.tsx" "app/(tabs)/settings/_layout.tsx" "app/(tabs)/settings/index.tsx" "app/(tabs)/index.tsx"
+git commit -m "feat: doctor report screen, remove standalone export"
+```
+
+---
+
+### Task 10: Verify the whole session
+
+**Files:** none (verification only).
+
+- [ ] **Step 1: Full type check**
+
+Run: `npx tsc --noEmit`
+Expected: no errors.
+
+- [ ] **Step 2: Full test run**
+
+Run: `npm test`
+Expected: all green, including `build-report`, `report-html`, `resolve-export-range`, `sqlite-settings-repository`.
+
+- [ ] **Step 3: Lint**
+
+Run: `npm run lint`
+Expected: no errors.
+
+- [ ] **Step 4: Manual smoke on a device/emulator**
+
+Run: `npx expo start`
+
+Verify:
+- General mode (green theme): Settings → "Báo cáo cho bác sĩ" opens the report screen with the date header only; preview grid shows days with data; out-of-range cells are pink.
+- Each meal column shows `Trước`/`Sau` sub-columns; under the `1h+2h` protocol (GDM) there are 3 sub-columns `Trước`/`1h`/`2h`, and the `2h` sub-cell is filled only on a day where the 1h reading was out of range.
+- GDM mode (rose theme): the subhead shows `Tuần thai {n}`.
+- No standalone "Đói/Fasting" column exists — the fasting reading appears under Breakfast → Trước.
+- **Share PDF** produces a PDF that opens in **Zalo** and **iOS Files** with intact Vietnamese diacritics; 14 days fit on one A4 page; the "Tạo bởi app Sugar" watermark is present.
+- **Export CSV** produces the same file as before (open it — byte-identical spec: BOM, tab-separated, `Date Time Value Unit Meal Timing "Hours After" Notes`).
+- Today tab "Xuất báo cáo cho bác sĩ →" routes to the same screen (both modes).
+- The old Settings "Xuất dữ liệu" row is gone; there is no dangling `/(tabs)/settings/export` route.
+- After a successful PDF share, `reportCount` increments (inspect via a dev log or re-open — it is silent, but confirm no crash).
+
+- [ ] **Step 5: Final commit (if any manual-fix tweaks were needed)**
+
+```bash
+git add -A
+git commit -m "feat: doctor report pdf and unified export"
+```
+
+> If Steps 1–4 passed with no code changes, the per-task commits already satisfy the Definition of Done; this step is a no-op.
+
+---
+
+## Self-Review
+
+**Spec coverage (PLAN-2 §Session 13, with the 2026-07-12 table redesign):**
+- ReportService pure + tested (rows=days; **3 meal columns, each Trước/Sau or Trước/1h/2h — no standalone Fasting column**; before+after via getDaySlots; 2h sub-cell filled only when 1h out-of-range; per-sub-cell out-of-range; footer stats; GDM header week) → **Task 4**.
+- HTML → expo-print A4 → expo-sharing; two-level thead with `colspan`; 14 days/page; out-of-range `#FDECE4`/`#B23C10` → **Tasks 5, 6**.
+- Unified surface: Share PDF + Export CSV + shared range picker; CSV reuses Session 7 unchanged → **Task 9** (CSV via existing `generateAndShareCsv`).
+- Remove Settings "Export data" row + standalone Export screen/route; Settings row → "Báo cáo cho bác sĩ / Doctor report"; entry from Settings + Today (both modes) → **Tasks 8, 9**.
+- Footer watermark + increment `reportCount` (no gating) → **Tasks 3, 5, 9** (watermark always on; count incremented in screen; gating seam left in template).
+- vi + en template strings → **Task 8**.
+
+**Acceptance mapping:** ReportService tests (before/after mapping, 2h-fill rule when 1h out-of-range, 2h hidden when 1h in-range, 2h-only protocol, Snack excluded, stats math, chronological rows) → Task 4 test cases. Template sub-column structure (2 vs 3) → Task 5 test cases. PDF opens with diacritics / 14-per-page → Task 10 manual. CSV byte-identical → reuses locked `exportReadingsCsv` untouched, verified Task 10. Old route gone / no dead i18n keys → Tasks 8–9 + the `rg` guards.
+
+**Placeholder scan:** none — every code step contains full source.
+
+**Type consistency:** `ReportModel`/`ReportRow`/`MealCell`/`SubCell`/`ReportStats` (with `hasSecondHour` on the model) defined in Task 4 are used identically in Tasks 5, 7, 9. `RenderReportHtmlOptions.labels` (Task 5) matches the `labels` object built in Task 9 and the `ReportPreviewLabels` prop (Task 7) field-for-field. `RenderReportHtmlOptions` defined in Task 5 consumed in Task 6. `GenerateAndSharePdfDeps.html.statsText` is `(percent, total) => string` in both Task 6 and its call site in Task 9. `SharePdfStatus.Shared` used consistently. `buildReport` signature (`readings`, `BuildReportOptions`) identical across Tasks 4, 6, 9. `ExportRangePreset.Last14Days/Last30Days` added in Task 2, consumed in Task 9.
+
+**Primitive reconciliation (done):** `Button` variants (`primary/accent/ghost/dangerOutline` — CSV button uses `ghost`), `formatValue(mgdl, unit)`, `pregnancyWeek(dueDate, now)`, and `Chip` props are all verified against the current codebase in Task 9's note.
