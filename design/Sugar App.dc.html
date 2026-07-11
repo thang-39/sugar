@@ -12,23 +12,102 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0">
   <style>
-    body { margin:0; background:#E9F5EF; font-family:'Nunito',sans-serif; }
+    body { margin:0; background:var(--surface,#E9F5EF); font-family:'Nunito',sans-serif; }
     .msr { font-family:'Material Symbols Rounded'; font-weight:normal; font-style:normal; line-height:1; letter-spacing:normal; text-transform:none; display:inline-block; white-space:nowrap; word-wrap:normal; direction:ltr; -webkit-font-smoothing:antialiased; }
     input:focus, textarea:focus { outline:none; }
     ::-webkit-scrollbar { width:0; height:0; }
     @keyframes toastUp { from { opacity:0; transform:translate(-50%,12px);} to { opacity:1; transform:translate(-50%,0);} }
     @keyframes popIn { from { opacity:0; transform:scale(.92);} to { opacity:1; transform:scale(1);} }
+    @keyframes sheetUp { from { transform:translateY(100%);} to { transform:translateY(0);} }
+    @keyframes fadeIn { from { opacity:0;} to { opacity:1;} }
   </style>
 </helmet>
 <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px; box-sizing:border-box;">
 <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="430px,880px">
-<div style="height:100%; display:flex; flex-direction:column; font-family:'Nunito',sans-serif; background:#F7FBF8; color:#1B2B24; position:relative; overflow:hidden; padding-top:58px; box-sizing:border-box;">
+<div style="{{ shellStyle }}">
 
   <!-- ============ ONBOARDING ============ -->
   <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ true }}">
-    <div style="flex:1; display:flex; flex-direction:column; overflow:auto; padding:28px 24px 24px; box-sizing:border-box;">
-      <div style="display:flex; justify-content:flex-end;">
-        <button onClick="{{ skipOnboarding }}" style="background:none; border:none; font-family:'Nunito'; font-weight:700; color:#0FA36B; font-size:15px; cursor:pointer;">Skip</button>
+
+    <!-- STEP: condition select (step 2) -->
+    <sc-if value="{{ onbCondition }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1; display:flex; flex-direction:column; overflow:auto; padding:8px 24px 24px; box-sizing:border-box;">
+        <div style="display:flex; align-items:center;">
+          <button onClick="{{ condBack }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+          <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; margin-right:40px;">
+            <div style="width:8px; height:8px; border-radius:99px; background:var(--surface-2,#DCEDE4);"></div>
+            <div style="width:24px; height:8px; border-radius:99px; background:{{ primary }};"></div>
+            <div style="width:8px; height:8px; border-radius:99px; background:var(--surface-2,#DCEDE4);"></div>
+          </div>
+        </div>
+        <div style="font-size:26px; font-weight:900; line-height:1.25; margin-top:24px;">Who are you tracking blood sugar for?</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:22px;">
+          <sc-for list="{{ conditionCards }}" as="c" hint-placeholder-count="3">
+            <div onClick="{{ c.onPick }}" style="{{ c.style }}">
+              <div style="width:52px; height:52px; border-radius:16px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:28px; color:{{ primary }};">{{ c.icon }}</span></div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:17px; font-weight:800;">{{ c.title }}</div>
+                <div style="font-size:14px; font-weight:600; color:#5C6F66; margin-top:2px; line-height:1.4;">{{ c.sub }}</div>
+              </div>
+              <span class="msr" style="font-size:24px; color:{{ c.checkColor }};">{{ c.checkIcon }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:1;"></div>
+        <button onClick="{{ skipOnboarding }}" style="align-self:center; background:none; border:none; font-family:'Nunito'; font-weight:700; font-size:15px; color:#5C6F66; cursor:pointer; padding:12px 20px;">Skip</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: gestational detail -->
+    <sc-if value="{{ onbGdm }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1; display:flex; flex-direction:column; overflow:auto; padding:8px 24px 24px; box-sizing:border-box;">
+        <div style="display:flex; align-items:center;">
+          <button onClick="{{ backToCondition }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+          <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; margin-right:40px;">
+            <div style="width:8px; height:8px; border-radius:99px; background:var(--surface-2,#DCEDE4);"></div>
+            <div style="width:8px; height:8px; border-radius:99px; background:var(--surface-2,#DCEDE4);"></div>
+            <div style="width:24px; height:8px; border-radius:99px; background:{{ primary }};"></div>
+          </div>
+        </div>
+        <div style="font-size:26px; font-weight:900; line-height:1.25; margin-top:20px;">A little about your pregnancy</div>
+        <div style="background:#fff; border-radius:20px; padding:16px 18px; display:flex; align-items:center; gap:14px; margin-top:22px; box-shadow:0 4px 16px rgba(27,43,36,.06); cursor:pointer;">
+          <div style="width:44px; height:44px; border-radius:14px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:24px; color:{{ primary }};">calendar_month</span></div>
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:700; color:#5C6F66;">Expected delivery date</div>
+            <div style="font-size:19px; font-weight:900; margin-top:2px;">{{ dueDateLong }}</div>
+          </div>
+          <span class="msr" style="font-size:22px; color:#B7C7BE;">chevron_right</span>
+        </div>
+        <div style="font-size:16px; font-weight:800; margin-top:24px;">How long after meals did your doctor say to measure?</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+          <sc-for list="{{ gdmTimingOptions }}" as="o" hint-placeholder-count="3">
+            <button onClick="{{ o.onPick }}" style="{{ o.style }}">
+              <span style="flex:1; text-align:left;">{{ o.label }}</span>
+              <span class="msr" style="font-size:22px; color:{{ o.checkColor }};">{{ o.checkIcon }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="background:var(--surface,#E9F5EF); border-radius:20px; padding:16px 18px; margin-top:22px;">
+          <div style="font-size:13.5px; font-weight:800; color:var(--brand-ink,#0A7350);">Targets set to pregnancy guidelines</div>
+          <div style="font-size:16px; font-weight:800; margin-top:6px; line-height:1.5;">{{ gdmPreviewLine }}</div>
+          <div style="font-size:12.5px; font-weight:600; color:#5C6F66; margin-top:8px;">Adjust in Settings if your doctor advised otherwise.</div>
+        </div>
+        <div style="flex:1;"></div>
+        <button onClick="{{ finishGdm }}" style="width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:16px; font-family:'Nunito'; font-weight:800; font-size:16px; letter-spacing:.5px; cursor:pointer;">START TRACKING</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: welcome (step 1) -->
+    <sc-if value="{{ onbWelcome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1; display:flex; flex-direction:column; overflow:auto; padding:20px 24px 24px; box-sizing:border-box;">
+      <div style="display:flex; align-items:center;">
+        <div style="width:52px;"></div>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <div style="width:24px; height:8px; border-radius:99px; background:{{ primary }};"></div>
+          <div style="width:8px; height:8px; border-radius:99px; background:var(--surface-2,#DCEDE4);"></div>
+          <div style="width:8px; height:8px; border-radius:99px; background:var(--surface-2,#DCEDE4);"></div>
+        </div>
+        <button onClick="{{ skipOnboarding }}" style="width:52px; text-align:right; background:none; border:none; font-family:'Nunito'; font-weight:700; color:var(--brand,#0FA36B); font-size:15px; cursor:pointer; padding:0;">Skip</button>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:8px;">
         <div style="width:64px; height:64px; border-radius:20px; background:{{ primary }}; display:flex; align-items:center; justify-content:center;">
@@ -58,6 +137,7 @@
       <div style="font-size:12px; color:#8A9A91; text-align:center; margin:18px 0 12px; line-height:1.5;">This app is for personal wellness tracking only.<br>It is not a medical device.</div>
       <button onClick="{{ finishOnboarding }}" style="background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:16px; font-family:'Nunito'; font-weight:800; font-size:16px; letter-spacing:.5px; cursor:pointer;">GET STARTED</button>
     </div>
+    </sc-if>
   </sc-if>
 
   <!-- ============ MAIN (tabs) ============ -->
@@ -70,7 +150,7 @@
           <div style="width:32px; height:32px; border-radius:10px; background:{{ primary }}; display:flex; align-items:center; justify-content:center;"><span class="msr" style="font-size:18px; color:#fff;">water_drop</span></div>
           <div style="font-weight:900; font-size:15px; letter-spacing:.4px;">SUGAR</div>
         </div>
-        <button onClick="{{ toggleSyncPop }}" style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #E2EDE7; border-radius:999px; padding:6px 12px; cursor:pointer; font-family:'Nunito';">
+        <button onClick="{{ toggleSyncPop }}" style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:999px; padding:6px 12px; cursor:pointer; font-family:'Nunito';">
           <span class="msr" style="font-size:16px; color:{{ syncColor }};">{{ syncIcon }}</span>
           <span style="font-size:12px; font-weight:700; color:#5C6F66;">{{ syncLabel }}</span>
         </button>
@@ -84,6 +164,129 @@
         </div>
       </sc-if>
 
+      <!-- ===== TODAY TAB ===== -->
+      <sc-if value="{{ tabToday }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1; overflow:auto; padding:8px 20px 20px; box-sizing:border-box;" data-screen-label="Today">
+
+          <!-- pregnant -->
+          <sc-if value="{{ isPregnant }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:30px; font-weight:900;">Week {{ pregWeek }}</div>
+            <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:2px;">{{ dueCountdown }}</div>
+
+            <div style="background:#fff; border-radius:20px; padding:10px; margin-top:18px; display:flex; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+              <sc-for list="{{ todaySlots }}" as="s" hint-placeholder-count="4">
+                <div style="{{ s.cardStyle }}">
+                  <div style="width:42px; height:42px; border-radius:13px; background:{{ s.iconBg }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:22px; color:{{ s.iconColor }};">{{ s.icon }}</span></div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:16.5px; font-weight:700; color:{{ s.titleColor }};">{{ s.title }}</div>
+                    <sc-if value="{{ s.showTimeChip }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:inline-flex; align-items:center; gap:5px; background:var(--surface,#E9F5EF); border-radius:999px; padding:3px 10px; margin-top:4px;">
+                        <span class="msr" style="font-size:14px; color:var(--brand-ink,#0A7350);">schedule</span>
+                        <span style="font-size:12.5px; font-weight:800; color:var(--brand-ink,#0A7350);">{{ s.time }}</span>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ s.showTimePlain }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size:12.5px; font-weight:700; color:{{ s.timeColor }}; margin-top:1px;">{{ s.time }}</div>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ s.done }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; align-items:baseline; gap:5px;">
+                      <div style="font-size:30px; font-weight:900; color:{{ s.valueColor }};">{{ s.valueDisp }}</div>
+                      <div style="font-size:12.5px; font-weight:700; color:{{ s.valueColor }}; opacity:.72;">{{ unitLabel }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ s.showAction }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ s.onAction }}" style="{{ s.actionStyle }}">{{ s.actionLabel }}</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ hasExtras }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff; border-radius:16px; padding:12px 16px; margin-top:12px; display:flex; align-items:center; gap:12px; box-shadow:0 3px 12px rgba(27,43,36,.05);">
+                <div style="width:34px; height:34px; border-radius:11px; background:#E8622C; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:18px; color:#fff;">cookie</span></div>
+                <div style="font-size:14.5px; font-weight:700; color:#5C6F66;">{{ extrasLabel }}</div>
+              </div>
+            </sc-if>
+
+            <button onClick="{{ goAddReminder }}" style="margin-top:14px; width:100%; background:#fff; border:1.5px solid var(--border-2,#CFE6DA); color:#5C6F66; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:14.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="msr" style="font-size:20px; color:#E8622C;">alarm_add</span>Add a reminder</button>
+
+            <div style="text-align:center; margin-top:22px;">
+              <button onClick="{{ openReport }}" style="background:none; border:none; font-family:'Nunito'; font-size:15.5px; font-weight:800; color:{{ primary }}; cursor:pointer;">Export report for your doctor →</button>
+            </div>
+          </sc-if>
+
+          <!-- postpartum -->
+          <sc-if value="{{ isPostpartum }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:30px; font-weight:900;">After delivery</div>
+            <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:2px;">Expected date {{ dueDateShort }} has passed</div>
+
+            <div style="background:var(--surface,#E9F5EF); border-radius:20px; padding:20px; margin-top:18px;">
+              <div style="font-size:19px; font-weight:900; line-height:1.35;">Have you had your baby yet? 🎉</div>
+              <div style="display:flex; gap:10px; margin-top:16px;">
+                <button onClick="{{ ppYesPick }}" style="{{ ppYesStyle }}">Yes</button>
+                <button onClick="{{ ppNoPick }}" style="{{ ppNoStyle }}">Not yet</button>
+              </div>
+            </div>
+
+            <div style="background:#fff; border-radius:20px; padding:18px 20px; margin-top:14px; display:flex; align-items:flex-start; gap:14px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+              <div style="width:44px; height:44px; border-radius:14px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:24px; color:{{ primary }};">event_available</span></div>
+              <div style="flex:1;">
+                <div style="font-size:16px; font-weight:700; line-height:1.45;">Re-check your blood sugar 4–12 weeks after birth</div>
+                <div style="font-size:14px; font-weight:600; color:#5C6F66; margin-top:4px; line-height:1.45;">Sugar will remind you when it's time.</div>
+              </div>
+            </div>
+
+            <button onClick="{{ goAddReminder }}" style="margin-top:14px; width:100%; background:#fff; border:1.5px solid var(--border-2,#CFE6DA); color:#5C6F66; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:14.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="msr" style="font-size:20px; color:#E8622C;">alarm_add</span>Add a reminder</button>
+
+            <div style="text-align:center; margin-top:22px;">
+              <button onClick="{{ openReport }}" style="background:none; border:none; font-family:'Nunito'; font-size:15.5px; font-weight:800; color:{{ primary }}; cursor:pointer;">Export report for your doctor →</button>
+            </div>
+          </sc-if>
+
+          <!-- general (Daily tracking) -->
+          <sc-if value="{{ isGeneralDay }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:30px; font-weight:900;">{{ genDateTitle }}</div>
+            <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:2px;">{{ genDateSub }}</div>
+
+            <sc-if value="{{ genEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff; border-radius:20px; padding:28px 20px; margin-top:18px; text-align:center; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+                <div style="width:54px; height:54px; border-radius:16px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; margin:0 auto;"><span class="msr" style="font-size:28px; color:{{ primary }};">water_drop</span></div>
+                <div style="font-size:16.5px; font-weight:800; margin-top:12px;">No readings yet today</div>
+                <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:4px;">Log your first blood sugar of the day.</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ hasGenSlots }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#fff; border-radius:20px; padding:10px; margin-top:18px; display:flex; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+                <sc-for list="{{ genSlots }}" as="s" hint-placeholder-count="3">
+                  <div onClick="{{ s.onOpen }}" style="display:flex; align-items:center; gap:14px; padding:12px 14px; border-radius:14px; background:var(--surface,#E9F5EF); cursor:pointer;">
+                    <div style="width:42px; height:42px; border-radius:13px; background:{{ s.iconBg }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:22px; color:#fff;">{{ s.icon }}</span></div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:15.5px; font-weight:800; text-transform:capitalize;">{{ s.title }}</div>
+                      <div style="font-size:12.5px; font-weight:700; color:#5C6F66; margin-top:1px;">{{ s.time }}</div>
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:5px;">
+                      <div style="font-size:26px; font-weight:900; color:{{ s.valueColor }};">{{ s.valueDisp }}</div>
+                      <div style="font-size:12px; font-weight:700; color:{{ s.valueColor }}; opacity:.72;">{{ unitLabel }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <button onClick="{{ goLog }}" style="margin-top:16px; width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; letter-spacing:.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="msr" style="font-size:20px;">add</span>Log a reading</button>
+
+            <button onClick="{{ goAddReminder }}" style="margin-top:12px; width:100%; background:#fff; border:1.5px solid var(--border-2,#CFE6DA); color:#5C6F66; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:14.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="msr" style="font-size:20px; color:#E8622C;">alarm_add</span>Add a reminder</button>
+
+            <div style="text-align:center; margin-top:18px;">
+              <button onClick="{{ openReport }}" style="background:none; border:none; font-family:'Nunito'; font-size:15px; font-weight:800; color:{{ primary }}; cursor:pointer;">Export report for your doctor →</button>
+            </div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
       <!-- ===== LOG TAB ===== -->
       <sc-if value="{{ tabLog }}" hint-placeholder-val="{{ true }}">
         <div style="flex:1; overflow:auto; padding:8px 20px 20px; box-sizing:border-box;">
@@ -93,7 +296,7 @@
           <div style="background:#fff; border-radius:20px; padding:20px; margin-top:16px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
             <div style="display:flex; align-items:baseline; justify-content:space-between;">
               <div style="font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Blood sugar</div>
-              <button onClick="{{ toggleUnit }}" style="background:#E9F5EF; border:none; border-radius:999px; padding:5px 12px; font-family:'Nunito'; font-weight:800; font-size:12px; color:#0FA36B; cursor:pointer;">{{ unitLabel }} ⇄</button>
+              <button onClick="{{ toggleUnit }}" style="background:var(--surface,#E9F5EF); border:none; border-radius:999px; padding:5px 12px; font-family:'Nunito'; font-weight:800; font-size:12px; color:var(--brand,#0FA36B); cursor:pointer;">{{ unitLabel }} ⇄</button>
             </div>
             <div style="display:flex; align-items:baseline; gap:8px; margin-top:8px;">
               <input value="{{ formValue }}" onChange="{{ onValueChange }}" inputMode="decimal" placeholder="{{ valuePlaceholder }}" style="font-family:'Nunito'; font-size:44px; font-weight:900; border:none; width:170px; background:transparent; color:#1B2B24;" />
@@ -131,12 +334,12 @@
           </sc-if>
 
           <sc-if value="{{ notesCollapsed }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ expandNotes }}" style="margin-top:18px; display:flex; align-items:center; gap:6px; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:14px; color:#0FA36B; cursor:pointer; padding:0;">
+            <button onClick="{{ expandNotes }}" style="margin-top:18px; display:flex; align-items:center; gap:6px; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:14px; color:var(--brand,#0FA36B); cursor:pointer; padding:0;">
               <span class="msr" style="font-size:18px;">add</span> Add a note
             </button>
           </sc-if>
           <sc-if value="{{ notesOpen }}" hint-placeholder-val="{{ false }}">
-            <textarea value="{{ formNotes }}" onChange="{{ onNotesChange }}" placeholder="e.g. felt dizzy, ate a big meal…" style="margin-top:16px; width:100%; box-sizing:border-box; border:1.5px solid #CFE6DA; border-radius:16px; padding:14px; font-family:'Nunito'; font-size:14px; font-weight:600; min-height:76px; resize:none; background:#fff; color:#1B2B24;"></textarea>
+            <textarea value="{{ formNotes }}" onChange="{{ onNotesChange }}" placeholder="e.g. felt dizzy, ate a big meal…" style="margin-top:16px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:16px; padding:14px; font-family:'Nunito'; font-size:14px; font-weight:600; min-height:76px; resize:none; background:#fff; color:#1B2B24;"></textarea>
           </sc-if>
 
           <button onClick="{{ saveReading }}" style="margin-top:20px; width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:16px; font-family:'Nunito'; font-weight:800; font-size:16px; letter-spacing:.5px; cursor:pointer;">SAVE READING</button>
@@ -200,7 +403,7 @@
               <div style="position:absolute; top:6px; left:{{ tipLeft }}; transform:translateX(-50%); background:#1B2B24; color:#fff; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:800; white-space:nowrap; z-index:5;">{{ tipText }}</div>
             </sc-if>
             <svg viewBox="0 0 340 200" style="width:100%; display:block;">
-              <rect x="34" y="{{ bandY }}" width="298" height="{{ bandH }}" rx="6" fill="#E9F5EF"></rect>
+              <rect x="34" y="{{ bandY }}" width="298" height="{{ bandH }}" rx="6" fill="var(--surface,#E9F5EF)"></rect>
               <sc-for list="{{ gridLines }}" as="g" hint-placeholder-count="4">
                 <line x1="34" x2="332" y1="{{ g.y }}" y2="{{ g.y }}" stroke="#EDF3EF" stroke-width="1"></line>
                 <text x="2" y="{{ g.ty }}" style="font-size:9px; font-weight:700; font-family:'Nunito';" fill="#8A9A91">{{ g.label }}</text>
@@ -215,7 +418,7 @@
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:14px; margin-top:12px; font-size:12px; font-weight:700; color:#5C6F66;">
-            <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; border-radius:4px; background:#E9F5EF; border:1px solid #CFE6DA; display:inline-block;"></span>Target range</span>
+            <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; border-radius:4px; background:var(--surface,#E9F5EF); border:1px solid var(--border-2,#CFE6DA); display:inline-block;"></span>Target range</span>
             <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:99px; background:#E8622C; display:inline-block;"></span>Out of range</span>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:16px;">
@@ -242,16 +445,46 @@
           <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:16px; background:#fff; border-radius:20px; padding:16px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 3px 12px rgba(27,43,36,.05);">
               <div style="width:46px; height:46px; border-radius:99px; background:{{ primary }}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:18px;">{{ userInitial }}</div>
-              <div style="flex:1;"><div style="font-weight:800; font-size:15px;">{{ userEmail }}</div><div style="font-size:12px; font-weight:700; color:#0FA36B;">Synced account</div></div>
+              <div style="flex:1;"><div style="font-weight:800; font-size:15px;">{{ userEmail }}</div><div style="font-size:12px; font-weight:700; color:var(--brand,#0FA36B);">Synced account</div></div>
               <button onClick="{{ logout }}" style="background:#F1F6F3; border:none; border-radius:999px; padding:8px 14px; font-family:'Nunito'; font-weight:800; font-size:12.5px; color:#5C6F66; cursor:pointer;">Log out</button>
             </div>
           </sc-if>
 
+          <sc-if value="{{ showProCard }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ openPro }}" style="margin-top:16px; background:{{ primary }}; border-radius:20px; padding:18px; color:#fff; cursor:pointer; position:relative; overflow:hidden;">
+              <div style="position:absolute; right:-18px; top:-18px; width:70px; height:70px; border-radius:99px; background:rgba(255,255,255,.16);"></div>
+              <div style="display:flex; align-items:center; gap:8px;"><span class="msr" style="font-size:22px;">workspace_premium</span><div style="font-size:16px; font-weight:900;">Sugar Pro</div></div>
+              <div style="font-size:12.5px; font-weight:600; opacity:.9; margin-top:4px;">Unlimited PDF reports · cloud backup · no ads</div>
+              <div style="margin-top:12px; display:inline-flex; align-items:center; gap:6px; background:#fff; color:{{ primary }}; border-radius:999px; padding:8px 16px; font-size:13px; font-weight:800;">UPGRADE <span class="msr" style="font-size:16px;">arrow_forward</span></div>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:18px; background:#fff; border-radius:20px; box-shadow:0 3px 12px rgba(27,43,36,.05); overflow:hidden;">
+            <div onClick="{{ changeCondition }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
+              <span class="msr" style="font-size:22px; color:var(--brand,#0FA36B);">tune</span>
+              <div style="flex:1; font-weight:800; font-size:14.5px;">Tracking mode</div>
+              <div style="font-size:12.5px; font-weight:700; color:#8A9A91;">{{ conditionLabel }}</div>
+              <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
+            </div>
+            <div style="height:1px; background:#F1F6F3; margin:0 18px;"></div>
+            <div onClick="{{ openReminders }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
+              <span class="msr" style="font-size:22px; color:#E8622C;">alarm</span>
+              <div style="flex:1; font-weight:800; font-size:14.5px;">Measurement reminders</div>
+              <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
+            </div>
+            <div style="height:1px; background:#F1F6F3; margin:0 18px;"></div>
+            <div onClick="{{ openReport }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
+              <span class="msr" style="font-size:22px; color:#8B5CF6;">description</span>
+              <div style="flex:1; font-weight:800; font-size:14.5px;">Doctor report (PDF)</div>
+              <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
+            </div>
+          </div>
+
           <div style="margin-top:18px; background:#fff; border-radius:20px; box-shadow:0 3px 12px rgba(27,43,36,.05); overflow:hidden;">
             <div style="display:flex; align-items:center; gap:12px; padding:15px 18px;">
-              <span class="msr" style="font-size:22px; color:#0FA36B;">straighten</span>
+              <span class="msr" style="font-size:22px; color:var(--brand,#0FA36B);">straighten</span>
               <div style="flex:1; font-weight:800; font-size:14.5px;">Unit</div>
-              <button onClick="{{ toggleUnit }}" style="background:#E9F5EF; border:none; border-radius:999px; padding:6px 14px; font-family:'Nunito'; font-weight:800; font-size:13px; color:#0FA36B; cursor:pointer;">{{ unitLabel }}</button>
+              <button onClick="{{ toggleUnit }}" style="background:var(--surface,#E9F5EF); border:none; border-radius:999px; padding:6px 14px; font-family:'Nunito'; font-weight:800; font-size:13px; color:var(--brand,#0FA36B); cursor:pointer;">{{ unitLabel }}</button>
             </div>
             <div style="height:1px; background:#F1F6F3; margin:0 18px;"></div>
             <div onClick="{{ openTargets }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
@@ -265,12 +498,6 @@
               <span class="msr" style="font-size:22px; color:#E8622C;">notifications</span>
               <div style="flex:1; font-weight:800; font-size:14.5px;">Range alerts</div>
               <button onClick="{{ toggleAlerts }}" style="{{ alertsToggleStyle }}"><span style="{{ alertsKnobStyle }}"></span></button>
-            </div>
-            <div style="height:1px; background:#F1F6F3; margin:0 18px;"></div>
-            <div onClick="{{ openExport }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
-              <span class="msr" style="font-size:22px; color:#4E7CF6;">ios_share</span>
-              <div style="flex:1; font-weight:800; font-size:14.5px;">Export data</div>
-              <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
             </div>
           </div>
 
@@ -297,7 +524,7 @@
 
   <!-- ============ SAVED (ticket) ============ -->
   <sc-if value="{{ isSaved }}" hint-placeholder-val="{{ false }}">
-    <div style="flex:1; overflow:auto; background:#0FA36B;">
+    <div style="flex:1; overflow:auto; background:var(--brand,#0FA36B);">
       <div style="padding:36px 24px 90px; text-align:center; color:#fff;">
         <div style="font-size:26px; font-weight:900;">Reading Saved!</div>
         <div style="font-size:13.5px; font-weight:600; opacity:.9; margin-top:4px;">Here is your entry</div>
@@ -315,17 +542,17 @@
               <div style="margin-top:8px; background:#FDECE4; color:#E8622C; border-radius:12px; padding:9px 12px; font-size:12.5px; font-weight:800; display:flex; align-items:center; gap:8px;"><span class="msr" style="font-size:18px;">warning</span>{{ savedAlertText }}</div>
             </sc-if>
             <sc-if value="{{ savedInRange }}" hint-placeholder-val="{{ true }}">
-              <div style="margin-top:8px; background:#E9F5EF; color:#0FA36B; border-radius:12px; padding:9px 12px; font-size:12.5px; font-weight:800; display:flex; align-items:center; gap:8px;"><span class="msr" style="font-size:18px;">check_circle</span>Within your target range</div>
+              <div style="margin-top:8px; background:var(--surface,#E9F5EF); color:var(--brand,#0FA36B); border-radius:12px; padding:9px 12px; font-size:12.5px; font-weight:800; display:flex; align-items:center; gap:8px;"><span class="msr" style="font-size:18px;">check_circle</span>Within your target range</div>
             </sc-if>
           </div>
-          <div style="border-top:2px dashed #E2EDE7; margin:0 14px;"></div>
+          <div style="border-top:2px dashed var(--border,#E2EDE7); margin:0 14px;"></div>
           <div style="padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
             <div><div style="font-weight:800; font-size:14px;">{{ savedDate }}</div><div style="font-size:12.5px; font-weight:700; color:#5C6F66;">{{ savedTime }}</div></div>
-            <button onClick="{{ viewSavedDetail }}" style="background:none; border:none; font-family:'Nunito'; font-weight:800; color:#0FA36B; font-size:13.5px; cursor:pointer;">View Details</button>
+            <button onClick="{{ viewSavedDetail }}" style="background:none; border:none; font-family:'Nunito'; font-weight:800; color:var(--brand,#0FA36B); font-size:13.5px; cursor:pointer;">View Details</button>
           </div>
         </div>
         <button onClick="{{ backToLog }}" style="width:100%; background:{{ primary }}; color:#fff; border:none; border-radius:999px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; letter-spacing:.5px; cursor:pointer; margin-top:-20px;">LOG ANOTHER</button>
-        <button onClick="{{ goHistory }}" style="width:100%; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:13.5px; color:#0FA36B; margin-top:14px; cursor:pointer;">Go to History</button>
+        <button onClick="{{ goHistory }}" style="width:100%; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:13.5px; color:var(--brand,#0FA36B); margin-top:14px; cursor:pointer;">Go to History</button>
       </div>
     </div>
   </sc-if>
@@ -334,7 +561,7 @@
   <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <button onClick="{{ backFromDetail }}" style="background:#fff; border:1px solid #E2EDE7; border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <button onClick="{{ backFromDetail }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
         <div style="font-size:18px; font-weight:900;">Reading Details</div>
       </div>
       <div style="background:#fff; border-radius:20px; margin-top:18px; overflow:hidden; box-shadow:0 4px 16px rgba(27,43,36,.06);">
@@ -348,7 +575,7 @@
           <div style="display:flex; justify-content:space-between; padding:13px 0; border-bottom:1px solid #F1F6F3; font-size:14px;"><span style="font-weight:700; color:#5C6F66;">Meal</span><span style="font-weight:800;">{{ detailMeal }}</span></div>
           <div style="display:flex; justify-content:space-between; padding:13px 0; font-size:14px;"><span style="font-weight:700; color:#5C6F66;">Timing</span><span style="font-weight:800;">{{ detailTiming }}</span></div>
           <sc-if value="{{ detailHasNotes }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:0 0 14px;"><div style="font-weight:700; color:#5C6F66; font-size:13px;">Notes</div><div style="font-weight:700; font-size:14px; margin-top:4px; background:#F7FBF8; border-radius:12px; padding:10px 12px;">{{ detailNotes }}</div></div>
+            <div style="padding:0 0 14px;"><div style="font-weight:700; color:#5C6F66; font-size:13px;">Notes</div><div style="font-weight:700; font-size:14px; margin-top:4px; background:var(--bg,#F7FBF8); border-radius:12px; padding:10px 12px;">{{ detailNotes }}</div></div>
           </sc-if>
         </div>
       </div>
@@ -361,7 +588,7 @@
   <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <button onClick="{{ cancelEdit }}" style="background:#fff; border:1px solid #E2EDE7; border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <button onClick="{{ cancelEdit }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
         <div style="font-size:18px; font-weight:900;">Edit Reading</div>
       </div>
       <div style="background:#fff; border-radius:20px; padding:20px; margin-top:16px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
@@ -379,7 +606,7 @@
         <button onClick="{{ setBefore }}" style="{{ beforeBtnStyle }}">Before meal</button>
         <button onClick="{{ setAfter }}" style="{{ afterBtnStyle }}">After meal</button>
       </div>
-      <textarea value="{{ formNotes }}" onChange="{{ onNotesChange }}" placeholder="Notes…" style="margin-top:16px; width:100%; box-sizing:border-box; border:1.5px solid #CFE6DA; border-radius:16px; padding:14px; font-family:'Nunito'; font-size:14px; font-weight:600; min-height:70px; resize:none; background:#fff; color:#1B2B24;"></textarea>
+      <textarea value="{{ formNotes }}" onChange="{{ onNotesChange }}" placeholder="Notes…" style="margin-top:16px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:16px; padding:14px; font-family:'Nunito'; font-size:14px; font-weight:600; min-height:70px; resize:none; background:#fff; color:#1B2B24;"></textarea>
       <button onClick="{{ saveEdit }}" style="margin-top:18px; width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">SAVE CHANGES</button>
     </div>
   </sc-if>
@@ -388,7 +615,7 @@
   <sc-if value="{{ isTargets }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid #E2EDE7; border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
         <div style="font-size:18px; font-weight:900;">Target Ranges</div>
       </div>
       <div style="font-size:13px; font-weight:600; color:#5C6F66; margin-top:12px; line-height:1.5;">Alerts fire when a saved reading falls outside the range matching its timing. Values in mg/dL.</div>
@@ -399,20 +626,20 @@
             <div style="font-weight:900; font-size:15px;">{{ tc.title }}</div>
           </div>
           <div style="display:flex; gap:12px; margin-top:14px;">
-            <div style="flex:1; background:#F7FBF8; border-radius:16px; padding:12px; text-align:center;">
+            <div style="flex:1; background:var(--bg,#F7FBF8); border-radius:16px; padding:12px; text-align:center;">
               <div style="font-size:11px; font-weight:800; color:#8A9A91; text-transform:uppercase;">Min</div>
               <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:6px;">
-                <button onClick="{{ tc.minDown }}" style="width:30px; height:30px; border-radius:99px; border:none; background:#E9F5EF; color:#0FA36B; font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">−</button>
+                <button onClick="{{ tc.minDown }}" style="width:30px; height:30px; border-radius:99px; border:none; background:var(--surface,#E9F5EF); color:var(--brand,#0FA36B); font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">−</button>
                 <div style="font-size:20px; font-weight:900; min-width:38px;">{{ tc.min }}</div>
-                <button onClick="{{ tc.minUp }}" style="width:30px; height:30px; border-radius:99px; border:none; background:#E9F5EF; color:#0FA36B; font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">+</button>
+                <button onClick="{{ tc.minUp }}" style="width:30px; height:30px; border-radius:99px; border:none; background:var(--surface,#E9F5EF); color:var(--brand,#0FA36B); font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">+</button>
               </div>
             </div>
-            <div style="flex:1; background:#F7FBF8; border-radius:16px; padding:12px; text-align:center;">
+            <div style="flex:1; background:var(--bg,#F7FBF8); border-radius:16px; padding:12px; text-align:center;">
               <div style="font-size:11px; font-weight:800; color:#8A9A91; text-transform:uppercase;">Max</div>
               <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:6px;">
-                <button onClick="{{ tc.maxDown }}" style="width:30px; height:30px; border-radius:99px; border:none; background:#E9F5EF; color:#0FA36B; font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">−</button>
+                <button onClick="{{ tc.maxDown }}" style="width:30px; height:30px; border-radius:99px; border:none; background:var(--surface,#E9F5EF); color:var(--brand,#0FA36B); font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">−</button>
                 <div style="font-size:20px; font-weight:900; min-width:38px;">{{ tc.max }}</div>
-                <button onClick="{{ tc.maxUp }}" style="width:30px; height:30px; border-radius:99px; border:none; background:#E9F5EF; color:#0FA36B; font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">+</button>
+                <button onClick="{{ tc.maxUp }}" style="width:30px; height:30px; border-radius:99px; border:none; background:var(--surface,#E9F5EF); color:var(--brand,#0FA36B); font-weight:900; font-size:16px; cursor:pointer; font-family:'Nunito';">+</button>
               </div>
             </div>
           </div>
@@ -426,7 +653,7 @@
   <sc-if value="{{ isExport }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid #E2EDE7; border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
         <div style="font-size:18px; font-weight:900;">Export Data</div>
       </div>
       <div style="margin-top:16px; background:#F5B301; border-radius:20px; padding:18px; color:#1B2B24; position:relative; overflow:hidden;">
@@ -450,6 +677,171 @@
     </div>
   </sc-if>
 
+  <!-- ============ REMINDERS (all modes) ============ -->
+  <sc-if value="{{ isReminders }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;" data-screen-label="Reminders">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <div style="font-size:18px; font-weight:900;">Reminders</div>
+      </div>
+      <div style="margin-top:22px; font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Measurement reminders</div>
+      <div style="font-size:13px; font-weight:600; color:#8A9A91; margin-top:6px; line-height:1.45;">Tap a reminder to edit name or time.</div>
+      <div style="background:#fff; border-radius:20px; margin-top:10px; box-shadow:0 3px 12px rgba(27,43,36,.05); overflow:hidden;">
+        <sc-for list="{{ manualReminderRows }}" as="rm" hint-placeholder-count="2">
+          <div style="{{ rm.rowStyle }}">
+            <div onClick="{{ rm.onEdit }}" style="display:flex; align-items:center; gap:12px; flex:1; min-width:0; cursor:pointer;">
+              <div style="background:var(--surface,#E9F5EF); border-radius:12px; padding:6px 12px; font-size:16px; font-weight:900; color:var(--brand-ink,#0A7350); flex-shrink:0;">{{ rm.time }}</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:15px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ rm.label }}</div>
+                <div style="font-size:11.5px; font-weight:700; color:#8A9A91; margin-top:2px; display:flex; align-items:center; gap:4px;"><span class="msr" style="font-size:13px;">{{ rm.repeatIcon }}</span>{{ rm.repeatLabel }}</div>
+              </div>
+            </div>
+            <button onClick="{{ rm.onToggle }}" style="{{ rm.toggleStyle }}"><span style="{{ rm.knobStyle }}"></span></button>
+          </div>
+        </sc-for>
+        <button onClick="{{ addReminder }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; background:none; border:none; border-top:1px solid #F1F6F3; padding:15px 18px; font-family:'Nunito'; font-weight:800; font-size:14.5px; color:var(--brand,#0FA36B); cursor:pointer;"><span class="msr" style="font-size:20px;">add_circle</span>Add reminder</button>
+      </div>
+
+      <div style="margin-top:24px; font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Smart after-meal reminders</div>
+      <div style="background:#fff; border-radius:20px; margin-top:10px; padding:16px 18px; box-shadow:0 3px 12px rgba(27,43,36,.05);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="msr" style="font-size:24px; color:#E8622C;">restaurant</span>
+          <div style="flex:1;">
+            <div style="font-size:15px; font-weight:800;">Remind me after each meal</div>
+            <div style="font-size:12.5px; font-weight:600; color:#5C6F66; margin-top:1px;">Times each reminder to when you eat</div>
+          </div>
+          <button onClick="{{ toggleSmartRem }}" style="{{ smartToggleStyle }}"><span style="{{ smartKnobStyle }}"></span></button>
+        </div>
+        <sc-if value="{{ smartRemOn }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; background:var(--surface,#E9F5EF); border-radius:999px; padding:4px; margin-top:16px; gap:2px;">
+            <sc-for list="{{ remTimingOptions }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.onPick }}" style="{{ o.style }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <div style="font-size:14px; font-weight:600; color:#5C6F66; margin-top:14px; line-height:1.5;">{{ remHelper }}</div>
+    </div>
+  </sc-if>
+
+  <!-- ============ REMINDER EDITOR (sheet) ============ -->
+  <sc-if value="{{ remEditorOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeRemEditor }}" style="position:absolute; inset:0; z-index:60; background:rgba(27,43,36,.42); display:flex; align-items:flex-end; animation:fadeIn .18s ease;">
+      <div onClick="{{ stopSheet }}" style="width:100%; background:#fff; border-radius:26px 26px 0 0; padding:20px 22px 26px; box-sizing:border-box; animation:sheetUp .24s ease; max-height:88%; overflow:auto;">
+        <div style="width:40px; height:5px; border-radius:99px; background:var(--surface-2,#DCEDE4); margin:0 auto 14px;"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:20px; font-weight:900;">{{ remEditorTitle }}</div>
+          <button onClick="{{ closeRemEditor }}" style="background:var(--surface,#E9F5EF); border:none; border-radius:99px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px; color:#5C6F66;">close</span></button>
+        </div>
+
+        <div style="margin-top:18px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Reminder name</div>
+        <input value="{{ remDraftLabel }}" onChange="{{ onRemNameChange }}" placeholder="e.g. Fasting · on waking" style="margin-top:8px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:14px; padding:13px 14px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
+
+        <div style="margin-top:16px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Time</div>
+        <input type="time" value="{{ remDraftTime }}" onChange="{{ onRemTimeChange }}" style="margin-top:8px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:14px; padding:13px 14px; font-family:'Nunito'; font-size:17px; font-weight:800; background:#fff; color:#1B2B24;" />
+
+        <div style="margin-top:16px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Repeat</div>
+        <div style="display:flex; background:var(--surface,#E9F5EF); border-radius:999px; padding:4px; margin-top:8px; gap:2px;">
+          <button onClick="{{ setRemRepeatDaily }}" style="{{ remRepeatDailyStyle }}">Every day</button>
+          <button onClick="{{ setRemRepeatOnce }}" style="{{ remRepeatOnceStyle }}">One time only</button>
+        </div>
+
+        <sc-if value="{{ remDraftRepeatOnce }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:16px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">{{ remDateLabel }}</div>
+          <input type="date" value="{{ remDraftDate }}" onChange="{{ onRemDateChange }}" style="margin-top:8px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:14px; padding:13px 14px; font-family:'Nunito'; font-size:16px; font-weight:800; background:#fff; color:#1B2B24;" />
+          <div style="font-size:12.5px; font-weight:600; color:#8A9A91; margin-top:8px; line-height:1.45;">{{ remDateHelper }}</div>
+        </sc-if>
+
+        <button onClick="{{ saveRemDraft }}" style="margin-top:22px; width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:16px; font-family:'Nunito'; font-weight:800; font-size:16px; letter-spacing:.5px; cursor:pointer;">{{ remSaveLabel }}</button>
+        <sc-if value="{{ remEditorIsEdit }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ deleteRemDraft }}" style="margin-top:12px; width:100%; background:none; border:1.5px solid #F3C9BA; color:#E8622C; border-radius:999px; padding:13px; font-family:'Nunito'; font-weight:800; font-size:14px; cursor:pointer;">Delete reminder</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ DOCTOR REPORT ============ -->
+  <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;" data-screen-label="Report">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button onClick="{{ backFromReport }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <div style="font-size:18px; font-weight:900;">Doctor report</div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <sc-for list="{{ reportChips }}" as="c" hint-placeholder-count="3">
+          <button onClick="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:16px; margin-top:16px; padding:18px 18px 12px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+        <div style="font-size:14px; font-weight:900; text-align:center;">Blood Sugar Log</div>
+        <div style="font-size:11px; font-weight:700; color:#5C6F66; text-align:center; margin-top:3px;">{{ reportSubhead }}</div>
+        <table style="width:100%; border-collapse:collapse; margin-top:12px; font-size:11.5px;">
+          <thead>
+            <tr>
+              <th style="border:1px solid var(--border,#E2EDE7); padding:6px 4px; font-weight:800; color:#5C6F66; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px;">Date</th>
+              <th style="border:1px solid var(--border,#E2EDE7); padding:6px 4px; font-weight:800; color:#5C6F66; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px;">Fasting</th>
+              <th style="border:1px solid var(--border,#E2EDE7); padding:6px 4px; font-weight:800; color:#5C6F66; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px;">A. brk</th>
+              <th style="border:1px solid var(--border,#E2EDE7); padding:6px 4px; font-weight:800; color:#5C6F66; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px;">A. lun</th>
+              <th style="border:1px solid var(--border,#E2EDE7); padding:6px 4px; font-weight:800; color:#5C6F66; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px;">A. din</th>
+            </tr>
+          </thead>
+          <tbody style="text-align:center; font-weight:700;">
+            <sc-for list="{{ reportRows }}" as="row" hint-placeholder-count="7">
+              <tr>
+                <td style="border:1px solid var(--border,#E2EDE7); padding:6px 4px; color:#5C6F66; font-weight:600;">{{ row.date }}</td>
+                <td style="{{ row.c0 }}">{{ row.v0 }}</td>
+                <td style="{{ row.c1 }}">{{ row.v1 }}</td>
+                <td style="{{ row.c2 }}">{{ row.v2 }}</td>
+                <td style="{{ row.c3 }}">{{ row.v3 }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <div style="font-size:9.5px; font-weight:600; color:#B7C7BE; text-align:center; margin-top:10px;">Generated by Sugar app</div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px;">
+        <span class="msr" style="font-size:18px; color:var(--brand-ink,#0A7350);">check_circle</span>
+        <div style="font-size:14.5px; font-weight:700; color:#5C6F66;"><span style="color:var(--brand-ink,#0A7350); font-weight:800;">86% in range</span> · 52 readings</div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onClick="{{ sharePdf }}" style="flex:1.4; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">Share PDF</button>
+        <button onClick="{{ openExport }}" style="flex:1; background:var(--surface,#E9F5EF); color:#1B2B24; border:none; border-radius:999px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">Export CSV</button>
+      </div>
+      <div style="font-size:12.5px; font-weight:600; color:#8A9A91; text-align:center; margin-top:12px;">Free version adds a “Generated by Sugar” footer</div>
+    </div>
+  </sc-if>
+
+  <!-- ============ SUGAR PRO ============ -->
+  <sc-if value="{{ isPro }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1; overflow:auto; padding:14px 24px 24px; box-sizing:border-box; display:flex; flex-direction:column;" data-screen-label="Sugar Pro">
+      <div style="display:flex; justify-content:flex-end;">
+        <button onClick="{{ closePro }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:22px; color:#5C6F66;">close</span></button>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; margin-top:2px;">
+        <div style="width:64px; height:64px; border-radius:20px; background:{{ primary }}; display:flex; align-items:center; justify-content:center;"><span class="msr" style="font-size:34px; color:#fff;">workspace_premium</span></div>
+        <div style="font-size:30px; font-weight:900; margin-top:14px;">Sugar Pro</div>
+        <div style="font-size:15px; font-weight:600; color:#5C6F66; margin-top:4px;">One-time purchase, yours forever</div>
+      </div>
+      <div style="background:#fff; border-radius:20px; padding:8px 20px; margin-top:22px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+        <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Unlimited PDF reports</div></div>
+        <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Secure cloud backup</div></div>
+        <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Trends by pregnancy week</div></div>
+        <div style="display:flex; align-items:center; gap:12px; padding:13px 0;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">No ads, ever</div></div>
+      </div>
+      <div style="display:flex; align-items:baseline; justify-content:center; gap:10px; margin-top:24px;">
+        <div style="font-size:40px; font-weight:900;">149,000₫</div>
+        <div style="font-size:16px; font-weight:600; color:#8A9A91; text-decoration:line-through;">199,000₫</div>
+      </div>
+      <div style="flex:1;"></div>
+      <button onClick="{{ unlockPro }}" style="width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:16px; font-family:'Nunito'; font-weight:800; font-size:16px; cursor:pointer;">Unlock Sugar Pro</button>
+      <button onClick="{{ closePro }}" style="align-self:center; background:none; border:none; font-family:'Nunito'; font-weight:700; font-size:14px; color:{{ primary }}; cursor:pointer; padding:12px 20px;">Restore purchase</button>
+      <div style="font-size:13px; font-weight:600; color:#8A9A91; text-align:center;">Your data always stays on your device.</div>
+    </div>
+  </sc-if>
+
   <!-- ============ LOGIN / REGISTER ============ -->
   <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; display:flex; flex-direction:column;">
@@ -465,15 +857,15 @@
         <div style="font-size:26px; font-weight:900; color:#1B2B24; line-height:1.1;">Every Reading<br><span style="font-size:15px; font-weight:800;">backed up &amp; synced</span></div>
       </div>
       <div style="padding:24px; flex:1; display:flex; flex-direction:column;">
-        <div style="font-size:22px; font-weight:900;">{{ authTitle }} <span style="font-size:14px; color:#8A9A91; font-weight:700;">or</span> <button onClick="{{ toggleAuthMode }}" style="background:none; border:none; font-family:'Nunito'; font-size:22px; font-weight:900; color:#0FA36B; cursor:pointer; padding:0;">{{ authAlt }}</button></div>
-        <input value="{{ authEmail }}" onChange="{{ onEmailChange }}" placeholder="Email" style="margin-top:20px; border:1.5px solid #0FA36B; border-radius:12px; padding:15px 16px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
-        <input value="{{ authPass }}" onChange="{{ onPassChange }}" type="password" placeholder="Password" style="margin-top:12px; border:1.5px solid #CFE6DA; border-radius:12px; padding:15px 16px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
+        <div style="font-size:22px; font-weight:900;">{{ authTitle }} <span style="font-size:14px; color:#8A9A91; font-weight:700;">or</span> <button onClick="{{ toggleAuthMode }}" style="background:none; border:none; font-family:'Nunito'; font-size:22px; font-weight:900; color:var(--brand,#0FA36B); cursor:pointer; padding:0;">{{ authAlt }}</button></div>
+        <input value="{{ authEmail }}" onChange="{{ onEmailChange }}" placeholder="Email" style="margin-top:20px; border:1.5px solid var(--brand,#0FA36B); border-radius:12px; padding:15px 16px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
+        <input value="{{ authPass }}" onChange="{{ onPassChange }}" type="password" placeholder="Password" style="margin-top:12px; border:1.5px solid var(--border-2,#CFE6DA); border-radius:12px; padding:15px 16px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
         <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:10px; color:#E8622C; font-size:12.5px; font-weight:700;">{{ authErrorText }}</div>
         </sc-if>
         <button onClick="{{ submitAuth }}" style="margin-top:16px; background:{{ primary }}; color:#fff; border:none; border-radius:12px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">{{ authCta }}</button>
         <div style="flex:1;"></div>
-        <div style="font-size:12px; color:#8A9A91; text-align:center; font-weight:600; margin-top:20px;">By continuing you agree to the<br><span style="color:#0FA36B; font-weight:800;">Terms &amp; Conditions</span> and <span style="color:#0FA36B; font-weight:800;">Privacy Policy</span></div>
+        <div style="font-size:12px; color:#8A9A91; text-align:center; font-weight:600; margin-top:20px;">By continuing you agree to the<br><span style="color:var(--brand,#0FA36B); font-weight:800;">Terms &amp; Conditions</span> and <span style="color:var(--brand,#0FA36B); font-weight:800;">Privacy Policy</span></div>
       </div>
     </div>
   </sc-if>
@@ -482,7 +874,7 @@
   <sc-if value="{{ isMigrate }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute; inset:0; background:rgba(27,43,36,.45); display:flex; align-items:flex-end; z-index:60;">
       <div style="background:#fff; border-radius:28px 28px 0 0; padding:26px 24px 30px; width:100%; box-sizing:border-box; animation:popIn .2s ease;">
-        <div style="width:56px; height:56px; border-radius:18px; background:#E9F5EF; display:flex; align-items:center; justify-content:center; margin:0 auto;"><span class="msr" style="font-size:30px; color:#0FA36B;">move_up</span></div>
+        <div style="width:56px; height:56px; border-radius:18px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; margin:0 auto;"><span class="msr" style="font-size:30px; color:var(--brand,#0FA36B);">move_up</span></div>
         <div style="font-size:19px; font-weight:900; text-align:center; margin-top:14px;">Import your device data?</div>
         <div style="font-size:13.5px; font-weight:600; color:#5C6F66; text-align:center; margin-top:6px; line-height:1.5;">We found <b>{{ migrateCount }} readings</b> on this device ({{ migrateRange }}). Import them into your new account?</div>
         <button onClick="{{ acceptMigrate }}" style="margin-top:18px; width:100%; background:{{ primary }}; color:#fff; border:none; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">Import readings</button>
@@ -502,7 +894,7 @@
 </x-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:500,&quot;height&quot;:960},&quot;primary&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#10B981&quot;,&quot;options&quot;:[&quot;#0FA36B&quot;,&quot;#10B981&quot;,&quot;#0E9F8C&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;onboarding&quot;,&quot;options&quot;:[&quot;onboarding&quot;,&quot;main&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Flow&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:500,&quot;height&quot;:960},&quot;primary&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#0FA36B&quot;,&quot;options&quot;:[&quot;#0FA36B&quot;,&quot;#10B981&quot;,&quot;#0E9F8C&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;main&quot;,&quot;options&quot;:[&quot;onboarding&quot;,&quot;main&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Flow&quot;},&quot;lifecycleStage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;postpartum&quot;,&quot;options&quot;:[&quot;pregnant&quot;,&quot;postpartum&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;GDM&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -531,17 +923,30 @@ class Component extends DCLogic {
         });
       }
     }
+    // Today's logged slots (GDM demo): fasting + after-breakfast done, plus a snack extra
+    const todayAt = (h, m) => { const dt = new Date(); dt.setHours(h, m, 0, 0); return dt.getTime(); };
+    readings.push({ id: 'today_fast', value: 92, mealType: 'Breakfast', mealTiming: 'Before', hoursAfterMeal: null, notes: '', recordedAt: todayAt(6, 45) });
+    readings.push({ id: 'today_bf', value: 130, mealType: 'Breakfast', mealTiming: 'After', hoursAfterMeal: 1, notes: '', recordedAt: todayAt(8, 35) });
+    readings.push({ id: 'today_snack', value: 115, mealType: 'Snack', mealTiming: 'After', hoursAfterMeal: 1, notes: '', recordedAt: todayAt(10, 20) });
     readings.sort((a, b) => b.recordedAt - a.recordedAt);
     this.state = {
-      screen: (props && props.startScreen) === 'main' ? 'main' : 'onboarding', tab: 'log',
-      unit: 'mg/dL', readings,
+      screen: (props && props.startScreen) === 'main' ? 'main' : 'onboarding', tab: 'today',
+      onbStep: 'welcome', condFrom: 'onboarding',
+      conditionType: 'general', gdmTiming: 1, dueDate: new Date(2026, 8, 15).getTime(),
+      manualReminders: [
+        { id: 'm1', time: '06:30', label: 'Fasting · on waking', on: true },
+        { id: 'm2', time: '22:00', label: 'Before bed', on: false },
+      ],
+      smartRemOn: true, reminderTiming: 1, reportRange: '14', pro: false,
+      remEditorOpen: false, remDraft: null,
+      unit: 'mmol/L', readings,
       form: { value: '', mealType: 'Breakfast', mealTiming: 'Before', hoursAfter: 2, notes: '' },
       notesOpen: false,
       histRange: 'all', histMeal: 'All',
       scale: '30', tipIdx: -1,
-      targets: { fastMin: 70, fastMax: 100, postMin: 70, postMax: 140 },
+      targets: { fastMin: 70, fastMax: 100, postMin: 70, postMax: 140, post2Min: 70, post2Max: 120 },
       alertsEnabled: true,
-      selectedId: null, savedId: null,
+      selectedId: null, savedId: null, pp: null,
       exportRange: 'all',
       loggedIn: false, authMode: 'signup', authEmail: '', authPass: '', authError: '',
       syncPop: false, pending: 3, lastSynced: 'Today, 09:12',
@@ -558,8 +963,14 @@ class Component extends DCLogic {
 
   disp(v) { return this.state.unit === 'mg/dL' ? String(Math.round(v)) : (v * 0.0555).toFixed(1); }
   toMg(str) { const n = parseFloat(str); if (isNaN(n)) return null; return this.state.unit === 'mg/dL' ? n : n / 0.0555; }
-  rangeFor(timing) { const t = this.state.targets; return timing === 'After' ? [t.postMin, t.postMax] : [t.fastMin, t.fastMax]; }
-  inRange(r) { const [lo, hi] = this.rangeFor(r.mealTiming); return r.value >= lo && r.value <= hi; }
+  rangeFor(timing, hours) {
+    const t = this.state.targets;
+    if (timing !== 'After') return [t.fastMin, t.fastMax];
+    const gest = this.state.conditionType === 'gestational';
+    if (gest && hours != null && hours >= 2) return [t.post2Min, t.post2Max];
+    return [t.postMin, t.postMax];
+  }
+  inRange(r) { const [lo, hi] = this.rangeFor(r.mealTiming, r.hoursAfterMeal); return r.value >= lo && r.value <= hi; }
   fmtDate(ts) { const d = new Date(ts); return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', weekday: 'short' }); }
   fmtTime(ts) { return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
   mealColor(m) { return { Breakfast: '#F5B301', Lunch: '#0FA36B', Dinner: '#8B5CF6', Snack: '#E8622C' }[m] || '#0FA36B'; }
@@ -569,7 +980,7 @@ class Component extends DCLogic {
     return {
       background: active ? (color || '#1B2B24') : '#fff',
       color: active ? '#fff' : '#5C6F66',
-      border: active ? '1.5px solid ' + (color || '#1B2B24') : '1.5px solid #E2EDE7',
+      border: active ? '1.5px solid ' + (color || '#1B2B24') : '1.5px solid var(--border,#E2EDE7)',
       borderRadius: '999px', padding: '8px 16px', fontFamily: 'Nunito', fontWeight: 800,
       fontSize: '12.5px', cursor: 'pointer',
     };
@@ -577,7 +988,19 @@ class Component extends DCLogic {
 
   renderVals() {
     const S = this.state;
-    const primary = this.props.primary ?? '#0FA36B';
+    // ---- Theme: Evergreen (default) or rose/GDM palette, driven by conditionType ----
+    const isGestTheme = S.conditionType === 'gestational';
+    const EVERGREEN = { brand: this.props.primary ?? '#0FA36B', brandInk: '#0A7350', surface: '#E9F5EF', surface2: '#DCEDE4', bg: '#F7FBF8', border: '#E2EDE7', border2: '#CFE6DA' };
+    const ROSE = { brand: '#D14C87', brandInk: '#A62C63', surface: '#FBE9F1', surface2: '#F6D9E6', bg: '#FDF6FA', border: '#F1DEE8', border2: '#EAC9DA' };
+    const TH = isGestTheme ? ROSE : EVERGREEN;
+    const primary = TH.brand;
+    const shellStyle = {
+      height: '100%', display: 'flex', flexDirection: 'column', fontFamily: "'Nunito',sans-serif",
+      background: TH.bg, color: '#1B2B24', position: 'relative', overflow: 'hidden',
+      paddingTop: '58px', boxSizing: 'border-box',
+      '--brand': TH.brand, '--brand-ink': TH.brandInk, '--surface': TH.surface,
+      '--surface-2': TH.surface2, '--bg': TH.bg, '--border': TH.border, '--border-2': TH.border2,
+    };
     const sel = S.readings.find(r => r.id === S.selectedId);
     const saved = S.readings.find(r => r.id === S.savedId);
 
@@ -610,7 +1033,7 @@ class Component extends DCLogic {
     const yOf = v => T + (H - T - B) * (1 - (v - vMin) / (vMax - vMin));
     const xOf = i => grouped.length <= 1 ? (L + (W - L - R) / 2) : L + (W - L - R) * (i / (grouped.length - 1));
     const chartPoints = grouped.map((r, i) => {
-      const [lo, hi] = r.avg ? [bandLo, bandHi] : this.rangeFor(r.mealTiming);
+      const [lo, hi] = r.avg ? [bandLo, bandHi] : this.rangeFor(r.mealTiming, r.hoursAfterMeal);
       const out = r.value < lo || r.value > hi;
       return {
         cx: xOf(i).toFixed(1), cy: yOf(r.value).toFixed(1),
@@ -640,25 +1063,160 @@ class Component extends DCLogic {
     const warn = mg !== null && (mg < 20 || mg > 600);
 
     const seg = a => ({ flex: 1, border: 'none', borderRadius: '999px', padding: '11px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '13.5px', cursor: 'pointer', background: a ? '#1B2B24' : 'transparent', color: a ? '#fff' : '#5C6F66' });
-    const unitBtn = a => ({ flex: 1, border: a ? '2px solid ' + primary : '1.5px solid #E2EDE7', borderRadius: '16px', padding: '14px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '15px', cursor: 'pointer', background: a ? '#E9F5EF' : '#fff', color: a ? '#0FA36B' : '#5C6F66' });
+    const unitBtn = a => ({ flex: 1, border: a ? '2px solid ' + primary : '1.5px solid var(--border,#E2EDE7)', borderRadius: '16px', padding: '14px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '15px', cursor: 'pointer', background: a ? 'var(--surface,#E9F5EF)' : '#fff', color: a ? '#0FA36B' : '#5C6F66' });
     const mealBtn = m => {
       const a = S.form.mealType === m;
       const c = this.mealColor(m);
       return { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', borderRadius: '16px', padding: '13px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '13.5px', cursor: 'pointer', background: a ? c : '#fff', color: a ? '#fff' : '#5C6F66', boxShadow: a ? 'none' : '0 2px 8px rgba(27,43,36,.05)' };
     };
 
-    const tabDefs = [
-      { key: 'log', label: 'Log', icon: 'add_circle' },
-      { key: 'history', label: 'History', icon: 'list_alt' },
-      { key: 'trends', label: 'Trends', icon: 'monitoring' },
-      { key: 'settings', label: 'Settings', icon: 'settings' },
-    ];
+    const tabDefs = S.conditionType === 'gestational'
+      ? [
+        { key: 'today', label: 'Today', icon: 'today' },
+        { key: 'log', label: 'Log', icon: 'add_circle' },
+        { key: 'history', label: 'History', icon: 'list_alt' },
+        { key: 'trends', label: 'Trends', icon: 'monitoring' },
+        { key: 'settings', label: 'Settings', icon: 'settings' },
+      ]
+      : [
+        { key: 'today', label: 'Today', icon: 'today' },
+        { key: 'log', label: 'Log', icon: 'add_circle' },
+        { key: 'history', label: 'History', icon: 'list_alt' },
+        { key: 'trends', label: 'Trends', icon: 'monitoring' },
+        { key: 'settings', label: 'Settings', icon: 'settings' },
+      ];
 
     const savedOut = saved ? !this.inRange(saved) : false;
     const guestCount = S.readings.length;
 
+    // ---------- GDM mode ----------
+    const day = 86400000;
+    const daysToDue = Math.max(0, Math.round((S.dueDate - now) / day));
+    const pregWeek = Math.min(42, Math.max(1, 40 - Math.ceil(daysToDue / 7)));
+    const dueShort = new Date(S.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    const dueLong = new Date(S.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    const isGest = S.conditionType === 'gestational';
+    const isPost = isGest && this.props.lifecycleStage === 'postpartum';
+    const isPreg = isGest && !isPost;
+
+    // condition presets + picker
+    const gestTargets = () => ({ fastMin: 70, fastMax: 95, postMin: 70, postMax: 140, post2Min: 70, post2Max: 120 });
+    const defTargets = { fastMin: 70, fastMax: 100, postMin: 70, postMax: 140, post2Min: 70, post2Max: 120 };
+    const pickCondition = key => () => {
+      const fromSettings = S.condFrom === 'settings';
+      if (key === 'gestational' && !fromSettings) {
+        this.setState({ conditionType: 'gestational', onbStep: 'gdm' });
+        return;
+      }
+      const targets = key === 'gestational' ? gestTargets() : defTargets;
+      this.setState({ conditionType: key, targets, screen: 'main', tab: 'today', condFrom: 'onboarding' });
+      if (fromSettings) this.toast('Tracking mode updated · your readings are unchanged');
+    };
+    const condDefs = [
+      { key: 'gestational', icon: 'pregnant_woman', title: 'Gestational diabetes', sub: 'Measure 4× a day on your doctor’s schedule' },
+      { key: 'general', icon: 'edit_note', title: 'Daily tracking', sub: 'Log your blood sugar whenever you need' },
+    ];
+    const condLabel = { gestational: 'Gestational', general: 'Daily' }[S.conditionType] || 'Daily';
+
+    // today's 4 slots
+    const isToday = ts => { const d = new Date(ts), n = new Date(); return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate(); };
+    const todays = S.readings.filter(r => isToday(r.recordedAt) && (r.id.indexOf('today_') === 0 || r.id.indexOf('new') === 0));
+    const findSlot = (timing, meal) => todays.filter(r => r.mealTiming === timing && r.mealType === meal).sort((a, b) => b.recordedAt - a.recordedAt)[0];
+    const slotDefs = [
+      { title: 'Fasting', icon: 'bedtime', iconBg: primary, time: '06:30', meal: 'Breakfast', timing: 'Before', r: findSlot('Before', 'Breakfast') },
+      { title: 'After breakfast', icon: 'bakery_dining', iconBg: '#F5B301', time: '08:30', meal: 'Breakfast', timing: 'After', r: findSlot('After', 'Breakfast') },
+      { title: 'After lunch', icon: 'lunch_dining', iconBg: '#4E7CF6', time: '13:30', meal: 'Lunch', timing: 'After', r: findSlot('After', 'Lunch') },
+      { title: 'After dinner', icon: 'dinner_dining', iconBg: '#8B5CF6', time: '19:30', meal: 'Dinner', timing: 'After', r: findSlot('After', 'Dinner') },
+    ];
+    const goLogSlot = (meal, timing) => () => this.setState({
+      screen: 'main', tab: 'log', notesOpen: false,
+      form: { value: '', mealType: meal, mealTiming: timing, hoursAfter: S.gdmTiming === 'both' ? 1 : S.gdmTiming, notes: '' },
+    });
+    let activeAssigned = false;
+    const todaySlots = slotDefs.map(sd => {
+      const done = !!sd.r;
+      let mode;
+      if (done) mode = 'done';
+      else if (!activeAssigned) { mode = 'active'; activeAssigned = true; }
+      else mode = 'upcoming';
+      const inr = done ? this.inRange(sd.r) : true;
+      const rowBase = { borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px' };
+      return {
+        title: sd.title, icon: sd.icon,
+        time: done ? this.fmtTime(sd.r.recordedAt) : sd.time,
+        iconBg: mode === 'upcoming' ? 'var(--surface-2,#DCEDE4)' : sd.iconBg,
+        iconColor: mode === 'upcoming' ? '#8A9A91' : '#fff',
+        titleColor: mode === 'upcoming' ? '#8A9A91' : '#1B2B24',
+        timeColor: done ? 'var(--brand-ink,#0A7350)' : '#B7C7BE',
+        cardStyle: mode === 'done' ? { ...rowBase, background: 'var(--surface,#E9F5EF)' }
+          : mode === 'active' ? { ...rowBase, background: '#fff', border: '1.5px solid var(--border-2,#CFE6DA)', boxShadow: '0 2px 10px rgba(27,43,36,.05)' }
+          : { ...rowBase, background: '#F1F6F3' },
+        done, valueDisp: done ? this.disp(sd.r.value) : '', valueColor: inr ? 'var(--brand-ink,#0A7350)' : '#E8622C',
+        showTimeChip: mode === 'active', showTimePlain: mode !== 'active',
+        showAction: mode !== 'done',
+        actionLabel: mode === 'active' ? 'Log now' : '+ Add',
+        actionStyle: mode === 'active'
+          ? { background: '#1B2B24', color: '#fff', border: 'none', borderRadius: '999px', padding: '12px 20px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '14px', cursor: 'pointer', flexShrink: 0 }
+          : { background: 'none', border: '1.5px solid var(--border-2,#CFE6DA)', color: '#5C6F66', borderRadius: '999px', padding: '10px 18px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '14px', cursor: 'pointer', flexShrink: 0 },
+        onAction: goLogSlot(sd.meal, sd.timing),
+      };
+    });
+    const extras = todays.filter(r => r.mealType === 'Snack');
+
+    // general-mode "today at a glance" — list-driven (any count, not a fixed 4)
+    const genSlots = todays.slice().sort((a, b) => a.recordedAt - b.recordedAt).map(r => {
+      const inr = this.inRange(r);
+      return {
+        icon: this.mealIcon(r.mealType), iconBg: this.mealColor(r.mealType),
+        title: (r.mealTiming === 'After' ? r.hoursAfterMeal + 'h after ' : 'Before ') + r.mealType.toLowerCase(),
+        time: this.fmtTime(r.recordedAt),
+        valueDisp: this.disp(r.value), valueColor: inr ? 'var(--brand-ink,#0A7350)' : '#E8622C',
+        onOpen: () => this.setState({ selectedId: r.id, screen: 'detail' }),
+      };
+    });
+
+    // reminders — toggle chrome (shared) + manual list + smart after-meal
+    const remToggle = on => ({ width: '52px', height: '32px', borderRadius: '999px', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, position: 'relative', background: on ? primary : 'var(--surface-2,#DCEDE4)', transition: 'background .2s' });
+    const remKnob = on => ({ position: 'absolute', top: '3px', left: on ? '23px' : '3px', width: '26px', height: '26px', borderRadius: '99px', background: '#fff', boxShadow: '0 1px 3px rgba(27,43,36,.25)', transition: 'left .2s', display: 'block' });
+    const toISODate = ts => { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    const fmtOnce = ds => { if (!ds) return 'One time'; const p = ds.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }); };
+    const defaultOnceISO = toISODate(now + (isPost ? 42 : 7) * day);
+    const freshDraft = () => ({ id: null, label: '', time: '08:00', repeat: 'daily', date: defaultOnceISO });
+    const openEditDraft = rm => ({ id: rm.id, label: rm.label, time: rm.time, repeat: rm.repeat || 'daily', date: rm.date || defaultOnceISO });
+    const manualRows = S.manualReminders.map((rm, i) => ({
+      label: rm.label, time: rm.time,
+      repeatIcon: rm.repeat === 'once' ? 'event' : 'repeat',
+      repeatLabel: rm.repeat === 'once' ? ('One time · ' + fmtOnce(rm.date)) : 'Every day',
+      rowStyle: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px 12px 18px', borderTop: i === 0 ? 'none' : '1px solid #F1F6F3' },
+      toggleStyle: remToggle(rm.on), knobStyle: remKnob(rm.on),
+      onEdit: () => this.setState({ remEditorOpen: true, remDraft: openEditDraft(rm) }),
+      onToggle: () => this.setState({ manualReminders: S.manualReminders.map(x => x.id === rm.id ? { ...x, on: !x.on } : x) }),
+      onDelete: () => this.setState({ manualReminders: S.manualReminders.filter(x => x.id !== rm.id) }),
+    }));
+    const dr = S.remDraft;
+    const remRepeatSeg = a => ({ flex: 1, border: 'none', borderRadius: '999px', padding: '11px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '13.5px', cursor: 'pointer', background: a ? '#1B2B24' : 'transparent', color: a ? '#fff' : '#5C6F66' });
+
+    // report sample grid
+    const rpt = [
+      ['01/07', '5.0', '6.9', '7.1', '6.8'],
+      ['02/07', '4.9', '7.0', '6.6', '7.4'],
+      ['03/07', '5.2', '7.3', '8.4*', '6.9'],
+      ['04/07', '4.8', '6.7', '7.0', '7.2'],
+      ['05/07', '5.1', '7.5', '6.8', '7.0'],
+      ['06/07', '5.0', '6.8', '7.2', '8.1*'],
+      ['07/07', '5.1', '7.2', '—', '—'],
+    ];
+    const rptCell = v => {
+      const out = typeof v === 'string' && v.endsWith('*');
+      const val = out ? v.slice(0, -1) : v;
+      const base = 'border:1px solid var(--border,#E2EDE7); padding:6px 4px;';
+      return { v: val, c: out ? base + ' background:#FDECE4; color:#B23C10; font-weight:800;' : base };
+    };
+    const ppPill = sel => ({ flex: 1, border: sel ? 'none' : '1.5px solid var(--border-2,#CFE6DA)', borderRadius: '999px', padding: '14px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '16px', cursor: 'pointer', background: sel ? '#1B2B24' : '#fff', color: sel ? '#fff' : '#1B2B24' });
+
     return {
       primary,
+      shellStyle,
       isOnboarding: S.screen === 'onboarding',
       isMain: S.screen === 'main',
       isSaved: S.screen === 'saved',
@@ -669,10 +1227,160 @@ class Component extends DCLogic {
       isLogin: S.screen === 'login',
       isMigrate: S.screen === 'migrate',
       tabLog: S.tab === 'log', tabHistory: S.tab === 'history', tabTrends: S.tab === 'trends', tabSettings: S.tab === 'settings',
+      tabToday: S.tab === 'today',
+      isReminders: S.screen === 'reminders',
+      isReport: S.screen === 'report',
+      isPro: S.screen === 'pro',
+
+      // onboarding steps
+      onbCondition: S.onbStep === 'condition',
+      onbGdm: S.onbStep === 'gdm',
+      onbWelcome: S.onbStep === 'welcome',
+      conditionCards: condDefs.map(cd => {
+        const a = S.conditionType === cd.key;
+        return {
+          icon: cd.icon, title: cd.title, sub: cd.sub,
+          style: { background: '#fff', border: a ? '2px solid ' + primary : '2px solid var(--border,#E2EDE7)', borderRadius: '20px', padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 4px 16px rgba(27,43,36,.06)', cursor: 'pointer' },
+          checkIcon: a ? 'check_circle' : 'radio_button_unchecked',
+          checkColor: a ? primary : '#C9D8CF',
+          onPick: pickCondition(cd.key),
+        };
+      }),
+      backToCondition: () => this.setState({ onbStep: 'condition' }),
+      condBack: () => this.setState(S.condFrom === 'settings'
+        ? { screen: 'main', tab: 'settings', condFrom: 'onboarding' }
+        : { onbStep: 'welcome' }),
+      dueDateLong: dueLong,
+      gdmTimingOptions: [
+        { key: 1, label: '1 hour after eating' },
+        { key: 2, label: '2 hours after eating' },
+        { key: 'both', label: '1 hour, re-check at 2 hours' },
+      ].map(o => {
+        const a = S.gdmTiming === o.key;
+        return {
+          label: o.label,
+          onPick: () => this.setState({ gdmTiming: o.key }),
+          checkIcon: a ? 'radio_button_checked' : 'radio_button_unchecked',
+          checkColor: a ? primary : '#C9D8CF',
+          style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: a ? '2px solid ' + primary : '1.5px solid var(--border,#E2EDE7)', borderRadius: '16px', padding: '15px 16px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '15px', color: '#1B2B24', cursor: 'pointer', textAlign: 'left', boxShadow: '0 2px 8px rgba(27,43,36,.04)' },
+        };
+      }),
+      gdmPreviewLine: (S.gdmTiming === 'both'
+        ? 'Fasting < ' + this.disp(95) + ' · After 1h < ' + this.disp(140) + ' · 2h < ' + this.disp(120) + ' ' + S.unit
+        : S.gdmTiming === 2
+          ? 'Fasting < ' + this.disp(95) + ' · After 2h < ' + this.disp(120) + ' ' + S.unit
+          : 'Fasting < ' + this.disp(95) + ' · After 1h < ' + this.disp(140) + ' ' + S.unit),
+      finishGdm: () => this.setState({ conditionType: 'gestational', targets: gestTargets(), screen: 'main', tab: 'today', condFrom: 'onboarding' }),
+
+      // today
+      isPregnant: isPreg, isPostpartum: isPost,
+      pregWeek,
+      dueCountdown: daysToDue + ' days to expected delivery · ' + dueShort,
+      dueDateShort: dueShort,
+      todaySlots,
+      hasExtras: extras.length > 0,
+      extrasLabel: extras.length ? 'Snack · ' + extras.map(r => this.disp(r.value)).join(', ') + ' · ' + this.fmtTime(extras[0].recordedAt) : '',
+      openReport: () => this.setState({ screen: 'report' }),
+      ppYesStyle: ppPill(S.pp === null ? true : S.pp === 'yes'),
+      ppNoStyle: ppPill(S.pp === 'no'),
+      ppYesPick: () => this.setState({ pp: 'yes' }),
+      ppNoPick: () => this.setState({ pp: 'no' }),
+
+      // today — general variant (date header, list-driven slots)
+      isGeneralDay: !isGest,
+      genDateTitle: 'Today',
+      genDateSub: new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }),
+      genSlots,
+      genEmpty: genSlots.length === 0,
+      hasGenSlots: genSlots.length > 0,
+      goLog: () => this.setState({ screen: 'main', tab: 'log' }),
+
+      // reminders — manual list + smart after-meal
+      manualReminderRows: manualRows,
+      hasManualReminders: manualRows.length > 0,
+      addReminder: () => this.setState({ remEditorOpen: true, remDraft: freshDraft() }),
+      goAddReminder: () => this.setState({ screen: 'reminders', remEditorOpen: true, remDraft: freshDraft() }),
+
+      // reminder editor sheet
+      remEditorOpen: S.remEditorOpen,
+      remEditorIsEdit: !!(dr && dr.id),
+      remEditorTitle: dr && dr.id ? 'Edit reminder' : 'New reminder',
+      remSaveLabel: dr && dr.id ? 'Save changes' : 'Add reminder',
+      remDraftLabel: dr ? dr.label : '',
+      remDraftTime: dr ? dr.time : '08:00',
+      remDraftDate: dr ? dr.date : defaultOnceISO,
+      remDraftRepeatDaily: dr ? dr.repeat === 'daily' : true,
+      remDraftRepeatOnce: dr ? dr.repeat === 'once' : false,
+      remRepeatDailyStyle: remRepeatSeg(!dr || dr.repeat === 'daily'),
+      remRepeatOnceStyle: remRepeatSeg(!!dr && dr.repeat === 'once'),
+      remDateLabel: isGest ? (isPost ? 'Postpartum date' : 'Special pregnancy date') : 'Specific date',
+      remDateHelper: isGest
+        ? (isPost ? 'Pick a specific day after birth — e.g. your postpartum blood-sugar re-check appointment.'
+          : 'Pick a specific day during pregnancy — e.g. your next clinic visit or glucose test.')
+        : 'This reminder will ring once on the chosen date only.',
+      stopSheet: e => { if (e && e.stopPropagation) e.stopPropagation(); },
+      closeRemEditor: () => this.setState({ remEditorOpen: false, remDraft: null }),
+      onRemNameChange: e => this.setState({ remDraft: { ...S.remDraft, label: e.target.value } }),
+      onRemTimeChange: e => this.setState({ remDraft: { ...S.remDraft, time: e.target.value } }),
+      onRemDateChange: e => this.setState({ remDraft: { ...S.remDraft, date: e.target.value } }),
+      setRemRepeatDaily: () => this.setState({ remDraft: { ...S.remDraft, repeat: 'daily' } }),
+      setRemRepeatOnce: () => this.setState({ remDraft: { ...S.remDraft, repeat: 'once' } }),
+      saveRemDraft: () => {
+        const d = S.remDraft; if (!d) return;
+        const patch = { time: d.time || '08:00', label: (d.label || '').trim() || 'Reminder', repeat: d.repeat, date: d.repeat === 'once' ? (d.date || null) : null };
+        const list = d.id
+          ? S.manualReminders.map(x => x.id === d.id ? { ...x, ...patch } : x)
+          : [...S.manualReminders, { id: 'm' + Date.now(), on: true, ...patch }];
+        this.setState({ manualReminders: list, remEditorOpen: false, remDraft: null });
+        this.toast(d.id ? 'Reminder updated' : 'Reminder added');
+      },
+      deleteRemDraft: () => {
+        const d = S.remDraft; if (!d) return;
+        this.setState({ manualReminders: S.manualReminders.filter(x => x.id !== d.id), remEditorOpen: false, remDraft: null });
+        this.toast('Reminder deleted');
+      },
+      smartRemOn: S.smartRemOn,
+      smartToggleStyle: remToggle(S.smartRemOn), smartKnobStyle: remKnob(S.smartRemOn),
+      toggleSmartRem: () => this.setState({ smartRemOn: !S.smartRemOn }),
+      remTimingOptions: [[1, '1 hour'], [2, '2 hours'], ['both', 'Both']].map(([k, label]) => ({
+        label, onPick: () => this.setState({ reminderTiming: k }), style: seg(S.reminderTiming === k),
+      })),
+      remHelper: (S.smartRemOn
+        ? (S.reminderTiming === 'both' ? 'Sugar will remind you 1 hour and again 2 hours after each meal 🌿'
+          : S.reminderTiming === 2 ? 'Sugar will remind you to measure 2 hours after each meal 🌿'
+          : 'Sugar will remind you to measure 1 hour after each meal 🌿')
+        : 'Smart reminders are off. Your manual reminders above still ring.'),
+
+      // report
+      reportChips: [['14', '14 days'], ['30', '30 days'], ['custom', 'Custom']].map(([k, label]) => ({
+        label, style: this.chip(S.reportRange === k), onPick: () => this.setState({ reportRange: k }),
+      })),
+      reportSubhead: (isGest
+        ? 'Pregnancy week ' + Math.max(1, pregWeek - 2) + '–' + pregWeek + ' · Targets: fasting <5.3, after-meal ' + (S.gdmTiming === 'both' ? '1h <7.8 / 2h <6.7' : S.gdmTiming === 2 ? '(2h) <6.7' : '(1h) <7.8')
+        : 'Daily log · Targets: fasting ' + this.disp(t.fastMin) + '–' + this.disp(t.fastMax) + ', after-meal ' + this.disp(t.postMin) + '–' + this.disp(t.postMax) + ' ' + S.unit),
+      reportRows: rpt.map(row => {
+        const c0 = rptCell(row[1]), c1 = rptCell(row[2]), c2 = rptCell(row[3]), c3 = rptCell(row[4]);
+        return { date: row[0], v0: c0.v, c0: c0.c, v1: c1.v, c1: c1.c, v2: c2.v, c2: c2.c, v3: c3.v, c3: c3.c };
+      }),
+      sharePdf: () => this.toast('Preparing PDF report…'),
+      backFromReport: () => this.setState({ screen: 'main', tab: isGest ? 'today' : 'settings' }),
+
+      // settings — GDM
+      isGestational: isGest,
+      conditionLabel: condLabel,
+      changeCondition: () => this.setState({ condFrom: 'settings', screen: 'onboarding', onbStep: 'condition' }),
+      openReminders: () => this.setState({ screen: 'reminders' }),
+      showProCard: !S.pro,
+      openPro: () => this.setState({ screen: 'pro' }),
+      closePro: () => this.setState({ screen: 'main', tab: 'settings' }),
+      unlockPro: () => { this.setState({ pro: true, screen: 'main', tab: 'settings' }); this.toast('Sugar Pro unlocked — thank you!'); },
 
       // onboarding
-      skipOnboarding: () => this.setState({ screen: 'main', unit: 'mg/dL' }),
-      finishOnboarding: () => this.setState({ screen: 'main' }),
+      skipOnboarding: () => {
+        if (S.condFrom === 'settings') this.setState({ screen: 'main', tab: 'settings', condFrom: 'onboarding' });
+        else this.setState({ conditionType: 'general', targets: defTargets, screen: 'main', tab: 'today' });
+      },
+      finishOnboarding: () => this.setState({ onbStep: 'condition' }),
       setUnitMg: () => this.setState({ unit: 'mg/dL' }),
       setUnitMmol: () => this.setState({ unit: 'mmol/L' }),
       unitMgBtnStyle: unitBtn(S.unit === 'mg/dL'),
@@ -737,7 +1445,7 @@ class Component extends DCLogic {
       savedTitle: saved ? (saved.mealTiming === 'After' ? saved.hoursAfterMeal + 'h after ' + saved.mealType.toLowerCase() : 'Before ' + saved.mealType.toLowerCase()) : '',
       savedAlert: savedOut && S.alertsEnabled,
       savedInRange: saved ? (!savedOut) : true,
-      savedAlertText: saved ? 'Outside your ' + (saved.mealTiming === 'After' ? 'after-meal' : 'fasting') + ' target (' + this.rangeFor(saved.mealTiming).map(v => this.disp(v)).join('–') + ' ' + S.unit + ')' : '',
+      savedAlertText: saved ? 'Outside your ' + (saved.mealTiming === 'After' ? 'after-meal' : 'fasting') + ' target (' + this.rangeFor(saved.mealTiming, saved.hoursAfterMeal).map(v => this.disp(v)).join('–') + ' ' + S.unit + ')' : '',
       savedDate: saved ? this.fmtDate(saved.recordedAt) : '',
       savedTime: saved ? this.fmtTime(saved.recordedAt) : '',
       viewSavedDetail: () => this.setState({ selectedId: S.savedId, screen: 'detail' }),
@@ -831,10 +1539,17 @@ class Component extends DCLogic {
       backToSettings: () => this.setState({ screen: 'main', tab: 'settings' }),
 
       // targets
-      targetCards: [
-        { key: 'fast', title: 'Fasting / Before meal', icon: 'wb_twilight', color: '#4E7CF6', min: t.fastMin, max: t.fastMax, lo: 'fastMin', hi: 'fastMax' },
-        { key: 'post', title: 'After meal', icon: 'restaurant', color: '#E8622C', min: t.postMin, max: t.postMax, lo: 'postMin', hi: 'postMax' },
-      ].map(c => ({
+      targetCards: (isGest
+        ? [
+          { key: 'fast', title: 'Fasting', icon: 'wb_twilight', color: '#4E7CF6', min: t.fastMin, max: t.fastMax, lo: 'fastMin', hi: 'fastMax' },
+          { key: 'post', title: 'After meal (1h)', icon: 'restaurant', color: '#E8622C', min: t.postMin, max: t.postMax, lo: 'postMin', hi: 'postMax' },
+          { key: 'post2', title: 'After meal (2h)', icon: 'schedule', color: '#8B5CF6', min: t.post2Min, max: t.post2Max, lo: 'post2Min', hi: 'post2Max' },
+        ]
+        : [
+          { key: 'fast', title: 'Fasting / Before meal', icon: 'wb_twilight', color: '#4E7CF6', min: t.fastMin, max: t.fastMax, lo: 'fastMin', hi: 'fastMax' },
+          { key: 'post', title: 'After meal', icon: 'restaurant', color: '#E8622C', min: t.postMin, max: t.postMax, lo: 'postMin', hi: 'postMax' },
+        ]
+      ).map(c => ({
         ...c,
         minDown: () => this.bump(c.lo, -5), minUp: () => this.bump(c.lo, 5),
         maxDown: () => this.bump(c.hi, -5), maxUp: () => this.bump(c.hi, 5),
@@ -845,7 +1560,7 @@ class Component extends DCLogic {
         const a = S.exportRange === k;
         return {
           label, count: exCounts[k] + ' readings',
-          style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: a ? '2px solid ' + primary : '1.5px solid #E2EDE7', borderRadius: '16px', padding: '14px 16px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '14px', color: '#1B2B24', cursor: 'pointer', textAlign: 'left' },
+          style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: a ? '2px solid ' + primary : '1.5px solid var(--border,#E2EDE7)', borderRadius: '16px', padding: '14px 16px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '14px', color: '#1B2B24', cursor: 'pointer', textAlign: 'left' },
           checkIcon: a ? 'radio_button_checked' : 'radio_button_unchecked',
           checkColor: a ? primary : '#C9D8CF',
           countColor: '#8A9A91',
