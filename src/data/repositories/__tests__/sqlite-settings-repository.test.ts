@@ -57,4 +57,11 @@ describe('SqliteSettingsRepository', () => {
     expect(await repo.get('alertsEnabled')).toBe(true);
     expect(await repo.get('fastingRange')).toEqual({ low: 70, high: 100 });
   });
+
+  it('defaults reportCount to 0 and round-trips an incremented value', async () => {
+    const repo = newRepo();
+    expect(await repo.get('reportCount')).toBe(0);
+    await repo.set('reportCount', 3);
+    expect(await repo.get('reportCount')).toBe(3);
+  });
 });
