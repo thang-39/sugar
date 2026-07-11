@@ -26,6 +26,9 @@ export interface AppSettings {
   // --- Session 11: reminders (JSON kv, no migration) ---
   manualReminders: ManualReminder[];
   smartAfterMeal: SmartAfterMeal;
+  // --- Session 13: doctor report ---
+  /** Number of successful PDF report exports. Session 16 gates on it. */
+  reportCount: number;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -41,4 +44,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   postMeal2hRange: null,
   manualReminders: [],
   smartAfterMeal: { enabled: false, offset: '1h' },
+  reportCount: 0,
 };
