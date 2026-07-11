@@ -16,10 +16,39 @@
     "close": "Close"
   },
   "tabs": {
+    "today": "Today",
     "log": "Log",
     "history": "History",
     "trends": "Trends",
     "settings": "Settings"
+  },
+  "today": {
+    "header": {
+      "week": "Week {{week}}",
+      "dueCountdown": "{{days}} days until your due date",
+      "today": "Today"
+    },
+    "slots": {
+      "before": {
+        "Breakfast": "Fasting (before breakfast)",
+        "Lunch": "Before lunch",
+        "Dinner": "Before dinner",
+        "Snack": "Before snack"
+      },
+      "after": {
+        "Breakfast": "After breakfast",
+        "Lunch": "After lunch",
+        "Dinner": "After dinner",
+        "Snack": "After snack"
+      }
+    },
+    "empty": {
+      "title": "No readings yet today",
+      "subtitle": "Log your first blood sugar of the day."
+    },
+    "logReading": "Log a reading",
+    "addReminder": "Add a reminder",
+    "exportReport": "Export report for your doctor →"
   },
   "screens": {
     "log": {

@@ -16,10 +16,39 @@
     "close": "Đóng"
   },
   "tabs": {
+    "today": "Hôm nay",
     "log": "Ghi số",
     "history": "Lịch sử",
     "trends": "Biểu đồ",
     "settings": "Cài đặt"
+  },
+  "today": {
+    "header": {
+      "week": "Tuần {{week}}",
+      "dueCountdown": "Còn {{days}} ngày đến ngày dự sinh",
+      "today": "Hôm nay"
+    },
+    "slots": {
+      "before": {
+        "Breakfast": "Đói (trước ăn sáng)",
+        "Lunch": "Trước ăn trưa",
+        "Dinner": "Trước ăn tối",
+        "Snack": "Trước ăn phụ"
+      },
+      "after": {
+        "Breakfast": "Sau ăn sáng",
+        "Lunch": "Sau ăn trưa",
+        "Dinner": "Sau ăn tối",
+        "Snack": "Sau ăn phụ"
+      }
+    },
+    "empty": {
+      "title": "Hôm nay chưa có chỉ số",
+      "subtitle": "Ghi chỉ số đường huyết đầu tiên của ngày."
+    },
+    "logReading": "Ghi chỉ số",
+    "addReminder": "Thêm nhắc đo",
+    "exportReport": "Xuất báo cáo cho bác sĩ →"
   },
   "screens": {
     "log": {
