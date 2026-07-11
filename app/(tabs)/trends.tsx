@@ -86,7 +86,8 @@ function rangeFor(scale: Scale, customFrom: Date, customTo: Date): ReadingListFi
 
 export default function TrendsScreen(): ReactElement {
   const { t } = useTranslation();
-  const { preferredUnit, preferredLanguage, fastingRange, postMealRange } = useSettingsStore();
+  const { preferredUnit, preferredLanguage, fastingRange, postMealRange, postMeal2hRange } =
+    useSettingsStore();
 
   const [scale, setScale] = useState<Scale>(Scale.Last7);
   const [customFrom, setCustomFrom] = useState<Date>(() => new Date(Date.now() - 29 * DAY_MS));
@@ -97,8 +98,8 @@ export default function TrendsScreen(): ReactElement {
   const { readings, isLoading, error } = useReadings(filter);
 
   const ranges = useMemo(
-    () => ({ fasting: fastingRange, postMeal: postMealRange }),
-    [fastingRange, postMealRange],
+    () => ({ fasting: fastingRange, postMeal: postMealRange, postMeal2h: postMeal2hRange ?? undefined }),
+    [fastingRange, postMealRange, postMeal2hRange],
   );
 
   const chartData = useMemo(() => {

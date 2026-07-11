@@ -30,7 +30,8 @@ export default function ReadingDetailScreen(): ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { preferredUnit, preferredLanguage, fastingRange, postMealRange } = useSettingsStore();
+  const { preferredUnit, preferredLanguage, fastingRange, postMealRange, postMeal2hRange } =
+    useSettingsStore();
   const { reading, isLoading } = useReading(id);
 
   if (isLoading) {
@@ -52,7 +53,11 @@ export default function ReadingDetailScreen(): ReactElement {
     );
   }
 
-  const evaluation = evaluateReading(reading, { fasting: fastingRange, postMeal: postMealRange });
+  const evaluation = evaluateReading(reading, {
+    fasting: fastingRange,
+    postMeal: postMealRange,
+    postMeal2h: postMeal2hRange ?? undefined,
+  });
   const recordedAt = new Date(reading.recordedAt);
 
   const confirmDelete = (): void => {
