@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-na
 
 import { MealTiming } from '@/domain/models/meal';
 import { getReadingRepository } from '@/data/repositories/factory';
+import { cancelRemindersForReading } from '@/data/notifications/notification-service';
 import { deleteReading } from '@/domain/use-cases/delete-reading';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { useReading } from '@/ui/hooks/use-readings';
@@ -70,6 +71,7 @@ export default function ReadingDetailScreen(): ReactElement {
           void (async (): Promise<void> => {
             try {
               await deleteReading(reading.id, { repository: getReadingRepository() });
+              void cancelRemindersForReading(reading.id);
               router.back();
             } catch (err) {
               console.error('Failed to delete reading:', err);
