@@ -182,6 +182,13 @@
         "previewTitle": "Ngưỡng đặt theo chuẩn thai kỳ",
         "previewAdjust": "Điều chỉnh trong Cài đặt nếu bác sĩ dặn khác.",
         "start": "Bắt đầu theo dõi"
+      },
+      "remind": {
+        "title": "Bật nhắc đo?",
+        "body": "Sugar sẽ nhắc mẹ đo đúng giờ, kể cả khi đóng app. Mẹ có thể chỉnh sau trong Cài đặt.",
+        "enable": "Bật nhắc đo",
+        "skip": "Để sau",
+        "fastingLabel": "Đo lúc đói"
       }
     },
     "notFound": {
