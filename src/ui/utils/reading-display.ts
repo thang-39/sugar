@@ -1,5 +1,34 @@
+import type { ComponentProps } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+
+import { MealTiming, MealType } from '@/domain/models/meal';
+import type { Reading } from '@/domain/models/reading';
 import { RangeEvaluation } from '@/domain/models/target-range';
-import { colors } from '@/ui/theme';
+import { colors, mealColor } from '@/ui/theme';
+import { mealIcon } from '@/ui/utils/meal-display';
+
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+export interface ReadingDisplay {
+  /** i18n key under `today.slots.*` for the card title. */
+  titleKey: string;
+  icon: IconName;
+  /** Icon-tile background (per-meal accent). */
+  iconColor: string;
+}
+
+/** Presentational metadata for a logged reading, derived from its saved meal semantics. */
+export function readingDisplay(reading: Reading): ReadingDisplay {
+  const isBefore = reading.mealTiming === MealTiming.Before;
+  const isFasting = isBefore && reading.mealType === MealType.Breakfast;
+  return {
+    titleKey: isBefore
+      ? `today.slots.before.${reading.mealType}`
+      : `today.slots.after.${reading.mealType}`,
+    icon: isFasting ? 'bed-outline' : mealIcon[reading.mealType],
+    iconColor: mealColor[reading.mealType],
+  };
+}
 
 /** Contrast-safe foreground/text color for a target-range evaluation. */
 export function statusColor(evaluation: RangeEvaluation): string {
