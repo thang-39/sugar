@@ -1,4 +1,5 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactElement } from 'react';
 import { StyleSheet, ActivityIndicator, View, Text, TextInput } from 'react-native';
@@ -29,6 +30,11 @@ import { useSettingsStore } from '@/ui/hooks/use-settings';
 // Side-effect import: initializes i18next before any screen renders.
 import '@/i18n';
 import { colors, fontSize, fontFamily, ThemeProvider } from '@/ui/theme';
+import {
+  configureNotifications,
+  type ReminderPayload,
+} from '@/data/notifications/notification-service';
+import { toLogParams } from '@/ui/utils/log-prefill';
 
 type Db = ExpoSQLiteDatabase<typeof schema>;
 
@@ -96,6 +102,42 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
         useSettingsStore.setState({ initError: message });
       });
   }, [isDbReady, initializeSettings, i18n]);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    void configureNotifications();
+  }, []);
+
+  useEffect(() => {
+    const routeFromPayload = (payload: ReminderPayload | undefined): void => {
+      if (!payload || payload.kind === 'manual') {
+        router.push('/(tabs)');
+        return;
+      }
+      router.push({
+        pathname: '/(tabs)',
+        params: toLogParams({
+          mealType: payload.mealType,
+          mealTiming: payload.mealTiming,
+          hoursAfterMeal: payload.hoursAfterMeal,
+        }),
+      });
+    };
+
+    // Cold start: app opened by tapping a notification.
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        routeFromPayload(response.notification.request.content.data as ReminderPayload);
+      }
+    });
+
+    // Warm: tapped while running.
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      routeFromPayload(response.notification.request.content.data as ReminderPayload);
+    });
+    return () => sub.remove();
+  }, [router]);
 
   const bootError = dbError?.message ?? initError;
   if (bootError !== undefined) {
