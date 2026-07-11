@@ -20,11 +20,21 @@
     "settings": "Settings"
   },
   "screens": {
-    "log": { "title": "Log Blood Sugar" },
-    "history": { "title": "History" },
-    "readingDetail": { "title": "Reading Details" },
-    "editReading": { "title": "Edit Reading" },
-    "trends": { "title": "Trends" },
+    "log": {
+      "title": "Log Blood Sugar"
+    },
+    "history": {
+      "title": "History"
+    },
+    "readingDetail": {
+      "title": "Reading Details"
+    },
+    "editReading": {
+      "title": "Edit Reading"
+    },
+    "trends": {
+      "title": "Trends"
+    },
     "settings": {
       "index": {
         "title": "Settings",
@@ -38,11 +48,16 @@
           "alerts": "Alerts",
           "targetRanges": "Target ranges",
           "export": "Export data",
-          "about": "About"
+          "about": "About",
+          "trackingMode": "Tracking mode"
         },
         "languageShort": {
           "vi": "VI",
           "en": "EN"
+        },
+        "trackingModeValues": {
+          "gestational": "Gestational",
+          "general": "Daily"
         }
       },
       "targetRange": {
@@ -93,6 +108,20 @@
         "step2Message": "Are you sure you want to delete everything? This action cannot be undone.",
         "confirm": "Delete all",
         "failed": "Could not delete the data. Please try again."
+      },
+      "trackingMode": {
+        "title": "Tracking mode",
+        "gestational": {
+          "title": "Gestational diabetes",
+          "subtitle": "Pregnancy targets + rose theme"
+        },
+        "general": {
+          "title": "Daily tracking",
+          "subtitle": "Default targets + green theme"
+        },
+        "confirmTitle": "Change tracking mode?",
+        "confirmMessage": "Default targets and the theme will change to the new mode — your saved readings are untouched.",
+        "confirm": "Change mode"
       }
     },
     "onboarding": {
@@ -101,12 +130,56 @@
       "unitLabel": "Preferred unit",
       "getStarted": "Get Started",
       "skip": "Skip",
-      "languages": { "vi": "Tiếng Việt", "en": "English" },
+      "languages": {
+        "vi": "Tiếng Việt",
+        "en": "English"
+      },
       "features": {
-        "log": { "title": "Log readings", "subtitle": "with meal context" },
-        "trends": { "title": "See trends", "subtitle": "charts & targets" },
-        "export": { "title": "Export CSV", "subtitle": "share with doctor" },
-        "offline": { "title": "Works offline", "subtitle": "no internet needed" }
+        "log": {
+          "title": "Log readings",
+          "subtitle": "with meal context"
+        },
+        "trends": {
+          "title": "See trends",
+          "subtitle": "charts & targets"
+        },
+        "export": {
+          "title": "Export CSV",
+          "subtitle": "share with doctor"
+        },
+        "offline": {
+          "title": "Works offline",
+          "subtitle": "no internet needed"
+        }
+      },
+      "condition": {
+        "title": "Who are you tracking blood sugar for?",
+        "gestational": {
+          "title": "Gestational diabetes",
+          "subtitle": "Measure 4× a day on your doctor's schedule"
+        },
+        "general": {
+          "title": "Daily tracking",
+          "subtitle": "Log your blood sugar whenever you need"
+        }
+      },
+      "gdm": {
+        "title": "A little about your pregnancy",
+        "dueDateLabel": "Expected delivery date",
+        "protocolQuestion": "How long after meals did your doctor say to measure?",
+        "protocols": {
+          "1h": "1 hour after eating",
+          "2h": "2 hours after eating",
+          "1h+2h": "1 hour, re-check at 2 hours"
+        },
+        "labels": {
+          "fasting": "Fasting",
+          "after1h": "After 1h",
+          "after2h": "2h"
+        },
+        "previewTitle": "Targets set to pregnancy guidelines",
+        "previewAdjust": "Adjust in Settings if your doctor advised otherwise.",
+        "start": "Start tracking"
       }
     },
     "notFound": {
