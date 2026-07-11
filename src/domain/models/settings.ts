@@ -1,3 +1,4 @@
+import type { AfterMealProtocol, ConditionType } from './condition';
 import type { TargetRange } from './target-range';
 import { Unit } from './unit';
 
@@ -11,9 +12,16 @@ export interface AppSettings {
   preferredUnit: Unit;
   preferredLanguage: Language;
   fastingRange: TargetRange; // stored in mg/dL
-  postMealRange: TargetRange; // stored in mg/dL
+  postMealRange: TargetRange; // stored in mg/dL (1h / primary)
   alertsEnabled: boolean;
   onboardingDone: boolean;
+  // --- Session 10: condition profile (JSON kv, no migration) ---
+  conditionType: ConditionType;
+  /** Expected delivery date, unix ms. `null` = not set (persisted as JSON null). */
+  dueDate: number | null;
+  afterMealProtocol: AfterMealProtocol;
+  /** 2h after-meal range (gestational). `null` = not set. */
+  postMeal2hRange: TargetRange | null;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -23,4 +31,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   postMealRange: { low: 70, high: 140 },
   alertsEnabled: true,
   onboardingDone: false,
+  conditionType: 'general',
+  dueDate: null,
+  afterMealProtocol: '1h',
+  postMeal2hRange: null,
 };
