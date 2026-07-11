@@ -3,7 +3,7 @@
 Mobile app for logging blood sugar readings, viewing history/trends, and exporting CSV reports for doctors. Primary target audience: Vietnamese users, including elderly users measuring at home — UI must be simple, large text, minimal steps.
 
 **Source of truth for requirements:** `PRD.md` — **v1.1 is authoritative**. All tech-stack and scope deviations (Expo, Expo Router, expo-sqlite + Drizzle, sync deferred post-v1, vi+en i18n) are already baked into it; see its changelog. Do not re-document them here.
-**Source of truth for execution order:** `PLAN.md` (session-based plan). Work on ONE session at a time. Do not implement features from later sessions early.
+**Source of truth for execution order:** `PLAN.md` (Sessions 1–9 + 4.5) then `PLAN-2.md` (Sessions 10–22: GDM pivot, monetization, growth — supersedes the old PLAN.md Session 10). Work on ONE session at a time. Do not implement features from later sessions early.
 
 ## Tech Stack
 
@@ -74,14 +74,15 @@ Layering rule (Clean Architecture, same as PRD): `app/ → src/ui/ → src/domai
 
 **UI rules**
 - Elderly-friendly: base font ≥ 17, primary actions as large full-width buttons, max 1 required decision per screen beyond the value itself. Smart defaults: time = now, mealType by time of day, mealTiming = Before.
-- All user-facing strings through i18n — no hardcoded text in components, ever.
+- All user-facing strings through i18n — no hardcoded text in components, ever. (Canonical strings like the wellness disclaimer live in PRD, not here.)
 - Support system font scaling (`allowFontScaling` stays on); test layouts at 1.3× scale.
-- Disclaimer string (onboarding + about): "This app is for personal wellness tracking only. It is not a medical device." / "Ứng dụng chỉ hỗ trợ theo dõi sức khoẻ cá nhân, không phải thiết bị y tế."
 
-**Design System (Evergreen — added Session 4.5)**
-- Visual reference: `design/Sugar App.dc.html` (Evergreen style). To change the look, edit the design in Claude Design → export over this file → have Claude diff it and update `src/ui/theme` + primitives. Never guess token values; always reconcile against the design file.
-- **Reuse the primitives** in `src/ui/components/ui/` (`AppText`, `Button`, `Card`, `Chip`, `SegmentedControl`, `SectionLabel`, `Stepper`, `ScreenHeader`, `IconTile`, `Badge`). Do NOT hand-write inline StyleSheet for cards/buttons/chips — extend a primitive if you need a new variant. Screen-specific composites (e.g. `StatCard`, `ListRow`) are added by the session that first needs them.
-- Colors/spacing/radius/font come only from `src/ui/theme` — no hardcoded hex in components.
+**Design System (Evergreen + Rose — Session 4.5, per-mode theming Session 10)**
+- Visual reference: `design/Sugar App.dc.html`. To change the look, edit the design in Claude Design → export over this file → have Claude diff it and update `src/ui/theme` + primitives. Never guess token values; always reconcile against the design file.
+- **Theme is per tracking mode (Session 10).** `conditionType` selects a color scheme via `CONDITION_PRESETS`: `general` → Evergreen (green), `gestational` → Rose (pink). Only brand/accent tokens differ — layout, spacing, typography are identical across schemes (`src/ui/theme/colors.ts` → `colorSchemes`).
+- **Components read colors at runtime via `useTheme()`** (from `src/ui/theme`), NOT the static `colors` import. The static `colors` export is Evergreen-only back-compat; using it in a component breaks Rose mode. New/edited components MUST pull colors from `useTheme()` so they re-theme when the mode changes.
+- **Reuse the primitives** in `src/ui/components/ui/` (`AppText`, `Button`, `Card`, `Chip`, `SegmentedControl`, `SectionLabel`, `Stepper`, `ScreenHeader`, `IconTile`, `Badge`, `Toggle`, `Notice`). Do NOT hand-write inline StyleSheet for cards/buttons/chips — extend a primitive if you need a new variant. Screen-specific composites (e.g. `StatCard`, `ListRow`, `SlotCard`) are added by the session that first needs them.
+- Spacing/radius/font come only from `src/ui/theme` — no hardcoded hex or magic numbers in components.
 - Bold text uses `fontFamily` (Nunito_*), NOT `fontWeight` (RN ignores it on custom fonts). Prefer `AppText` over raw `Text`.
 - Icons: Ionicons (`@expo/vector-icons`); `src/ui/utils/meal-display.ts` maps meal types → icons.
 
