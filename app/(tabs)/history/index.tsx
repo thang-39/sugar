@@ -67,7 +67,8 @@ function rangeFor(preset: FilterPreset, customFrom: Date, customTo: Date): Readi
 export default function HistoryListScreen(): ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
-  const { preferredUnit, preferredLanguage, fastingRange, postMealRange } = useSettingsStore();
+  const { preferredUnit, preferredLanguage, fastingRange, postMealRange, postMeal2hRange } =
+    useSettingsStore();
 
   const [preset, setPreset] = useState<FilterPreset>(FilterPreset.All);
   const [customFrom, setCustomFrom] = useState<Date>(() => new Date(Date.now() - 29 * DAY_MS));
@@ -83,8 +84,8 @@ export default function HistoryListScreen(): ReactElement {
 
   const { readings, isLoading, error } = useReadings(filter);
   const ranges = useMemo(
-    () => ({ fasting: fastingRange, postMeal: postMealRange }),
-    [fastingRange, postMealRange],
+    () => ({ fasting: fastingRange, postMeal: postMealRange, postMeal2h: postMeal2hRange ?? undefined }),
+    [fastingRange, postMealRange, postMeal2hRange],
   );
 
   const onPickDate = (event: DateTimePickerEvent, selected?: Date): void => {
