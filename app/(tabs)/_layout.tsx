@@ -4,10 +4,11 @@ import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, fontSize, fontFamily } from '@/ui/theme';
+import { fontSize, fontFamily, useTheme } from '@/ui/theme';
 
 export default function TabsLayout(): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
   const onboardingDone = useSettingsStore((s) => s.onboardingDone);
 
   // First-run gate. TabsLayout renders inside the root navigator, so navigation
