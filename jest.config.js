@@ -5,6 +5,7 @@ module.exports = {
   moduleNameMapper: {
     // assets mapper MUST come before the general @/ mapper
     '^@/assets/(.*)$': '<rootDir>/assets/$1',
+    '^expo-notifications$': '<rootDir>/__mocks__/expo-notifications.js',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };
