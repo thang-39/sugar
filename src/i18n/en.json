@@ -11,7 +11,8 @@
     "errorTitle": "Something went wrong",
     "dbError": "Database error: {{message}}",
     "saveFailed": "Could not save the reading. Please try again.",
-    "disclaimer": "This app is for personal wellness tracking only. It is not a medical device."
+    "disclaimer": "This app is for personal wellness tracking only. It is not a medical device.",
+    "save": "Save"
   },
   "tabs": {
     "log": "Log",
@@ -49,7 +50,8 @@
           "targetRanges": "Target ranges",
           "export": "Export data",
           "about": "About",
-          "trackingMode": "Tracking mode"
+          "trackingMode": "Tracking mode",
+          "reminders": "Measurement reminders"
         },
         "languageShort": {
           "vi": "VI",
@@ -316,5 +318,61 @@
     "deleteConfirmTitle": "Delete this reading?",
     "deleteConfirmMessage": "This action cannot be undone.",
     "deleteFailed": "Could not delete the reading. Please try again."
+  },
+  "reminders": {
+    "title": "Measurement reminders",
+    "channelName": "Measurement reminders",
+    "permissionDenied": "Notifications are off. Tap to open settings and turn them on.",
+    "manual": {
+      "section": "Reminders",
+      "hint": "Tap a reminder to edit its name or time.",
+      "add": "Add reminder",
+      "dailyLabel": "Every day",
+      "onceLabel": "One time · {{date}}"
+    },
+    "smart": {
+      "section": "Smart after-meal reminders",
+      "title": "Remind me after each meal",
+      "subtitle": "Times each reminder to when you eat",
+      "offset1h": "1 hour",
+      "offset2h": "2 hours",
+      "offsetBoth": "Both",
+      "helperOff": "Smart reminders are off. Your manual reminders above still ring.",
+      "helper1h": "When you log a before-meal reading, Sugar reminds you to measure 1 hour after 🌿",
+      "helper2h": "When you log a before-meal reading, Sugar reminds you to measure 2 hours after 🌿",
+      "helperBoth": "When you log a before-meal reading, Sugar reminds you to measure 1 hour and again 2 hours after 🌿"
+    },
+    "editor": {
+      "newTitle": "New reminder",
+      "editTitle": "Edit reminder",
+      "nameLabel": "Reminder name",
+      "namePlaceholder": "e.g. Fasting · on waking",
+      "defaultName": "Reminder",
+      "timeLabel": "Time",
+      "repeatLabel": "Repeat",
+      "repeatDaily": "Every day",
+      "repeatOnce": "One time only",
+      "dateLabel": {
+        "general": "Specific date",
+        "pregnancy": "Special pregnancy date",
+        "postpartum": "Postpartum date"
+      },
+      "addButton": "Add reminder",
+      "delete": "Delete reminder"
+    },
+    "notif": {
+      "manualTitle": "Sugar 🌿",
+      "manualFallback": "Time to check your blood sugar",
+      "smartTitle": "Time to measure after your meal 🌿",
+      "smartBody": "Time to measure after {{meal}} 🌿",
+      "recheckTitle": "Time for a re-check 🌿",
+      "recheckBody": "Your reading after {{meal}} was a little high — a 2-hour re-check helps you keep track 🌿"
+    },
+    "onboarding": {
+      "title": "Turn on reminders?",
+      "body": "Sugar can remind you to measure on time, even when the app is closed. You can change this later in Settings.",
+      "enable": "Turn on reminders",
+      "skip": "Later"
+    }
   }
 }
