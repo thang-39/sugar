@@ -12,7 +12,8 @@
     "dbError": "Lỗi cơ sở dữ liệu: {{message}}",
     "saveFailed": "Không thể lưu kết quả. Vui lòng thử lại.",
     "disclaimer": "Ứng dụng chỉ hỗ trợ theo dõi sức khoẻ cá nhân, không phải thiết bị y tế.",
-    "save": "Lưu"
+    "save": "Lưu",
+    "close": "Đóng"
   },
   "tabs": {
     "log": "Ghi số",
