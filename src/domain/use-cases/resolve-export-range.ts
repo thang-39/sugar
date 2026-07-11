@@ -25,6 +25,12 @@ function monthsAgo(ts: number, months: number): number {
   return startOfDay(d.getTime());
 }
 
+function daysAgo(ts: number, days: number): number {
+  const d = new Date(ts);
+  d.setDate(d.getDate() - days);
+  return startOfDay(d.getTime());
+}
+
 /**
  * Turn an Export screen preset into a `ReadingListFilter`. Bounds use the
  * device's local timezone (PRD "Dates, times, timezone"). "Last N months"
@@ -35,6 +41,10 @@ export function resolveExportRange(
   opts: ResolveExportRangeOptions,
 ): ReadingListFilter {
   switch (preset) {
+    case ExportRangePreset.Last14Days:
+      return { from: daysAgo(opts.now, 13) };
+    case ExportRangePreset.Last30Days:
+      return { from: daysAgo(opts.now, 29) };
     case ExportRangePreset.Last3Months:
       return { from: monthsAgo(opts.now, 3) };
     case ExportRangePreset.Last6Months:
