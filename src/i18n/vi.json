@@ -11,7 +11,8 @@
     "errorTitle": "Đã xảy ra lỗi",
     "dbError": "Lỗi cơ sở dữ liệu: {{message}}",
     "saveFailed": "Không thể lưu kết quả. Vui lòng thử lại.",
-    "disclaimer": "Ứng dụng chỉ hỗ trợ theo dõi sức khoẻ cá nhân, không phải thiết bị y tế."
+    "disclaimer": "Ứng dụng chỉ hỗ trợ theo dõi sức khoẻ cá nhân, không phải thiết bị y tế.",
+    "save": "Lưu"
   },
   "tabs": {
     "log": "Ghi số",
@@ -49,7 +50,8 @@
           "targetRanges": "Ngưỡng mục tiêu",
           "export": "Xuất dữ liệu",
           "about": "Giới thiệu",
-          "trackingMode": "Chế độ theo dõi"
+          "trackingMode": "Chế độ theo dõi",
+          "reminders": "Nhắc đo đường huyết"
         },
         "languageShort": {
           "vi": "VI",
@@ -316,5 +318,61 @@
     "deleteConfirmTitle": "Xóa kết quả này?",
     "deleteConfirmMessage": "Thao tác này không thể hoàn tác.",
     "deleteFailed": "Không thể xóa kết quả. Vui lòng thử lại."
+  },
+  "reminders": {
+    "title": "Nhắc đo đường huyết",
+    "channelName": "Nhắc đo đường huyết",
+    "permissionDenied": "Thông báo đang tắt. Nhấn để mở cài đặt và bật lại.",
+    "manual": {
+      "section": "Nhắc đo",
+      "hint": "Nhấn vào một lời nhắc để đổi tên hoặc giờ.",
+      "add": "Thêm lời nhắc",
+      "dailyLabel": "Mỗi ngày",
+      "onceLabel": "Một lần · {{date}}"
+    },
+    "smart": {
+      "section": "Nhắc đo sau ăn thông minh",
+      "title": "Nhắc đo sau mỗi bữa",
+      "subtitle": "Tự tính giờ nhắc theo lúc mẹ ăn",
+      "offset1h": "1 giờ",
+      "offset2h": "2 giờ",
+      "offsetBoth": "Cả hai",
+      "helperOff": "Nhắc thông minh đang tắt. Các lời nhắc thủ công phía trên vẫn hoạt động.",
+      "helper1h": "Khi mẹ ghi chỉ số trước ăn, Sugar sẽ nhắc đo lại sau bữa 1 giờ 🌿",
+      "helper2h": "Khi mẹ ghi chỉ số trước ăn, Sugar sẽ nhắc đo lại sau bữa 2 giờ 🌿",
+      "helperBoth": "Khi mẹ ghi chỉ số trước ăn, Sugar sẽ nhắc đo lại sau bữa 1 giờ và 2 giờ 🌿"
+    },
+    "editor": {
+      "newTitle": "Lời nhắc mới",
+      "editTitle": "Sửa lời nhắc",
+      "nameLabel": "Tên lời nhắc",
+      "namePlaceholder": "vd: Đo lúc đói · sáng sớm",
+      "defaultName": "Nhắc đo",
+      "timeLabel": "Giờ",
+      "repeatLabel": "Lặp lại",
+      "repeatDaily": "Mỗi ngày",
+      "repeatOnce": "Một lần",
+      "dateLabel": {
+        "general": "Ngày cụ thể",
+        "pregnancy": "Ngày đặc biệt trong thai kỳ",
+        "postpartum": "Ngày sau sinh"
+      },
+      "addButton": "Thêm lời nhắc",
+      "delete": "Xoá lời nhắc"
+    },
+    "notif": {
+      "manualTitle": "Sugar 🌿",
+      "manualFallback": "Đến giờ đo đường huyết rồi mẹ ơi",
+      "smartTitle": "Đến giờ đo sau ăn 🌿",
+      "smartBody": "Đến giờ đo sau {{meal}} rồi mẹ ơi 🌿",
+      "recheckTitle": "Đo lại nhé mẹ 🌿",
+      "recheckBody": "Chỉ số sau {{meal}} hơi cao — đo lại lúc 2 giờ giúp mẹ theo dõi nhé 🌿"
+    },
+    "onboarding": {
+      "title": "Bật nhắc đo?",
+      "body": "Sugar sẽ nhắc mẹ đo đúng giờ, kể cả khi đóng app. Mẹ có thể chỉnh sau trong Cài đặt.",
+      "enable": "Bật nhắc đo",
+      "skip": "Để sau"
+    }
   }
 }
