@@ -28,7 +28,7 @@ import { useSettingsStore } from '@/ui/hooks/use-settings';
 
 // Side-effect import: initializes i18next before any screen renders.
 import '@/i18n';
-import { colors, fontSize, fontFamily } from '@/ui/theme';
+import { colors, fontSize, fontFamily, ThemeProvider } from '@/ui/theme';
 
 type Db = ExpoSQLiteDatabase<typeof schema>;
 
@@ -108,13 +108,15 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
-        </Stack>
-      </SafeAreaProvider>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+          </Stack>
+        </SafeAreaProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
