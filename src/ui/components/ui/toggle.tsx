@@ -1,7 +1,7 @@
-import { useEffect, useRef, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, type ReactElement } from 'react';
 import { Animated, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 
-import { colors, radius } from '@/ui/theme';
+import { radius, useTheme, type ColorScheme } from '@/ui/theme';
 
 interface ToggleProps {
   value: boolean;
@@ -23,6 +23,8 @@ export function Toggle({
   accessibilityLabel,
   disabled = false,
 }: ToggleProps): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const progress = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   useEffect(() => {
@@ -59,27 +61,28 @@ export function Toggle({
   );
 }
 
-const styles = StyleSheet.create({
-  track: {
-    width: TRACK_WIDTH,
-    height: TRACK_HEIGHT,
-    borderRadius: radius.pill,
-    padding: KNOB_INSET,
-    justifyContent: 'center',
-  },
-  knob: {
-    width: KNOB_SIZE,
-    height: KNOB_SIZE,
-    borderRadius: KNOB_SIZE / 2,
-    backgroundColor: colors.card,
-    // Soft knob shadow to lift it off the track.
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    track: {
+      width: TRACK_WIDTH,
+      height: TRACK_HEIGHT,
+      borderRadius: radius.pill,
+      padding: KNOB_INSET,
+      justifyContent: 'center',
+    },
+    knob: {
+      width: KNOB_SIZE,
+      height: KNOB_SIZE,
+      borderRadius: KNOB_SIZE / 2,
+      backgroundColor: colors.card,
+      // Soft knob shadow to lift it off the track.
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+  });

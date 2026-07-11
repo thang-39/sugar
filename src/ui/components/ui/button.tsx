@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps, ReactElement } from 'react';
+import { useMemo, type ComponentProps, type ReactElement } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, fontSize, radius, spacing } from '@/ui/theme';
+import { fontSize, radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { AppText } from './app-text';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -33,7 +33,7 @@ interface ButtonProps {
 
 const SOLID: readonly ButtonVariant[] = ['primary', 'accent'];
 
-function backgroundFor(variant: ButtonVariant): string {
+function backgroundFor(variant: ButtonVariant, colors: ColorScheme): string {
   switch (variant) {
     case 'primary':
       return colors.primaryButton;
@@ -44,7 +44,7 @@ function backgroundFor(variant: ButtonVariant): string {
   }
 }
 
-function foregroundFor(variant: ButtonVariant): string {
+function foregroundFor(variant: ButtonVariant, colors: ColorScheme): string {
   switch (variant) {
     case 'primary':
     case 'accent':
@@ -69,13 +69,15 @@ export function Button({
   accessibilityRole = 'button',
   style,
 }: ButtonProps): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const isDisabled = disabled || isLoading;
-  const fg = foregroundFor(variant);
+  const fg = foregroundFor(variant, colors);
   const isSolid = SOLID.includes(variant);
   const caps = uppercase ?? isSolid;
 
   const containerStyle: ViewStyle = {
-    backgroundColor: backgroundFor(variant),
+    backgroundColor: backgroundFor(variant, colors),
     ...(variant === 'dangerOutline' && { borderWidth: 1.5, borderColor: colors.error }),
   };
 
@@ -108,29 +110,18 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    minHeight: 56,
-    borderRadius: radius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  icon: {
-    marginRight: spacing.sm,
-  },
-  label: {
-    fontSize: fontSize.base,
-  },
-  caps: {
-    letterSpacing: 0.5,
-  },
-});
+const makeStyles = (_colors: ColorScheme) =>
+  StyleSheet.create({
+    base: {
+      minHeight: 56,
+      borderRadius: radius.pill,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+    },
+    disabled: { opacity: 0.5 },
+    content: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+    icon: { marginRight: spacing.sm },
+    label: { fontSize: fontSize.base },
+    caps: { letterSpacing: 0.5 },
+  });

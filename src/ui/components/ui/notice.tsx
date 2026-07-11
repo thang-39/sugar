@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps, ReactElement } from 'react';
+import { useMemo, type ComponentProps, type ReactElement } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, radius, spacing } from '@/ui/theme';
+import { radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { AppText } from './app-text';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -19,11 +19,16 @@ interface NoticeProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const TONE: Record<NoticeTone, { bg: string; fg: string }> = {
-  warn: { bg: colors.warnBg, fg: colors.outOfRange },
-  success: { bg: colors.inRangeBg, fg: colors.inRange },
-  info: { bg: colors.surface, fg: colors.primary },
-};
+function toneStyles(tone: NoticeTone, colors: ColorScheme): { bg: string; fg: string } {
+  switch (tone) {
+    case 'success':
+      return { bg: colors.inRangeBg, fg: colors.inRange };
+    case 'info':
+      return { bg: colors.surface, fg: colors.primary };
+    default:
+      return { bg: colors.warnBg, fg: colors.outOfRange };
+  }
+}
 
 /** Inline block alert box (validation warnings, in-range confirmation). Presentational. */
 export function Notice({
@@ -33,7 +38,9 @@ export function Notice({
   accessibilityLabel,
   style,
 }: NoticeProps): ReactElement {
-  const { bg, fg } = TONE[tone];
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { bg, fg } = toneStyles(tone, colors);
   return (
     <View
       style={[styles.box, { backgroundColor: bg }, style]}
@@ -48,18 +55,19 @@ export function Notice({
   );
 }
 
-const styles = StyleSheet.create({
-  box: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  icon: {
-    marginRight: spacing.sm,
-  },
-  text: {
-    flex: 1,
-  },
-});
+const makeStyles = (_colors: ColorScheme) =>
+  StyleSheet.create({
+    box: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: radius.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+    },
+    icon: {
+      marginRight: spacing.sm,
+    },
+    text: {
+      flex: 1,
+    },
+  });
