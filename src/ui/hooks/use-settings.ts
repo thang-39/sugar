@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { CONDITION_PRESETS, type ConditionType } from '@/domain/models/condition';
 import { type AppSettings, type Language, DEFAULT_SETTINGS } from '@/domain/models/settings';
 import { SqliteSettingsRepository } from '@/data/repositories/sqlite-settings-repository';
 import { getDb } from '@/data/db/client';
@@ -18,6 +19,8 @@ interface SettingsStore extends AppSettings {
   initError?: string;
   initialize: () => Promise<void>;
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => Promise<void>;
+  /** Re-apply a condition preset over target ranges + theme + protocol. Never touches readings. */
+  applyConditionPreset: (conditionType: ConditionType) => Promise<void>;
   /** Reset in-memory settings to defaults (call after wiping the settings rows). */
   resetToDefaults: () => void;
 }
@@ -35,6 +38,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       postMealRange,
       alertsEnabled,
       onboardingDone,
+      conditionType,
+      dueDate,
+      afterMealProtocol,
+      postMeal2hRange,
     ] = await Promise.all([
       getSettingsRepo().get('preferredUnit'),
       getSettingsRepo().get('preferredLanguage'),
@@ -42,6 +49,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       getSettingsRepo().get('postMealRange'),
       getSettingsRepo().get('alertsEnabled'),
       getSettingsRepo().get('onboardingDone'),
+      getSettingsRepo().get('conditionType'),
+      getSettingsRepo().get('dueDate'),
+      getSettingsRepo().get('afterMealProtocol'),
+      getSettingsRepo().get('postMeal2hRange'),
     ]);
 
     set({
@@ -51,6 +62,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       postMealRange,
       alertsEnabled,
       onboardingDone,
+      conditionType,
+      dueDate,
+      afterMealProtocol,
+      postMeal2hRange,
       isInitialized: true,
     });
   },
@@ -61,6 +76,25 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     if (key === 'preferredLanguage') {
       void i18n.changeLanguage(value as Language);
     }
+  },
+  applyConditionPreset: async (conditionType) => {
+    const preset = CONDITION_PRESETS[conditionType];
+    const post2 = preset.postMeal2hRange ?? null;
+    const repo = getSettingsRepo();
+    await Promise.all([
+      repo.set('conditionType', conditionType),
+      repo.set('fastingRange', preset.fastingRange),
+      repo.set('postMealRange', preset.postMealRange),
+      repo.set('postMeal2hRange', post2),
+      repo.set('afterMealProtocol', preset.afterMealProtocol),
+    ]);
+    set({
+      conditionType,
+      fastingRange: preset.fastingRange,
+      postMealRange: preset.postMealRange,
+      postMeal2hRange: post2,
+      afterMealProtocol: preset.afterMealProtocol,
+    });
   },
   resetToDefaults: () => {
     set({ ...DEFAULT_SETTINGS });
