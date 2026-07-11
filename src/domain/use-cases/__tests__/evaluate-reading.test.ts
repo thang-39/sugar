@@ -53,3 +53,40 @@ describe('evaluateReading', () => {
     );
   });
 });
+
+describe('evaluateReading — 2h after-meal range (gestational)', () => {
+  const ranges: TargetRanges = {
+    fasting: { low: 70, high: 95 },
+    postMeal: { low: 70, high: 140 }, // 1h
+    postMeal2h: { low: 70, high: 120 }, // 2h
+  };
+
+  it('uses the 2h range when hoursAfterMeal >= 2 and postMeal2h is set', () => {
+    // 130 is IN the 1h range (<=140) but OUT of the 2h range (>120)
+    expect(
+      evaluateReading({ value: 130, mealTiming: MealTiming.After, hoursAfterMeal: 2 }, ranges),
+    ).toBe(RangeEvaluation.High);
+  });
+
+  it('uses the 1h range when hoursAfterMeal is 1', () => {
+    expect(
+      evaluateReading({ value: 130, mealTiming: MealTiming.After, hoursAfterMeal: 1 }, ranges),
+    ).toBe(RangeEvaluation.InRange);
+  });
+
+  it('falls back to the 1h range when postMeal2h is absent (general mode)', () => {
+    const general: TargetRanges = {
+      fasting: { low: 70, high: 100 },
+      postMeal: { low: 70, high: 140 },
+    };
+    expect(
+      evaluateReading({ value: 130, mealTiming: MealTiming.After, hoursAfterMeal: 2 }, general),
+    ).toBe(RangeEvaluation.InRange);
+  });
+
+  it('ignores hoursAfterMeal for before-meal readings', () => {
+    expect(
+      evaluateReading({ value: 130, mealTiming: MealTiming.Before, hoursAfterMeal: 2 }, ranges),
+    ).toBe(RangeEvaluation.High); // 130 > fasting.high (95)
+  });
+});
