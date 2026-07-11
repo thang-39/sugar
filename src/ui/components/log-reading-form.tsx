@@ -30,6 +30,7 @@ import { getDefaultMealType, convertValueString } from '@/ui/utils/log-form';
 import { formatDateTime } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
 import { mealIcon } from '@/ui/utils/meal-display';
+import type { LogPrefill } from '@/ui/utils/log-prefill';
 import { colors, spacing, radius, fontSize, fontFamily, mealColor } from '@/ui/theme';
 import {
   AppText,
@@ -61,6 +62,8 @@ const HOUR_OPTIONS: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 interface LogReadingFormProps {
   /** When provided, the form runs in edit mode: prefilled and saving via updateReading. */
   initialReading?: Reading;
+  /** Create-mode prefill from a deep link (notification tap / Today slot). Ignored in edit mode. */
+  prefill?: LogPrefill;
   /** Called after a successful save in edit mode (create mode resets the form instead). */
   onSaved?: (reading: Reading) => void;
 }
@@ -72,6 +75,7 @@ function initialValueString(mgdl: number, unit: Unit): string {
 
 export function LogReadingForm({
   initialReading,
+  prefill,
   onSaved,
 }: LogReadingFormProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -91,15 +95,16 @@ export function LogReadingForm({
     initialReading ? initialValueString(initialReading.value, preferredUnit) : '',
   );
   const [mealType, setMealType] = useState<MealType>(
-    () => initialReading?.mealType ?? getDefaultMealType(new Date()),
+    () => initialReading?.mealType ?? prefill?.mealType ?? getDefaultMealType(new Date()),
   );
-  // Editing counts as an explicit meal-type choice, so changing the time never
-  // clobbers the stored value.
-  const [isMealTypeManual, setIsMealTypeManual] = useState(isEdit);
+  // A deep-link meal type counts as an explicit choice, so time changes don't clobber it.
+  const [isMealTypeManual, setIsMealTypeManual] = useState(isEdit || prefill?.mealType !== undefined);
   const [mealTiming, setMealTiming] = useState<MealTiming>(
-    initialReading?.mealTiming ?? MealTiming.Before,
+    initialReading?.mealTiming ?? prefill?.mealTiming ?? MealTiming.Before,
   );
-  const [hoursAfterMeal, setHoursAfterMeal] = useState(initialReading?.hoursAfterMeal ?? 2);
+  const [hoursAfterMeal, setHoursAfterMeal] = useState(
+    initialReading?.hoursAfterMeal ?? prefill?.hoursAfterMeal ?? 2,
+  );
   const [notes, setNotes] = useState(initialReading?.notes ?? '');
   const [recordedAt, setRecordedAt] = useState<Date>(() =>
     initialReading ? new Date(initialReading.recordedAt) : new Date(),
