@@ -1,4 +1,5 @@
 import type { AfterMealProtocol, ConditionType } from './condition';
+import type { ManualReminder, SmartAfterMeal } from './reminder';
 import type { TargetRange } from './target-range';
 import { Unit } from './unit';
 
@@ -22,6 +23,9 @@ export interface AppSettings {
   afterMealProtocol: AfterMealProtocol;
   /** 2h after-meal range (gestational). `null` = not set. */
   postMeal2hRange: TargetRange | null;
+  // --- Session 11: reminders (JSON kv, no migration) ---
+  manualReminders: ManualReminder[];
+  smartAfterMeal: SmartAfterMeal;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -35,4 +39,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   dueDate: null,
   afterMealProtocol: '1h',
   postMeal2hRange: null,
+  manualReminders: [],
+  smartAfterMeal: { enabled: false, offset: '1h' },
 };
