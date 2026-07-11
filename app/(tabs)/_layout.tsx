@@ -33,6 +33,14 @@ export default function TabsLayout(): ReactElement {
       <Tabs.Screen
         name="index"
         options={{
+          title: t('tabs.today'),
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => <Ionicons name="today-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="log"
+        options={{
           title: t('tabs.log'),
           headerShown: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="add-circle" color={color} size={size} />,
