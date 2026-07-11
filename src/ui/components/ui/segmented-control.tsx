@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radius, spacing } from '@/ui/theme';
+import { radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { AppText } from './app-text';
 
 interface Segment<T extends string> {
@@ -34,12 +34,15 @@ export function SegmentedControl<T extends string>({
   segments,
   value,
   onChange,
-  activeColor = colors.primary,
+  activeColor,
   style,
   segmentStyle,
   activeSegmentStyle,
   labelStyle,
 }: SegmentedControlProps<T>): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const fill = activeColor ?? colors.primary;
   return (
     <View style={[styles.track, style]}>
       {segments.map((segment) => {
@@ -50,7 +53,7 @@ export function SegmentedControl<T extends string>({
             style={[
               styles.segment,
               segmentStyle,
-              isActive && { backgroundColor: activeColor },
+              isActive && { backgroundColor: fill },
               isActive && activeSegmentStyle,
             ]}
             onPress={() => onChange(segment.value)}
@@ -75,25 +78,26 @@ export function SegmentedControl<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
-  track: {
-    flexDirection: 'row',
-    backgroundColor: colors.card,
-    borderRadius: radius.pill,
-    padding: 4,
-    // Soft inner-panel shadow (0 2px 10px rgba(27,43,36,.05)).
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 1,
-  },
-  segment: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: radius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    track: {
+      flexDirection: 'row',
+      backgroundColor: colors.card,
+      borderRadius: radius.pill,
+      padding: 4,
+      // Soft inner-panel shadow (0 2px 10px rgba(27,43,36,.05)).
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 1,
+    },
+    segment: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: radius.pill,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+    },
+  });
