@@ -71,7 +71,7 @@ export default function ReadingDetailScreen(): ReactElement {
           void (async (): Promise<void> => {
             try {
               await deleteReading(reading.id, { repository: getReadingRepository() });
-              void cancelRemindersForReading(reading.id);
+              void cancelRemindersForReading(reading.id).catch(() => {});
               router.back();
             } catch (err) {
               console.error('Failed to delete reading:', err);

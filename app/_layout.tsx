@@ -104,47 +104,57 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
   }, [isDbReady, initializeSettings, i18n]);
 
   const router = useRouter();
+  const [pendingResponse, setPendingResponse] = useState<ReminderPayload | undefined>(undefined);
 
   useEffect(() => {
-    void configureNotifications();
+    void configureNotifications().catch(() => {});
   }, []);
 
+  // Capture the notification response (cold-start + warm) without routing yet —
+  // on a killed-app cold start the navigator isn't mounted, so routing here would
+  // be dropped. The consumer effect below routes once the app is booted.
   useEffect(() => {
-    const routeFromPayload = (payload: ReminderPayload | undefined): void => {
-      if (!payload || payload.kind === 'manual') {
-        router.push('/(tabs)');
-        return;
-      }
-      router.push({
-        pathname: '/(tabs)',
-        params: toLogParams({
-          mealType: payload.mealType,
-          mealTiming: payload.mealTiming,
-          hoursAfterMeal: payload.hoursAfterMeal,
-        }),
-      });
-    };
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) {
+          setPendingResponse(response.notification.request.content.data as ReminderPayload);
+        }
+      })
+      .catch(() => {});
 
-    // Cold start: app opened by tapping a notification.
-    void Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        routeFromPayload(response.notification.request.content.data as ReminderPayload);
-      }
-    });
-
-    // Warm: tapped while running.
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      routeFromPayload(response.notification.request.content.data as ReminderPayload);
+      setPendingResponse(response.notification.request.content.data as ReminderPayload);
     });
     return () => sub.remove();
-  }, [router]);
+  }, []);
+
+  // Boot-ready is the negation of the spinner gate below; deep-link routing must
+  // wait until the <Stack> is mounted or expo-router silently drops the push.
+  const isBooted = isDbReady && isInitialized && fontsLoaded;
+  useEffect(() => {
+    if (!isBooted || pendingResponse === undefined) return;
+    const payload = pendingResponse;
+    setPendingResponse(undefined);
+    if (payload.kind === 'manual') {
+      router.push('/(tabs)');
+      return;
+    }
+    router.push({
+      pathname: '/(tabs)',
+      params: toLogParams({
+        mealType: payload.mealType,
+        mealTiming: payload.mealTiming,
+        hoursAfterMeal: payload.hoursAfterMeal,
+      }),
+    });
+  }, [isBooted, pendingResponse, router]);
 
   const bootError = dbError?.message ?? initError;
   if (bootError !== undefined) {
     return <BootError message={bootError} />;
   }
 
-  if (!isDbReady || !isInitialized || !fontsLoaded) {
+  if (!isBooted) {
     return <BootSpinner />;
   }
 

@@ -12,7 +12,8 @@
     "dbError": "Database error: {{message}}",
     "saveFailed": "Could not save the reading. Please try again.",
     "disclaimer": "This app is for personal wellness tracking only. It is not a medical device.",
-    "save": "Save"
+    "save": "Save",
+    "close": "Close"
   },
   "tabs": {
     "log": "Log",
