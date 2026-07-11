@@ -42,6 +42,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       dueDate,
       afterMealProtocol,
       postMeal2hRange,
+      manualReminders,
+      smartAfterMeal,
     ] = await Promise.all([
       getSettingsRepo().get('preferredUnit'),
       getSettingsRepo().get('preferredLanguage'),
@@ -53,6 +55,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       getSettingsRepo().get('dueDate'),
       getSettingsRepo().get('afterMealProtocol'),
       getSettingsRepo().get('postMeal2hRange'),
+      getSettingsRepo().get('manualReminders'),
+      getSettingsRepo().get('smartAfterMeal'),
     ]);
 
     set({
@@ -66,6 +70,8 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       dueDate,
       afterMealProtocol,
       postMeal2hRange,
+      manualReminders,
+      smartAfterMeal,
       isInitialized: true,
     });
   },
