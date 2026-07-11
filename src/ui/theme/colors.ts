@@ -1,110 +1,137 @@
 /**
- * Color tokens — "Evergreen" design system (see design/Sugar App.dc.html).
- * Light theme only (PRD: dark mode out of scope for v1). Values are translated
- * from the reference design; semantic token NAMES are kept stable so consumers
- * don't break — only the values changed from the previous blue theme.
- * Blood-sugar status colors are chosen for high contrast — elderly-first;
- * accessibility pass in Session 9 will verify contrast ratios formally.
+ * Color tokens — Evergreen (default) + Rose (gestational) presets.
+ * Only brand + neutral-ramp tokens differ between presets; text ramp, accents, and
+ * non-brand status colors are constant. Values reconciled against design/Sugar App.dc.html
+ * (EVERGREEN / ROSE objects). Light theme only (dark mode out of scope for v1).
  */
+import type { ConditionTheme } from '@/domain/models/condition';
 
-const palette = {
-  // Evergreen greens
-  green: '#0FA36B', // primary / accent (links, toggles, in-range)
-  greenDark: '#0E8F5E',
-  ink: '#1B2B24', // near-black green — primary text & CTA buttons
-  bg: '#F7FBF8', // app background
-  surface: '#E9F5EF', // soft green surface (chips, tints)
+/** The tokens that vary per theme preset. */
+interface Palette {
+  brand: string; // primary / accent (links, toggles, in-range)
+  brandDark: string;
+  brandInk: string; // darker brand — status text + in-range label (WCAG-safe)
+  surface: string; // soft tinted surface (chips, tints)
+  surfaceMuted: string;
+  bg: string; // app background
+  border: string;
+  borderStrong: string;
+}
+
+const evergreen: Palette = {
+  brand: '#0FA36B',
+  brandDark: '#0E8F5E',
+  brandInk: '#0A7350',
+  surface: '#E9F5EF',
   surfaceMuted: '#DCEDE4',
-  white: '#FFFFFF',
+  bg: '#F7FBF8',
+  border: '#E2EDE7',
+  borderStrong: '#CFE6DA',
+};
 
-  // Text ramp (green-tinted greys)
+const rose: Palette = {
+  brand: '#D14C87',
+  brandDark: '#BC3F76',
+  brandInk: '#A62C63',
+  surface: '#FBE9F1',
+  surfaceMuted: '#F6D9E6',
+  bg: '#FDF6FA',
+  border: '#F1DEE8',
+  borderStrong: '#EAC9DA',
+};
+
+/** Constant, theme-independent values. */
+const constant = {
+  ink: '#1B2B24', // near-black — primary text & the dark CTA pill
+  white: '#FFFFFF',
   textPrimary: '#1B2B24',
   textSecondary: '#5C6F66',
   textMuted: '#8A9A91',
   textFaint: '#B7C7BE',
-
-  // Borders / dividers
-  border: '#E2EDE7',
-  borderStrong: '#CFE6DA',
   divider: '#F1F6F3',
-
-  // Accent palette (cards, meal colors, warnings)
   blue: '#4E7CF6',
   purple: '#8B5CF6',
   amber: '#F5B301',
   orange: '#E8622C', // out-of-range / high
-
-  // Darkened status shades — used for TEXT/badges so small labels meet WCAG AA.
-  greenText: '#0A7350',
   amberText: '#8A5D00',
   orangeText: '#B23C10',
-
-  // Status tints
   warnBg: '#FDECE4',
   amberBg: '#FCF3DE',
-
   black: '#000000',
 } as const;
 
-export const colors = {
-  // Brand
-  primary: palette.green,
-  primaryDark: palette.greenDark,
-  primaryLight: palette.surface,
-  onPrimary: palette.white,
+function buildColors(p: Palette) {
+  return {
+    // Brand
+    primary: p.brand,
+    primaryDark: p.brandDark,
+    primaryLight: p.surface,
+    onPrimary: constant.white,
 
-  // CTA button (dark "ink" pill from the design)
-  primaryButton: palette.ink,
-  onPrimaryButton: palette.white,
+    // CTA button (dark ink pill — constant across themes)
+    primaryButton: constant.ink,
+    onPrimaryButton: constant.white,
 
-  // Surfaces
-  background: palette.bg,
-  surface: palette.surface,
-  surfaceMuted: palette.surfaceMuted,
-  card: palette.white,
-  border: palette.border,
-  borderStrong: palette.borderStrong,
-  divider: palette.divider,
+    // Surfaces
+    background: p.bg,
+    surface: p.surface,
+    surfaceMuted: p.surfaceMuted,
+    card: constant.white,
+    border: p.border,
+    borderStrong: p.borderStrong,
+    divider: constant.divider,
 
-  // Text
-  text: palette.textPrimary,
-  textMuted: palette.textSecondary,
-  textFaint: palette.textMuted,
-  textDisabled: palette.textFaint,
-  onDark: palette.white,
+    // Text
+    text: constant.textPrimary,
+    textMuted: constant.textSecondary,
+    textFaint: constant.textMuted,
+    textDisabled: constant.textFaint,
+    onDark: constant.white,
 
-  // Accent (charts, tiles, badges)
-  accentBlue: palette.blue,
-  accentPurple: palette.purple,
-  accentAmber: palette.amber,
-  accentOrange: palette.orange,
+    // Accent (charts, tiles, badges) — constant
+    accentBlue: constant.blue,
+    accentPurple: constant.purple,
+    accentAmber: constant.amber,
+    accentOrange: constant.orange,
 
-  // Blood-sugar status (target-range evaluation → 'in-range' | 'low' | 'high')
-  inRange: palette.green,
-  inRangeBg: palette.surface,
-  low: palette.amber,
-  lowBg: palette.amberBg,
-  high: palette.orange,
-  highBg: palette.warnBg,
-  outOfRange: palette.orange,
-  warnBg: palette.warnBg,
+    // Blood-sugar status
+    inRange: p.brand,
+    inRangeBg: p.surface,
+    low: constant.amber,
+    lowBg: constant.amberBg,
+    high: constant.orange,
+    highBg: constant.warnBg,
+    outOfRange: constant.orange,
+    warnBg: constant.warnBg,
 
-  // Status TEXT colors (contrast-safe on white/tinted backgrounds; see reading-display.test)
-  inRangeText: palette.greenText,
-  lowText: palette.amberText,
-  highText: palette.orangeText,
+    // Status TEXT colors (contrast-safe)
+    inRangeText: p.brandInk,
+    lowText: constant.amberText,
+    highText: constant.orangeText,
 
-  // Feedback
-  error: palette.orange,
-  success: palette.green,
-} as const;
+    // Feedback
+    error: constant.orange,
+    success: p.brand,
+  } as const;
+}
 
-/** Per-meal accent color (avatars in history, tiles) — the 4 onboarding accents. */
+export type ColorScheme = ReturnType<typeof buildColors>;
+
+/** Named schemes keyed by ConditionTheme. */
+export const colorSchemes: Record<ConditionTheme, ColorScheme> = {
+  evergreen: buildColors(evergreen),
+  rose: buildColors(rose),
+};
+
+/** Back-compat static export (evergreen). Modules not yet on useTheme() use this. */
+export const colors = colorSchemes.evergreen;
+
+/** Per-meal accent color — constant across themes. */
 export const mealColor = {
-  Breakfast: palette.amber,
-  Lunch: palette.blue,
-  Dinner: palette.purple,
-  Snack: palette.orange,
+  Breakfast: constant.amber,
+  Lunch: constant.blue,
+  Dinner: constant.purple,
+  Snack: constant.orange,
 } as const;
 
-export type ColorToken = keyof typeof colors;
+export type ColorToken = keyof ColorScheme;
