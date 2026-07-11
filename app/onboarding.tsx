@@ -7,6 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AfterMealProtocol, CONDITION_PRESETS, ConditionType } from '@/domain/models/condition';
+import { smartOffsetForProtocol } from '@/domain/models/reminder';
+import {
+  reconcileManualReminders,
+  requestNotificationPermission,
+} from '@/data/notifications/notification-service';
 import { Language } from '@/domain/models/settings';
 import { Unit } from '@/domain/models/unit';
 import { AppText, Button, Card, IconTile, SectionLabel, SegmentedControl } from '@/ui/components/ui';
@@ -14,7 +19,7 @@ import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { radius, spacing, useTheme } from '@/ui/theme';
 import { formatValue } from '@/ui/utils/format';
 
-type Step = 'welcome' | 'condition' | 'gdm';
+type Step = 'welcome' | 'condition' | 'gdm' | 'remind';
 
 interface Feature {
   key: 'log' | 'trends' | 'export' | 'offline';
@@ -48,10 +53,26 @@ export default function OnboardingScreen(): ReactElement {
   const gestPreset = CONDITION_PRESETS.gestational;
 
   // --- flow handlers ---
-  const finishGeneral = async (): Promise<void> => {
-    await applyConditionPreset(ConditionType.General);
+  const completeOnboarding = async (): Promise<void> => {
     await updateSetting('onboardingDone', true);
     router.replace('/(tabs)');
+  };
+
+  const enableRemindersAndFinish = async (): Promise<void> => {
+    const granted = await requestNotificationPermission();
+    if (granted) {
+      await updateSetting('smartAfterMeal', {
+        ...useSettingsStore.getState().smartAfterMeal,
+        enabled: true,
+      });
+      await reconcileManualReminders(useSettingsStore.getState().manualReminders);
+    }
+    await completeOnboarding();
+  };
+
+  const finishGeneral = async (): Promise<void> => {
+    await applyConditionPreset(ConditionType.General);
+    await completeOnboarding();
   };
 
   const skip = async (): Promise<void> => {
@@ -75,8 +96,17 @@ export default function OnboardingScreen(): ReactElement {
     await applyConditionPreset(ConditionType.Gestational);
     await updateSetting('dueDate', dueDate.getTime());
     await updateSetting('afterMealProtocol', protocol);
-    await updateSetting('onboardingDone', true);
-    router.replace('/(tabs)');
+    await updateSetting('manualReminders', [
+      {
+        id: `m${Date.now()}`,
+        label: t('screens.onboarding.remind.fastingLabel'),
+        time: '06:30',
+        enabled: true,
+        repeat: 'daily',
+      },
+    ]);
+    await updateSetting('smartAfterMeal', { enabled: false, offset: smartOffsetForProtocol(protocol) });
+    setStep('remind');
   };
 
   const dueLabel = dueDate.toLocaleDateString(preferredLanguage === 'vi' ? 'vi-VN' : 'en-US', {
@@ -295,6 +325,33 @@ export default function OnboardingScreen(): ReactElement {
             <Button variant="primary" uppercase label={t('screens.onboarding.gdm.start')} onPress={() => void finishGestational()} />
           </>
         )}
+
+        {/* ---------- ENABLE REMINDERS ---------- */}
+        {step === 'remind' && (
+          <>
+            <View style={styles.remindIcon}>
+              <Ionicons name="notifications" size={48} color={colors.primary} />
+            </View>
+            <AppText variant="title" style={styles.stepTitle}>
+              {t('screens.onboarding.remind.title')}
+            </AppText>
+            <AppText color={colors.textMuted} style={styles.remindBody}>
+              {t('screens.onboarding.remind.body')}
+            </AppText>
+            <Button
+              variant="primary"
+              uppercase
+              label={t('screens.onboarding.remind.enable')}
+              onPress={() => void enableRemindersAndFinish()}
+            />
+            <Button
+              variant="ghost"
+              label={t('screens.onboarding.remind.skip')}
+              onPress={() => void completeOnboarding()}
+              style={styles.remindSkip}
+            />
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -387,4 +444,7 @@ const styles = StyleSheet.create({
   previewBox: { borderRadius: radius.lg, padding: spacing.lg },
   previewLine: { marginTop: 6, lineHeight: 24 },
   previewAdjust: { marginTop: 8 },
+  remindIcon: { alignSelf: 'center', marginBottom: spacing.md },
+  remindBody: { marginTop: spacing.sm, marginBottom: spacing.xl, lineHeight: 24 },
+  remindSkip: { marginTop: spacing.sm },
 });

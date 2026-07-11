@@ -182,6 +182,13 @@
         "previewTitle": "Targets set to pregnancy guidelines",
         "previewAdjust": "Adjust in Settings if your doctor advised otherwise.",
         "start": "Start tracking"
+      },
+      "remind": {
+        "title": "Turn on reminders?",
+        "body": "Sugar can remind you to measure on time, even when the app is closed. You can change this later in Settings.",
+        "enable": "Turn on reminders",
+        "skip": "Later",
+        "fastingLabel": "Fasting check"
       }
     },
     "notFound": {
