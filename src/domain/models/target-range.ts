@@ -5,7 +5,8 @@ export interface TargetRange {
 
 export interface TargetRanges {
   fasting: TargetRange; // used when mealTiming === 'Before'
-  postMeal: TargetRange; // used when mealTiming === 'After'
+  postMeal: TargetRange; // used when mealTiming === 'After' (1h / primary)
+  postMeal2h?: TargetRange; // gestational: readings >= 2h after a meal, when set
 }
 
 export const RangeEvaluation = {
