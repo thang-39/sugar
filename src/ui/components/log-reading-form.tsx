@@ -26,6 +26,7 @@ import { createReading } from '@/domain/use-cases/create-reading';
 import { updateReading } from '@/domain/use-cases/update-reading';
 import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { readingUseCaseDeps } from '@/data/repositories/factory';
+import { syncRemindersForReading } from '@/data/notifications/notification-service';
 import { getDefaultMealType, convertValueString } from '@/ui/utils/log-form';
 import { formatDateTime } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
@@ -84,6 +85,9 @@ export function LogReadingForm({
     preferredLanguage,
     fastingRange,
     postMealRange,
+    postMeal2hRange,
+    afterMealProtocol,
+    smartAfterMeal,
     alertsEnabled,
     updateSetting,
   } = useSettingsStore();
@@ -224,7 +228,13 @@ export function LogReadingForm({
       const evaluation = evaluateReading(reading, {
         fasting: fastingRange,
         postMeal: postMealRange,
+        postMeal2h: postMeal2hRange ?? undefined,
       });
+      // Smart after-meal + conditional re-check scheduling (create OR edit — idempotent
+      // per reading id). Fire-and-forget; a scheduling failure never blocks the save UX.
+      void syncRemindersForReading(reading, smartAfterMeal, afterMealProtocol, evaluation).catch(
+        (err) => console.warn('reminder scheduling failed', err),
+      );
       // Out-of-range success still saved — warn haptic; in-range → success.
       void (evaluation === RangeEvaluation.InRange ? haptics.success() : haptics.warning());
       showSavedAlert(reading, evaluation);
