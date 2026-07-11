@@ -111,6 +111,12 @@ export default function SettingsScreen(): ReactElement {
           onPress={() => router.push('/(tabs)/settings/tracking-mode')}
         />
         <SettingRow
+          icon="alarm"
+          iconColor={colors.accentOrange}
+          label={t('screens.settings.index.rows.reminders')}
+          onPress={() => router.push('/(tabs)/settings/reminders')}
+        />
+        <SettingRow
           icon="resize"
           iconColor={colors.primary}
           label={t('screens.settings.index.rows.unit')}
