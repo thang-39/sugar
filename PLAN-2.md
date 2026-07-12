@@ -170,17 +170,33 @@ Unchanged from the monetization addition. Summary:
 
 ---
 
+### Session 17.5: Local backup & restore — free, no server ⭐ (added 2026-07-12)
+**Goal:** every user can get all their data off the phone and back onto a new one — no account, no server, no Pro. This is the "free tier is sacred / you can always take your data with you" guarantee, and it's the migration path + safety net if the cloud is ever shut off. Ships **independently of auth** (does not need Session 17).
+
+- **One versioned JSON is the canonical backup format** for the whole app (free local *and* Session 18 cloud reuse it). Shape: `{ app: 'sugar', schemaVersion, exportedAt, readings: [...], settings: {...} }` — serialize **domain models**, not the physical SQLite layout, so DB migrations don't break old files. `schemaVersion` = a backup-format version we own (bump on shape changes), independent of drizzle migration ids.
+- Domain use-cases (pure TS, no React/Expo, unit-tested — these are the seam Session 18 also calls): `serializeBackup(readings, settings) → BackupFile`; `parseBackup(unknown) → BackupFile` (validate `app` tag + `schemaVersion`, narrow with type guards, never `any`); `migrateBackup(BackupFile) → BackupFile` (forward-migrate older `schemaVersion` to current before apply); `applyBackup(BackupFile, repos)` — **replace** semantics (clear + insert inside one transaction), each reading re-validated (20–600 warn-only rule preserved; garbage rows skipped + counted, never abort).
+- Data layer `BackupService`: **Export** → `serializeBackup` → write `sugar-backup-YYYY-MM-DD.json` to cache dir (`expo-file-system`) → `expo-sharing` share sheet (user picks Google Drive / iCloud Files / Files / Zalo / email — we integrate no cloud SDK; the OS sheet gives Drive + iCloud for free, cross-platform). **Import** → `expo-document-picker` (`application/json`) → read → `parseBackup` → `migrateBackup` → confirm overwrite ("Dữ liệu hiện tại trên máy sẽ được thay bằng bản sao lưu này") → `applyBackup` → reset zustand → success ("Đã khôi phục {n} chỉ số").
+- **OS auto-backup for free (silent):** ensure the SQLite file is NOT excluded from iCloud (iOS) / Android Auto Backup so users who never tap Export still get in-ecosystem protection. Verify the db path isn't in a no-backup dir.
+- Settings → "Sao lưu dữ liệu" section (all modes, signed-out fine): "Xuất tệp sao lưu" + "Khôi phục từ tệp" + "Lần sao lưu gần nhất: {ngày}" nudge (`lastLocalBackupAt` settings key). Caring copy, i18n vi + en.
+- **Never gated** — money-principle #1. `backup_enabled` analytics event (Session 15) fires here too (anonymous, no glucose).
+- Version rule: `parseBackup` **rejects a file whose `schemaVersion` is newer than the app** ("Tệp này từ phiên bản Sugar mới hơn — hãy cập nhật app") — mirror of Session 18's cloud rule so both paths behave identically.
+
+**Accept:** Export → wipe (Delete All Data) → Import the file = byte-identical readings + settings; import of a hand-edited older-`schemaVersion` file migrates forward; newer-version file rejected with update message; malformed/garbage rows skipped + reported, never crash; works fully signed-out; `serializeBackup`/`parseBackup`/`migrateBackup`/`applyBackup` unit-tested (round-trip, version up-migration, rejection, bad-row skip) against in-memory SQLite; `tsc` + tests green. Commit: `feat: free local json backup and restore`
+
+---
+
 ### Session 18: Cloud backup & restore — Pro ⭐ (growth plan S16)
-Unchanged from the monetization addition. Summary:
+**Reworked 2026-07-12: unified on the Session 17.5 JSON format** (was raw single-slot SQLite `.db` upload). Pro sells *convenience* — automatic, cross-device, no manual file — on top of the same serializer the free path uses. Summary:
 
-- Private bucket `backups`, policy = own `auth.uid()/` prefix only; `backup_meta` table (RLS owner-only). **Single-slot** latest-only design (`backups/{uid}/sugar.db`, upsert) — fits the 1GB free tier, one-button UX.
-- `BackupService`: `PRAGMA wal_checkpoint(TRUNCATE)` → copy sqlite file → upload upsert → upsert meta (`schema_version` = latest local migration id) → `lastBackupAt`.
-- **Auto backup on foreground** when `isPro && session && now − lastBackupAt > 7 days` — no background task, zero battery.
-- **Restore:** "Sao lưu gần nhất: {ngày} · {size}" + "Khôi phục về máy này" → overwrite warning → download → SQLite magic-header check → **reject if `schema_version` newer than app** ("hãy cập nhật app trước") → `closeDb()` → replace file → reopen (older snapshots auto-migrate) → reset zustand → success screen.
-- Gate: whole feature Pro (`backup_gate`); NOW add "Sao lưu & khôi phục cloud" to `PRO_BENEFITS`. Privacy policy + Data Safety updated ("dữ liệu chỉ rời máy khi mẹ bật sao lưu…"); client-side E2E encryption deliberately deferred (lost-key trap), trade-off documented.
-- Ops: Supabase free tier pauses after ~1 week idle — unpause/ping until real users back up weekly; upgrade only when depended on.
+- Private bucket `backups`, policy = own `auth.uid()/` prefix only; `backup_meta` table (RLS owner-only). **Single-slot** latest-only design (`backups/{uid}/sugar-backup.json`, upsert) — the JSON blob is tiny (a heavy user logging ~5×/day ≈ under 1 MB/year), so it fits the 1 GB free tier with huge headroom and keeps one-button UX.
+- `BackupService` **reuses Session 17.5's use-cases** — no second serializer: `serializeBackup(readings, settings)` → JSON string → upload upsert → upsert meta (`schema_version` = current backup-format `schemaVersion`) → `lastCloudBackupAt`.
+- **Auto backup on foreground** when `isPro && session && now − lastCloudBackupAt > 7 days` — no background task, zero battery. (This same foreground ping also keeps the free-tier project from pausing once real Pro users exist — the 7-day-idle pause only bites pre-launch.)
+- **Restore:** "Sao lưu gần nhất: {ngày} · {size}" + "Khôi phục về máy này" → overwrite warning → download JSON → `parseBackup` (validates `app` tag + version) → `migrateBackup` → **reject if `schemaVersion` newer than app** ("hãy cập nhật app trước") → `applyBackup` (transactional clear+insert, older files auto-migrate) → reset zustand → success screen. Identical restore path to local import — cloud only differs in *where the bytes come from*.
+- Gate: whole feature Pro (`backup_gate`); NOW add "**Tự động sao lưu đám mây & đồng bộ nhiều máy**" to `PRO_BENEFITS` (Pro sells the *automatic + cross-device* layer; the manual local file itself is free — Session 17.5). Privacy policy + Data Safety updated ("dữ liệu chỉ rời máy khi mẹ bật sao lưu đám mây…"); client-side E2E encryption deliberately deferred (lost-key trap), trade-off documented.
+- **RLS is the critical setting** — each user reads only `auth.uid()/` objects and their own `backup_meta` row; verify with a cross-user 403 check.
+- Ops: Supabase free tier pauses after ~1 week idle — the Pro foreground ping covers it once live; unpause/ping manually until then; upgrade to Pro ($25/mo) only when the 500 MB DB / activity genuinely depends on it.
 
-**Accept:** round-trip backup → Delete All Data → restore = identical readings + settings; older snapshot migrates; newer snapshot rejected with update message; manual RLS check (user A → user B object = 403); non-Pro sees locked state; auto-backup fires once per 7 days, not every foreground; `tsc` + tests green. Commit: `feat: cloud backup and restore`
+**Accept:** round-trip cloud backup → Delete All Data → restore = identical readings + settings; older-version blob migrates; newer-version blob rejected with update message; manual RLS check (user A → user B object = 403); non-Pro sees locked state; auto-backup fires once per 7 days, not every foreground; cloud + local import share one `applyBackup` path (no duplicated restore logic); `tsc` + tests green. Commit: `feat: cloud json backup and restore`
 
 ---
 
@@ -251,12 +267,12 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 
 ---
 
-## Money principles (apply to Sessions 15–19)
+## Money principles (apply to Sessions 15–19, incl. 17.5)
 
-1. *Free tier is sacred:* logging, view/edit/delete, reminders, basic chart, and the **first** PDF report are never gated. Paywall only on derived value.
+1. *Free tier is sacred:* logging, view/edit/delete, reminders, basic chart, the **first** PDF report, and **local backup/restore (JSON export/import — your data is always yours to take)** are never gated. Paywall only on derived value. Pro sells the *automatic, cross-device cloud* layer, never access to your own data.
 2. *One entitlement source of truth:* every gate goes through `useIsPro()` / `useProGate()` — never scattered purchase checks.
 3. *Sell only what's shipped:* `PRO_BENEFITS` is a config array; a line is added only in the session that ships the feature.
-4. *Privacy story evolves honestly:* "không thu thập dữ liệu" → "dữ liệu đường huyết chỉ nằm trên máy; chỉ rời máy khi mẹ bật sao lưu". Data Safety / App Privacy updated at S15 (purchases + optional anonymous analytics), S18 (backup opt-in), S19 (ads — if ever).
+4. *Privacy story evolves honestly:* "không thu thập dữ liệu" → "dữ liệu đường huyết chỉ nằm trên máy; chỉ rời máy khi mẹ **tự xuất tệp** hoặc **bật sao lưu đám mây**". Local JSON export (S17.5) keeps the data on-device / in the user's own cloud (no server of ours). Data Safety / App Privacy updated at S15 (purchases + optional anonymous analytics), S18 (cloud backup opt-in — this is when our server first holds health data, for Pro users only, RLS-protected), S19 (ads — if ever).
 5. *IAP only:* all digital purchases via Apple/Google IAP. Never MoMo/bank transfer for Pro — store-policy violation, app-removal risk.
 
 **Verified facts (2026-07-07):** VN supports Play merchant registration (paid apps + IAP, USD/EUR payout). RevenueCat free to $2,500 MTR/month (~64tr VND) then 1%. Play account created before 13/11/2023 → **no** 12-tester/14-day closed-testing requirement → straight to production at Session 23 (a newer account must budget ~2 extra weeks for closed testing). Aptabase free 20k events/month, fully anonymized, no consent banner; over limit = pause, no charge.
@@ -276,12 +292,13 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 
 ### v1.4 (2026-07-07, confirmed 2026-07-11)
 - **Sugar Pro — one-time 149.000₫** via IAP (`sugar_pro_lifetime`), RevenueCat entitlement `pro`. Never gate logging or viewing/editing own data.
-- **Free/Pro matrix:** Free = unlimited logging/history/ranges/reminders/basic trends/weekly summary + **first PDF (watermarked)**. Pro = unlimited PDF + no watermark, **CSV export** *(supersedes v1.1 core-free CSV; pre-launch, no user loses anything)*, "Theo bữa" analysis, cloud backup & restore, (no-ads only if Session 19 activates).
-- **Auth & backup partially un-deferred:** Supabase anonymous-first auth (Google now; Apple at iOS launch per 4.8; secure-store sessions; in-app account deletion + web deletion-request URL) + single-slot Pro backup/restore (private bucket + RLS). **Two-way sync / multi-device stays deferred.**
+- **Free/Pro matrix:** Free = unlimited logging/history/ranges/reminders/basic trends/weekly summary + **first PDF (watermarked)** + **local backup/restore (JSON export/import, no account)**. Pro = unlimited PDF + no watermark, **CSV export** *(supersedes v1.1 core-free CSV; pre-launch, no user loses anything)*, "Theo bữa" analysis, **automatic cloud backup + cross-device restore**, (no-ads only if Session 19 activates).
+- **Backup format unified on versioned JSON** (`schemaVersion` we own; serialize domain models, not the SQLite file) — one serializer/restore path shared by free local (S17.5) and Pro cloud (S18).
+- **Auth & backup partially un-deferred:** free local JSON backup/restore needs no account (S17.5). Supabase anonymous-first auth (Google now; Apple at iOS launch per 4.8; secure-store sessions; in-app account deletion + web deletion-request URL) + single-slot **Pro cloud** backup/restore (private bucket + RLS). **Two-way real-time sync stays deferred** ("cross-device" = restore-latest, not live merge.)
 - **Postpartum lifecycle in scope:** `babyBornAt` settings key, post-due-date prompt, OGTT reminders (4–12 weeks + yearly), long-term switch re-applies the **general** preset, data untouched.
 - **Supplies (affiliate) screen in scope:** static list, external Shopee links, mandatory disclosure, links via EAS Update.
 - **Weekly summary notification** (local, Sun 19:30, only when week has ≥5 readings, no guilt/streak copy). **Review prompt:** once, after first successful PDF export (fallback 20th reading).
-- **Stories 61–71:** 61 buy Pro · 62 restore purchases · 63 report gate from 2nd + watermark removal · 64 Theo bữa (Pro) · 65 Google sign-in (Apple at iOS) · 66 in-app account deletion · 67 cloud backup (Pro) · 68 restore to new device · 69 weekly summary · 70 postpartum + OGTT · 71 supplies/affiliate. *(72 ads — only if Session 19 passes its decision gate.)*
+- **Stories 61–73:** 61 buy Pro · 62 restore purchases · 63 report gate from 2nd + watermark removal · 64 Theo bữa (Pro) · 65 Google sign-in (Apple at iOS) · 66 in-app account deletion · 67 cloud backup (Pro) · 68 restore to new device · 69 weekly summary · 70 postpartum + OGTT · 71 supplies/affiliate · **73 local JSON backup/restore (free, no account — S17.5)**. *(72 ads — only if Session 19 passes its decision gate.)*
 - **Data Safety / App Privacy by milestone:** S15 purchases + anonymous analytics (if enabled) · S18 backup opt-in · S19 advertising (if built). Marketing line becomes "dữ liệu đường huyết chỉ nằm trên máy của mẹ".
 - **Deferred (new):** meal-content logging + meal-photo AI analysis; type-2 mode revival; widget quick-log.
 
@@ -310,7 +327,7 @@ Approval steps take days-to-weeks. **None of them block Sessions 15–22 anymore
 **Updated 2026-07-12: build everything, then publish once at the end (Session 23) — Google + Apple together.** No early soft launch; no shipping the paywall via post-launch update. Trade-off: lose early real-user feedback, gain a single complete launch.
 
 1. Sessions 10–14 (value + build rails/prep, **no submission**).
-2. Sessions 15–16 (paywall + gating) → 17–18 (auth + backup) → 20 (retention loop) → 21 (postpartum + supplies). Session 19 (ads) waits for its 6–8 week decision gate. Session 22 opportunistic.
+2. Sessions 15–16 (paywall + gating) → **17.5 (free local backup — no account, can ship anytime after S13)** → 17 (auth) → 18 (Pro cloud backup) → 20 (retention loop) → 21 (postpartum + supplies). Session 19 (ads) waits for its 6–8 week decision gate. Session 22 opportunistic. *(17.5 has no auth dependency, so it may also slot right after S13's export surface if preferred.)*
 3. **Session 23 = the launch:** submit to Google Play + Apple App Store together (optional 1-week internal-testing cohort first per §7).
 
 North star = PDF reports/week. Kill/pivot criteria (growth plan §9) unchanged: 3 months <500 installs or conversion <1.5% → change channel/positioning; 6 months <2tr/tháng → maintenance mode. Don't loosen the criteria under income pressure — they protect your time.
@@ -327,3 +344,5 @@ North star = PDF reports/week. Kill/pivot criteria (growth plan §9) unchanged: 
 | GDM add. S13 (PDF) | **Session 13** | absorbs CSV export; standalone Export screen removed; `1h+2h` cell rendering |
 | GDM add. S14 / growth S18 | **Session 14** | unchanged |
 | Money add. S15–S22 / growth S13–S17, S19–S21 | **Sessions 15–22** | unchanged except: CSV gate now lives on the report screen; Session 21 long-term switch targets `general` (no type2); meal-photo idea logged as deferred |
+| — (new 2026-07-12) | **Session 17.5** | free local JSON backup/restore added (no server, never gated) — the "you can always take your data with you" guarantee |
+| Money add. S16 (cloud backup) | **Session 18** | reworked to the unified JSON format (was raw `.db` upload); Pro now sells *automatic + cross-device*, reusing S17.5's serializer/restore |
