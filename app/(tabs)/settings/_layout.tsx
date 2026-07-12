@@ -17,11 +17,6 @@ export default function SettingsStackLayout(): ReactElement {
       }}
     >
       <Stack.Screen name="index" options={{ title: t('tabs.settings') }} />
-      <Stack.Screen name="target-range" options={{ title: t('screens.settings.targetRange.title') }} />
-      <Stack.Screen name="tracking-mode" options={{ title: t('screens.settings.trackingMode.title') }} />
-      <Stack.Screen name="reminders" options={{ title: t('reminders.title') }} />
-      <Stack.Screen name="report" options={{ title: t('screens.settings.report.title') }} />
-      <Stack.Screen name="about" options={{ title: t('screens.settings.about.title') }} />
     </Stack>
   );
 }

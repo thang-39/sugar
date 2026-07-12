@@ -79,7 +79,7 @@ export default function RootLayout(): ReactElement {
 function RootLayoutReady({ db }: { db: Db }): ReactElement {
   const { success: isDbReady, error: dbError } = useMigrations(db, migrations);
   const { isInitialized, initError, initialize: initializeSettings } = useSettingsStore();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [fontsLoaded] = useFonts({
     Nunito_400Regular,
     Nunito_600SemiBold,
@@ -163,9 +163,45 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
       <ThemeProvider>
         <SafeAreaProvider>
           <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitleStyle: { fontSize: fontSize.lg, fontFamily: fontFamily.extrabold },
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          >
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+            <Stack.Screen
+              name="reading/[id]/index"
+              options={{ headerShown: true, title: t('screens.readingDetail.title') }}
+            />
+            <Stack.Screen
+              name="reading/[id]/edit"
+              options={{ headerShown: true, title: t('screens.editReading.title') }}
+            />
+            <Stack.Screen
+              name="report"
+              options={{ headerShown: true, title: t('screens.settings.report.title') }}
+            />
+            <Stack.Screen
+              name="reminders"
+              options={{ headerShown: true, title: t('reminders.title') }}
+            />
+            <Stack.Screen
+              name="target-range"
+              options={{ headerShown: true, title: t('screens.settings.targetRange.title') }}
+            />
+            <Stack.Screen
+              name="tracking-mode"
+              options={{ headerShown: true, title: t('screens.settings.trackingMode.title') }}
+            />
+            <Stack.Screen
+              name="about"
+              options={{ headerShown: true, title: t('screens.settings.about.title') }}
+            />
           </Stack>
         </SafeAreaProvider>
       </ThemeProvider>
