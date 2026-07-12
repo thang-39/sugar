@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/ui/components/ui';
-import { colors, radius, spacing } from '@/ui/theme';
+import { radius, spacing, useTheme } from '@/ui/theme';
 
 interface StatCardProps {
   value: string;
@@ -15,6 +15,7 @@ interface StatCardProps {
 
 /** Colored summary tile for the Trends screen (Average / In range / Readings). */
 export function StatCard({ value, label, color, onDark = true }: StatCardProps): ReactElement {
+  const colors = useTheme();
   const fg = onDark ? colors.onDark : colors.text;
   return (
     <View style={[styles.tile, { backgroundColor: color }]}>

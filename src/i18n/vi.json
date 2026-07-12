@@ -6,10 +6,10 @@
   "paywall": {
     "title": "Sugar Pro",
     "subtitle": "Mở khóa toàn bộ tính năng cao cấp — trả một lần, dùng mãi mãi.",
-    "cta": "Mở khóa Sugar Pro — {{price}}",
+    "cta": "Mở khóa Sugar Pro",
+    "priceLine": "Chỉ {{price}} · một lần",
     "ctaLoading": "Đang tải giá…",
     "launchNote": "Giá ra mắt — mua một lần, không phí hằng tháng.",
-    "oneTime": "Thanh toán một lần qua Google Play. Không tự động gia hạn.",
     "benefits": {
       "unlimitedReports": "Xuất báo cáo PDF không giới hạn",
       "noWatermark": "Báo cáo sạch, không có dòng chữ quảng cáo",

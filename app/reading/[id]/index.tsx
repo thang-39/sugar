@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import type { ReactElement, ReactNode } from 'react';
+import { useMemo, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -11,12 +11,14 @@ import { deleteReading } from '@/domain/use-cases/delete-reading';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { useReading } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, fontSize, fontFamily, spacing } from '@/ui/theme';
+import { fontSize, fontFamily, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { formatDateTime, formatValue } from '@/ui/utils/format';
 import { statusBgColor, statusColor } from '@/ui/utils/reading-display';
 import { AppText, Badge, Button, Card } from '@/ui/components/ui';
 
 function DetailRow({ label, children }: { label: string; children: ReactNode }): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.detailRow}>
       <AppText color={colors.textMuted}>{label}</AppText>
@@ -30,6 +32,8 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }):
 export default function ReadingDetailScreen(): ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { preferredUnit, preferredLanguage, fastingRange, postMealRange, postMeal2hRange } =
     useSettingsStore();
@@ -86,8 +90,8 @@ export default function ReadingDetailScreen(): ReactElement {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {/* Value hero with status tint */}
-      <View style={[styles.hero, { backgroundColor: statusBgColor(evaluation) }]}>
-        <AppText variant="display" color={statusColor(evaluation)}>
+      <View style={[styles.hero, { backgroundColor: statusBgColor(evaluation, colors) }]}>
+        <AppText variant="display" color={statusColor(evaluation, colors)}>
           {formatValue(reading.value, preferredUnit)}
         </AppText>
         <AppText weight="bold" color={colors.textMuted}>
@@ -96,7 +100,7 @@ export default function ReadingDetailScreen(): ReactElement {
         <Badge
           label={t(`status.${evaluation}`).toUpperCase()}
           color={colors.onPrimary}
-          backgroundColor={statusColor(evaluation)}
+          backgroundColor={statusColor(evaluation, colors)}
           style={styles.statusBadge}
         />
       </View>
@@ -144,50 +148,51 @@ export default function ReadingDetailScreen(): ReactElement {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-  },
-  centerState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    padding: spacing.xxl,
-    gap: spacing.md,
-  },
-  hero: {
-    alignItems: 'center',
-    borderRadius: 20,
-    paddingVertical: spacing.xl,
-    gap: spacing.xs,
-  },
-  statusBadge: {
-    marginTop: spacing.sm,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.lg,
-  },
-  card: {
-    gap: spacing.sm,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  detailValue: {
-    flexShrink: 1,
-    textAlign: 'right',
-  },
-  notes: {
-    marginTop: spacing.xs,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.base,
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: spacing.lg,
+      gap: spacing.lg,
+    },
+    centerState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+      padding: spacing.xxl,
+      gap: spacing.md,
+    },
+    hero: {
+      alignItems: 'center',
+      borderRadius: 20,
+      paddingVertical: spacing.xl,
+      gap: spacing.xs,
+    },
+    statusBadge: {
+      marginTop: spacing.sm,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.lg,
+    },
+    card: {
+      gap: spacing.sm,
+    },
+    detailRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    detailValue: {
+      flexShrink: 1,
+      textAlign: 'right',
+    },
+    notes: {
+      marginTop: spacing.xs,
+      fontFamily: fontFamily.regular,
+      fontSize: fontSize.base,
+    },
+  });

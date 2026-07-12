@@ -10,7 +10,7 @@ import { MealTiming } from '@/domain/models/meal';
 import type { Reading } from '@/domain/models/reading';
 import type { Unit } from '@/domain/models/unit';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
-import { colors, mealColor, spacing } from '@/ui/theme';
+import { mealColor, spacing, useTheme } from '@/ui/theme';
 import { formatDate, formatTime, formatValue } from '@/ui/utils/format';
 import { mealIcon } from '@/ui/utils/meal-display';
 import { statusBadge, statusColor } from '@/ui/utils/reading-display';
@@ -33,6 +33,7 @@ export function ReadingListItem({
   onPress,
 }: ReadingListItemProps): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
   const evaluation = evaluateReading(reading, ranges);
   const isOutOfRange = evaluation !== RangeEvaluation.InRange;
   const recordedAt = new Date(reading.recordedAt);
@@ -59,14 +60,17 @@ export function ReadingListItem({
       <IconTile icon={mealIcon[reading.mealType]} color={mealColor[reading.mealType]} />
       <View style={styles.main}>
         <View style={styles.valueRow}>
-          <AppText variant="heading" color={statusColor(evaluation)}>
+          <AppText variant="heading" color={statusColor(evaluation, colors)}>
             {formatValue(reading.value, unit)}
           </AppText>
           <AppText variant="caption" color={colors.textFaint}>
             {unit}
           </AppText>
           {isOutOfRange && (
-            <Badge label={t(`status.${evaluation}`).toUpperCase()} {...statusBadge(evaluation)} />
+            <Badge
+              label={t(`status.${evaluation}`).toUpperCase()}
+              {...statusBadge(evaluation, colors)}
+            />
           )}
         </View>
         <AppText variant="caption" numberOfLines={1}>
