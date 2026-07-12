@@ -12,8 +12,8 @@ import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { useReading } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { fontSize, fontFamily, spacing, useTheme, type ColorScheme } from '@/ui/theme';
-import { formatDateTime, formatValue } from '@/ui/utils/format';
-import { statusBgColor, statusColor } from '@/ui/utils/reading-display';
+import { formatDate, formatTime, formatValue } from '@/ui/utils/format';
+import { statusColor } from '@/ui/utils/reading-display';
 import { AppText, Badge, Button, Card } from '@/ui/components/ui';
 
 function DetailRow({ label, children }: { label: string; children: ReactNode }): ReactElement {
@@ -64,6 +64,12 @@ export default function ReadingDetailScreen(): ReactElement {
     postMeal2h: postMeal2hRange ?? undefined,
   });
   const recordedAt = new Date(reading.recordedAt);
+  const timingText =
+    reading.mealTiming === MealTiming.After
+      ? t('readingDetail.timingValues.after', {
+          n: reading.hoursAfterMeal !== undefined && reading.hoursAfterMeal >= 2 ? 2 : 1,
+        })
+      : t('readingDetail.timingValues.before');
 
   const confirmDelete = (): void => {
     Alert.alert(t('readingDetail.deleteConfirmTitle'), t('readingDetail.deleteConfirmMessage'), [
@@ -89,47 +95,41 @@ export default function ReadingDetailScreen(): ReactElement {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      {/* Value hero with status tint */}
-      <View style={[styles.hero, { backgroundColor: statusBgColor(evaluation, colors) }]}>
-        <AppText variant="display" color={statusColor(evaluation, colors)}>
-          {formatValue(reading.value, preferredUnit)}
-        </AppText>
-        <AppText weight="bold" color={colors.textMuted}>
-          {preferredUnit}
-        </AppText>
-        <Badge
-          label={t(`status.${evaluation}`).toUpperCase()}
-          color={colors.onPrimary}
-          backgroundColor={statusColor(evaluation, colors)}
-          style={styles.statusBadge}
-        />
-      </View>
+      {/* One card: colored value hero + detail rows + inline notes */}
+      <Card style={styles.detailCard}>
+        <View style={[styles.hero, { backgroundColor: statusColor(evaluation, colors) }]}>
+          <Badge
+            label={t(`status.${evaluation}`).toUpperCase()}
+            color={statusColor(evaluation, colors)}
+            backgroundColor={colors.heroBadgeBg}
+            style={styles.statusBadge}
+          />
+          <AppText variant="display" color={colors.onPrimary} style={styles.heroValue}>
+            {formatValue(reading.value, preferredUnit)}{' '}
+            <AppText weight="bold" color={colors.onPrimary}>
+              {preferredUnit}
+            </AppText>
+          </AppText>
+        </View>
 
-      <Card style={styles.card}>
-        <DetailRow label={t('readingDetail.mealLabel')}>
-          {t(`logForm.mealTypes.${reading.mealType}`)}
-        </DetailRow>
-        <DetailRow label={t('readingDetail.timingLabel')}>
-          {t(`logForm.mealTimings.${reading.mealTiming}`)}
-        </DetailRow>
-        {reading.mealTiming === MealTiming.After && reading.hoursAfterMeal !== undefined && (
-          <DetailRow label={t('readingDetail.hoursAfterLabel')}>
-            {t('history.hoursValue', { n: reading.hoursAfterMeal })}
+        <View style={styles.rows}>
+          <DetailRow label={t('readingDetail.dateLabel')}>
+            {formatDate(recordedAt, preferredLanguage)}
           </DetailRow>
-        )}
-        <DetailRow label={t('readingDetail.recordedAtLabel')}>
-          {formatDateTime(recordedAt, preferredLanguage)}
-        </DetailRow>
-      </Card>
-
-      <Card style={styles.card}>
-        <AppText color={colors.textMuted}>{t('readingDetail.notesLabel')}</AppText>
-        <AppText
-          style={styles.notes}
-          color={reading.notes === undefined ? colors.textDisabled : colors.text}
-        >
-          {reading.notes ?? t('readingDetail.noNotes')}
-        </AppText>
+          <DetailRow label={t('readingDetail.timeLabel')}>
+            {formatTime(recordedAt, preferredLanguage)}
+          </DetailRow>
+          <DetailRow label={t('readingDetail.mealLabel')}>
+            {t(`logForm.mealTypes.${reading.mealType}`)}
+          </DetailRow>
+          <DetailRow label={t('readingDetail.timingLabel')}>{timingText}</DetailRow>
+          {reading.notes !== undefined && (
+            <View style={styles.notesBlock}>
+              <AppText color={colors.textMuted}>{t('readingDetail.notesLabel')}</AppText>
+              <AppText style={styles.notes}>{reading.notes}</AppText>
+            </View>
+          )}
+        </View>
       </Card>
 
       <Button
@@ -166,18 +166,25 @@ const makeStyles = (colors: ColorScheme) =>
       padding: spacing.xxl,
       gap: spacing.md,
     },
+    detailCard: {
+      padding: 0,
+      overflow: 'hidden',
+    },
     hero: {
       alignItems: 'center',
-      borderRadius: 20,
       paddingVertical: spacing.xl,
-      gap: spacing.xs,
+      gap: spacing.sm,
     },
     statusBadge: {
-      marginTop: spacing.sm,
+      alignSelf: 'center',
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.lg,
     },
-    card: {
+    heroValue: {
+      textAlign: 'center',
+    },
+    rows: {
+      padding: spacing.lg,
       gap: spacing.sm,
     },
     detailRow: {
@@ -190,8 +197,11 @@ const makeStyles = (colors: ColorScheme) =>
       flexShrink: 1,
       textAlign: 'right',
     },
-    notes: {
+    notesBlock: {
       marginTop: spacing.xs,
+      gap: spacing.xs,
+    },
+    notes: {
       fontFamily: fontFamily.regular,
       fontSize: fontSize.base,
     },
