@@ -55,6 +55,8 @@ export default function TodayScreen(): ReactElement {
   const week = isGestational && dueDate !== null ? pregnancyWeek(dueDate, Date.now()) : undefined;
   const daysUntilDue =
     dueDate !== null ? Math.max(0, Math.ceil((dueDate - Date.now()) / DAY_MS)) : undefined;
+  const dueDateLabel =
+    dueDate !== null ? formatDate(new Date(dueDate), preferredLanguage) : undefined;
 
   return (
     <SafeAreaView
@@ -65,8 +67,9 @@ export default function TodayScreen(): ReactElement {
         {isGestational ? (
           <>
             <AppText variant="title">{t('today.header.week', { week })}</AppText>
-            <AppText color={colors.textMuted}>
+            <AppText variant="caption" color={colors.textMuted}>
               {t('today.header.dueCountdown', { days: daysUntilDue })}
+              {dueDateLabel ? ` · ${dueDateLabel}` : ''}
             </AppText>
           </>
         ) : (
