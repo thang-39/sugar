@@ -6,10 +6,10 @@
   "paywall": {
     "title": "Sugar Pro",
     "subtitle": "Unlock every premium feature — pay once, keep forever.",
-    "cta": "Unlock Sugar Pro — {{price}}",
+    "cta": "Unlock Sugar Pro",
+    "priceLine": "Just {{price}} · one-time",
     "ctaLoading": "Loading price…",
     "launchNote": "Launch price — one-time purchase, no monthly fee.",
-    "oneTime": "One-time payment via Google Play. Does not auto-renew.",
     "benefits": {
       "unlimitedReports": "Unlimited PDF report exports",
       "noWatermark": "Clean reports, no app watermark",

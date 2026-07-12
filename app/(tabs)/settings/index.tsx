@@ -19,13 +19,14 @@ import {
 } from '@/ui/components/ui';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { useEntitlementStore, useIsPro } from '@/ui/hooks/use-entitlement';
-import { colors, spacing } from '@/ui/theme';
+import { spacing, useTheme } from '@/ui/theme';
 import { formatValue } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
 
 export default function SettingsScreen(): ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
+  const colors = useTheme();
   const {
     preferredUnit,
     preferredLanguage,

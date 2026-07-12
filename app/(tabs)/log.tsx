@@ -8,17 +8,21 @@ import { LogReadingForm } from '@/ui/components/log-reading-form';
 import { parseLogPrefill } from '@/ui/utils/log-prefill';
 import { ScreenHeader } from '@/ui/components/ui';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, spacing } from '@/ui/theme';
+import { spacing, useTheme } from '@/ui/theme';
 import { formatDate } from '@/ui/utils/format';
 
 export default function LogScreen(): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
   const preferredLanguage = useSettingsStore((s) => s.preferredLanguage);
   const params = useLocalSearchParams();
   const prefill = parseLogPrefill(params);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: colors.background }]}
+      edges={['top', 'left', 'right']}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboard}
@@ -40,7 +44,6 @@ export default function LogScreen(): ReactElement {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   keyboard: {
     flex: 1,

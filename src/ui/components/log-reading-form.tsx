@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   TextInput,
@@ -32,7 +32,7 @@ import { formatDateTime } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
 import { mealIcon } from '@/ui/utils/meal-display';
 import type { LogPrefill } from '@/ui/utils/log-prefill';
-import { colors, spacing, radius, fontSize, fontFamily, mealColor } from '@/ui/theme';
+import { spacing, radius, fontSize, fontFamily, mealColor, useTheme, type ColorScheme } from '@/ui/theme';
 import {
   AppText,
   Button,
@@ -80,6 +80,8 @@ export function LogReadingForm({
   onSaved,
 }: LogReadingFormProps = {}): React.JSX.Element {
   const { t } = useTranslation();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const {
     preferredUnit,
     preferredLanguage,
@@ -485,128 +487,129 @@ export function LogReadingForm({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: spacing.lg,
-    paddingTop: spacing.md,
-    backgroundColor: colors.background,
-  },
-  valueCard: {
-    marginBottom: spacing.lg,
-  },
-  valueRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
-  valueInput: {
-    fontSize: fontSize.display,
-    fontFamily: fontFamily.black,
-    color: colors.text,
-    textAlign: 'center',
-    minWidth: 150,
-    flexShrink: 1,
-    paddingVertical: Platform.OS === 'ios' ? spacing.sm : 0,
-  },
-  unitToggle: {
-    marginTop: spacing.md,
-    alignSelf: 'stretch',
-  },
-  unitToggleSegment: {
-    minHeight: 52,
-  },
-  validationError: {
-    marginTop: spacing.sm,
-  },
-  section: {
-    marginBottom: spacing.lg,
-  },
-  mealTypeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  mealChip: {
-    flexGrow: 1,
-    flexBasis: '46%',
-    minHeight: 52,
-  },
-  timingLabel: {
-    marginTop: spacing.lg,
-  },
-  timing: {
-    marginTop: spacing.sm,
-  },
-  hoursSection: {
-    marginTop: spacing.md,
-  },
-  hoursGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  dateTimeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    minHeight: 56,
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.sm,
-  },
-  dateTimeText: {
-    color: colors.text,
-  },
-  notesCollapsed: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  notesExpanded: {
-    marginBottom: spacing.lg,
-  },
-  notesInput: {
-    backgroundColor: colors.card,
-    borderWidth: 1.5,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    fontSize: fontSize.base,
-    fontFamily: fontFamily.semibold,
-    color: colors.text,
-    minHeight: 100,
-    textAlignVertical: 'top',
-    marginTop: spacing.sm,
-  },
-  charCount: {
-    textAlign: 'right',
-    marginTop: spacing.xs,
-  },
-  saveButton: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.xxl,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    padding: spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? spacing.xxl : spacing.lg,
-  },
-  modalDone: {
-    marginTop: spacing.md,
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      padding: spacing.lg,
+      paddingTop: spacing.md,
+      backgroundColor: colors.background,
+    },
+    valueCard: {
+      marginBottom: spacing.lg,
+    },
+    valueRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: spacing.sm,
+    },
+    valueInput: {
+      fontSize: fontSize.display,
+      fontFamily: fontFamily.black,
+      color: colors.text,
+      textAlign: 'center',
+      minWidth: 150,
+      flexShrink: 1,
+      paddingVertical: Platform.OS === 'ios' ? spacing.sm : 0,
+    },
+    unitToggle: {
+      marginTop: spacing.md,
+      alignSelf: 'stretch',
+    },
+    unitToggleSegment: {
+      minHeight: 52,
+    },
+    validationError: {
+      marginTop: spacing.sm,
+    },
+    section: {
+      marginBottom: spacing.lg,
+    },
+    mealTypeGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    mealChip: {
+      flexGrow: 1,
+      flexBasis: '46%',
+      minHeight: 52,
+    },
+    timingLabel: {
+      marginTop: spacing.lg,
+    },
+    timing: {
+      marginTop: spacing.sm,
+    },
+    hoursSection: {
+      marginTop: spacing.md,
+    },
+    hoursGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    dateTimeButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.lg,
+      minHeight: 56,
+      paddingHorizontal: spacing.lg,
+      marginTop: spacing.sm,
+    },
+    dateTimeText: {
+      color: colors.text,
+    },
+    notesCollapsed: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.md,
+      marginBottom: spacing.lg,
+    },
+    notesExpanded: {
+      marginBottom: spacing.lg,
+    },
+    notesInput: {
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
+      borderColor: colors.borderStrong,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      fontSize: fontSize.base,
+      fontFamily: fontFamily.semibold,
+      color: colors.text,
+      minHeight: 100,
+      textAlignVertical: 'top',
+      marginTop: spacing.sm,
+    },
+    charCount: {
+      textAlign: 'right',
+      marginTop: spacing.xs,
+    },
+    saveButton: {
+      marginTop: spacing.sm,
+      marginBottom: spacing.xxl,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    modalContent: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      padding: spacing.lg,
+      paddingBottom: Platform.OS === 'ios' ? spacing.xxl : spacing.lg,
+    },
+    modalDone: {
+      marginTop: spacing.md,
+    },
+  });
