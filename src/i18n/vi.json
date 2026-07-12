@@ -78,7 +78,7 @@
           "language": "Ngôn ngữ",
           "alerts": "Cảnh báo",
           "targetRanges": "Ngưỡng mục tiêu",
-          "export": "Xuất dữ liệu",
+          "report": "Báo cáo cho bác sĩ",
           "about": "Giới thiệu",
           "trackingMode": "Chế độ theo dõi",
           "reminders": "Nhắc đo đường huyết"
@@ -107,24 +107,38 @@
           "maxIncrease": "Tăng ngưỡng cao nhất {{range}}"
         }
       },
-      "export": {
-        "title": "Xuất dữ liệu",
-        "description": "Tạo tệp CSV để gửi cho bác sĩ hoặc mở bằng Excel.",
+      "report": {
+        "title": "Báo cáo cho bác sĩ",
+        "description": "Tạo báo cáo PDF hoặc tệp CSV để đưa cho bác sĩ.",
         "rangeLabel": "Khoảng thời gian",
         "ranges": {
-          "all": "Tất cả",
-          "last3m": "3 tháng",
-          "last6m": "6 tháng",
+          "last14d": "14 ngày",
+          "last30d": "30 ngày",
           "custom": "Tuỳ chọn"
         },
         "from": "Từ ngày",
         "to": "Đến ngày",
-        "summary": "{{n}} kết quả sẽ được xuất",
-        "exportButton": "Xuất CSV",
-        "exporting": "Đang xuất...",
-        "empty": "Không có kết quả nào trong khoảng thời gian này.",
+        "docTitle": "Nhật ký đường huyết",
+        "columns": {
+          "date": "Ngày",
+          "breakfast": "Sáng",
+          "lunch": "Trưa",
+          "dinner": "Tối",
+          "before": "Trước",
+          "after": "Sau",
+          "hour1": "1h",
+          "hour2": "2h"
+        },
+        "subheadGdm": "Tuần thai {{week}} · Ngưỡng: đói {{fasting}}, sau ăn {{postMeal}} ({{unit}})",
+        "subheadGeneral": "Ngưỡng: đói {{fasting}}, sau ăn {{postMeal}} ({{unit}})",
+        "stats": "{{percent}}% trong ngưỡng · {{count}} lần đo",
+        "watermark": "Tạo bởi app Sugar",
+        "sharePdf": "Chia sẻ PDF",
+        "exportCsv": "Xuất CSV",
+        "watermarkNote": "Bản miễn phí có thêm dòng \"Tạo bởi app Sugar\".",
+        "empty": "Không có chỉ số nào trong khoảng thời gian này.",
         "shareUnavailable": "Thiết bị không hỗ trợ chia sẻ tệp.",
-        "failed": "Không thể xuất dữ liệu. Vui lòng thử lại."
+        "failed": "Không thể tạo báo cáo. Vui lòng thử lại."
       },
       "about": {
         "title": "Giới thiệu",
