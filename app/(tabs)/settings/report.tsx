@@ -14,7 +14,7 @@ import type { TargetRanges } from '@/domain/models/target-range';
 import { buildReport } from '@/domain/use-cases/build-report';
 import { pregnancyWeek } from '@/domain/use-cases/pregnancy-week';
 import { resolveExportRange } from '@/domain/use-cases/resolve-export-range';
-import { AppText, Button, Card, Chip, ScreenHeader } from '@/ui/components/ui';
+import { AppText, Button, Card, Chip, SegmentedControl } from '@/ui/components/ui';
 import { ReportPreviewTable } from '@/ui/components/report-preview-table';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
@@ -23,9 +23,21 @@ import { formatDate, formatValue } from '@/ui/utils/format';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const PRESETS: readonly ExportRangePreset[] = [
+const ReportMode = { Pdf: 'pdf', Csv: 'csv' } as const;
+type ReportMode = (typeof ReportMode)[keyof typeof ReportMode];
+
+// The two flows serve different purposes, so each keeps its own range presets:
+// the PDF is a recent snapshot for a doctor visit; the CSV is a full data dump.
+const PDF_PRESETS: readonly ExportRangePreset[] = [
   ExportRangePreset.Last14Days,
   ExportRangePreset.Last30Days,
+  ExportRangePreset.Custom,
+];
+
+const CSV_PRESETS: readonly ExportRangePreset[] = [
+  ExportRangePreset.All,
+  ExportRangePreset.Last3Months,
+  ExportRangePreset.Last6Months,
   ExportRangePreset.Custom,
 ];
 
@@ -45,12 +57,19 @@ export default function ReportScreen(): ReactElement {
     updateSetting,
   } = useSettingsStore();
 
-  const [preset, setPreset] = useState<ExportRangePreset>(ExportRangePreset.Last14Days);
+  const [mode, setMode] = useState<ReportMode>(ReportMode.Pdf);
+  const [pdfPreset, setPdfPreset] = useState<ExportRangePreset>(ExportRangePreset.Last14Days);
+  const [csvPreset, setCsvPreset] = useState<ExportRangePreset>(ExportRangePreset.All);
   const [customFrom, setCustomFrom] = useState<Date>(() => new Date(Date.now() - 13 * DAY_MS));
   const [customTo, setCustomTo] = useState<Date>(() => new Date());
   const [activePicker, setActivePicker] = useState<'from' | 'to' | undefined>(undefined);
   const [isSharingPdf, setIsSharingPdf] = useState(false);
   const [isSharingCsv, setIsSharingCsv] = useState(false);
+
+  const isPdf = mode === ReportMode.Pdf;
+  const presets = isPdf ? PDF_PRESETS : CSV_PRESETS;
+  const preset = isPdf ? pdfPreset : csvPreset;
+  const setPreset = isPdf ? setPdfPreset : setCsvPreset;
 
   const filter = useMemo<ReadingListFilter>(
     () =>
@@ -200,14 +219,23 @@ export default function ReportScreen(): ReactElement {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <ScreenHeader title={t('screens.settings.report.title')} style={styles.header} />
+      <SegmentedControl
+        segments={[
+          { value: ReportMode.Pdf, label: t('screens.settings.report.tabs.pdf') },
+          { value: ReportMode.Csv, label: t('screens.settings.report.tabs.csv') },
+        ]}
+        value={mode}
+        onChange={setMode}
+      />
 
       <AppText color={colors.textMuted} style={styles.description}>
-        {t('screens.settings.report.description')}
+        {isPdf
+          ? t('screens.settings.report.pdfDescription')
+          : t('screens.settings.report.csvDescription')}
       </AppText>
 
       <View style={styles.presetRow}>
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <Chip
             key={p}
             label={t(`screens.settings.report.ranges.${p}`)}
@@ -250,7 +278,7 @@ export default function ReportScreen(): ReactElement {
         <Card style={styles.summaryCard}>
           <AppText color={colors.textMuted}>{t('screens.settings.report.empty')}</AppText>
         </Card>
-      ) : (
+      ) : isPdf ? (
         <Card style={styles.previewCard}>
           <AppText weight="extrabold" style={styles.previewTitle}>
             {t('screens.settings.report.docTitle')}
@@ -266,30 +294,37 @@ export default function ReportScreen(): ReactElement {
             })}
           </AppText>
         </Card>
+      ) : (
+        <Card style={styles.summaryCard}>
+          <AppText>{t('screens.settings.report.summary', { n: count })}</AppText>
+        </Card>
       )}
 
-      <View style={styles.buttonRow}>
+      {isPdf ? (
         <Button
           label={t('screens.settings.report.sharePdf')}
           icon="document-text-outline"
           onPress={() => void onSharePdf()}
           isLoading={isSharingPdf}
-          disabled={count === 0 || isSharingCsv}
-          style={styles.pdfButton}
+          disabled={count === 0}
+          style={styles.actionButton}
         />
+      ) : (
         <Button
           label={t('screens.settings.report.exportCsv')}
-          variant="ghost"
+          icon="share-outline"
           onPress={() => void onExportCsv()}
           isLoading={isSharingCsv}
-          disabled={count === 0 || isSharingPdf}
-          style={styles.csvButton}
+          disabled={count === 0}
+          style={styles.actionButton}
         />
-      </View>
+      )}
 
-      <AppText variant="caption" color={colors.textFaint} style={styles.watermarkNote}>
-        {t('screens.settings.report.watermarkNote')}
-      </AppText>
+      {isPdf && (
+        <AppText variant="caption" color={colors.textFaint} style={styles.watermarkNote}>
+          {t('screens.settings.report.watermarkNote')}
+        </AppText>
+      )}
 
       {activePicker !== undefined && (
         <DateTimePicker
@@ -305,8 +340,7 @@ export default function ReportScreen(): ReactElement {
 
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, gap: spacing.sm },
-  header: { marginBottom: spacing.xs },
-  description: { marginBottom: spacing.md, lineHeight: 22 },
+  description: { marginTop: spacing.sm, marginBottom: spacing.sm, lineHeight: 22 },
   presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   customRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   customButton: { flex: 1, borderRadius: radius.md, padding: spacing.md, gap: spacing.xs },
@@ -315,8 +349,6 @@ const styles = StyleSheet.create({
   previewTitle: { textAlign: 'center' },
   previewSubhead: { textAlign: 'center', marginBottom: spacing.sm },
   statsText: { textAlign: 'center', marginTop: spacing.sm },
-  buttonRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
-  pdfButton: { flex: 1.4 },
-  csvButton: { flex: 1 },
+  actionButton: { marginTop: spacing.lg },
   watermarkNote: { textAlign: 'center', marginTop: spacing.md, lineHeight: 18 },
 });
