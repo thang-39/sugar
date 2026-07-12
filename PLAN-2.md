@@ -1,4 +1,4 @@
-# PLAN 2 — GDM pivot, Monetization & Growth (Sessions 10–22)
+# PLAN 2 — GDM pivot, Monetization & Growth (Sessions 10–23)
 
 **Supersedes** `PLAN-ADDITION-gdm-sessions.md` and `PLAN-ADDITION-monetization-sessions.md` (strategy context stays in `SUGAR-GROWTH-PLAN.md`). `PLAN.md` (Sessions 1–9 + 4.5) is untouched; its old Session 10 (store prep) lives here as Session 14.
 
@@ -112,7 +112,9 @@ Per CLAUDE.md: never guess token values — reconcile `src/ui/theme` against the
 
 ---
 
-### Session 14: Build + store prep — GDM positioning (was PLAN.md Session 10)
+### Session 14: Build config + store prep assets — GDM positioning (was PLAN.md Session 10)
+**Strategy note (updated 2026-07-12):** actual store **submission is deferred to the final Session 23** (publish Google + Apple together). This session only lays the technical rails + prepares assets — no publishing. Rationale: build the full app (through Session 22) first, then launch once. Trade-off consciously accepted: **no early soft-launch feedback loop** (the growth plan's §7 soft launch / internal-testing cohort now happens at Session 23, not here).
+
 Everything from the original Session 10 block (EAS config, bundle IDs, permissions audit — now includes notifications from Session 11 — privacy policy page + real URL in About, compliance checklists), with GDM listing:
 
 - **Title (Play, ≤30 chars):** `Sugar – Sổ tiểu đường thai kỳ`
@@ -121,9 +123,9 @@ Everything from the original Session 10 block (EAS config, bundle IDs, permissio
 - 6 screenshots (vi, growth plan §3): report "Thay tờ giấy bệnh viện phát" / log "Ghi xong trong 5 giây" / reminder / Hôm nay slots (rose theme) / trends / share-to-Zalo
 - Description stays "log and track" — no diagnose/treat/manage claims. Data Safety remains "no data collected" (local-only; notifications are local).
 
-**Accept:** original Session 10 criteria + vi listing assets ready. Commit: `chore: eas build config and store assets`
+**Accept:** original Session 10 criteria (installable EAS build on a real device) + vi listing assets ready. **No store submission this session.** Commit: `chore: eas build config and store assets`
 
-→ After this session: submit production on Play (internal-testing cohort of 10–15 mẹ ~1 week first if possible), soft launch per growth plan §7. Admin track below must already be moving.
+→ After this session: continue building (Sessions 15–22). **Do NOT submit to stores yet** — that is Session 23. But the Admin track below (merchant profile, RevenueCat) must already be moving, since it blocks Session 15.
 
 ---
 
@@ -231,6 +233,23 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 
 ---
 
+### Session 23: Publish to Google Play + Apple App Store ⭐ (final launch)
+**Goal:** the single launch moment — submit the fully-built app to both stores. Everything before this was build/prep; nothing shipped to real users yet.
+
+**Accounts & payment (decided 2026-07-12):** pay with **Vietcombank ECard** (Visa debit — enable international online payment + keep balance first). **Google Play: self-register under the user's own name** ($25 one-time) — no friend/third-party account. **Apple**: $99/yr recurring on the same ECard (keep balance for annual renewal), or defer/use a friend's Developer account at first if the yearly fee is heavy — but self-owned is preferred once there is revenue. Android is the priority store (VN GDM users are mostly Android).
+
+**iOS-opening code prerequisites (must land before submitting Apple):** Apple Developer $99/năm → Paid Apps agreement + bank/tax → non-consumable `sugar_pro_lifetime` + add iOS app to RevenueCat → one code pass: **Sign in with Apple** (the auth provider config array from Session 17 gets its Apple entry enabled) + **StoreKit sandbox** verification + **App Privacy** answers. iOS `bundleIdentifier` already set (Session 14).
+
+**Google Play submission:** production `.aab` via `eas build -p android --profile production` → upload → store listing (assets from Session 14) → Data Safety (updated per money-principle §4 milestones: purchases + backup opt-in) → **Start rollout**. Optional soft-launch first: internal-testing cohort of 10–15 mẹ ~1 week (growth plan §7), then public.
+
+**Apple App Store submission:** `eas build -p ios --profile production` → TestFlight → App Store Review (4.8 Sign in with Apple satisfied) → submit.
+
+**Both:** final screenshots per store specs; privacy policy + deletion-request URLs live; review-prompt / weekly-summary (Session 20) verified on production builds; RevenueCat products approved in both stores.
+
+**Accept:** app live (or in review) on Google Play AND Apple App Store; sandbox→production IAP works on both; Data Safety / App Privacy accurate; soft-launch cohort invited (if used). This is a manual/admin-heavy session — see `docs/plans/2026-07-12-session-14-launch-guide.md` (extend it with the iOS + Apple steps here). Commit: `chore: production store submission`
+
+---
+
 ## Money principles (apply to Sessions 15–19)
 
 1. *Free tier is sacred:* logging, view/edit/delete, reminders, basic chart, and the **first** PDF report are never gated. Paywall only on derived value.
@@ -239,7 +258,7 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 4. *Privacy story evolves honestly:* "không thu thập dữ liệu" → "dữ liệu đường huyết chỉ nằm trên máy; chỉ rời máy khi mẹ bật sao lưu". Data Safety / App Privacy updated at S15 (purchases + optional anonymous analytics), S18 (backup opt-in), S19 (ads — if ever).
 5. *IAP only:* all digital purchases via Apple/Google IAP. Never MoMo/bank transfer for Pro — store-policy violation, app-removal risk.
 
-**Verified facts (2026-07-07):** VN supports Play merchant registration (paid apps + IAP, USD/EUR payout). RevenueCat free to $2,500 MTR/month (~64tr VND) then 1%. Play account created before 13/11/2023 → **no** 12-tester/14-day closed-testing requirement → straight to production after Session 14. Aptabase free 20k events/month, fully anonymized, no consent banner; over limit = pause, no charge.
+**Verified facts (2026-07-07):** VN supports Play merchant registration (paid apps + IAP, USD/EUR payout). RevenueCat free to $2,500 MTR/month (~64tr VND) then 1%. Play account created before 13/11/2023 → **no** 12-tester/14-day closed-testing requirement → straight to production at Session 23 (a newer account must budget ~2 extra weeks for closed testing). Aptabase free 20k events/month, fully anonymized, no consent banner; over limit = pause, no charge.
 
 ---
 
@@ -281,15 +300,17 @@ Approval steps take days-to-weeks and **block Session 15** if late:
 8. **Shopee affiliate** registration — Session 21.
 9. **Tax:** confirm personal Google/Apple revenue declaration (~7%) with kế toán/chi cục thuế — before money arrives.
 
-**iOS-opening checklist (later, on demand):** Apple Developer $99/năm → Paid Apps agreement + bank/tax → non-consumable `sugar_pro_lifetime` + add iOS app to RC → 1 code session: Sign in with Apple + StoreKit sandbox + App Privacy → TestFlight → review. Open iOS when (a) Android conversion ≥2% with organic sales, or (b) "có bản iOS không?" keeps repeating in groups — count those comments.
+**iOS-opening checklist (now folded into Session 23 — Apple launches alongside Google):** Apple Developer $99/năm → Paid Apps agreement + bank/tax → non-consumable `sugar_pro_lifetime` + add iOS app to RC → 1 code pass: Sign in with Apple + StoreKit sandbox + App Privacy → TestFlight → review. *(Was previously "later, on demand" / Android-first; changed 2026-07-12 to publish both stores together at the end.)*
 
 ---
 
 ## Timeline & sequencing
 
-1. Sessions 10–13 (value) → Session 14 → **submit production on Play** → soft launch per §7.
-2. Sessions 15–16 ship the paywall via update **~1–2 weeks post-launch**.
-3. Sessions 17–18 (auth + backup) → 20 (retention loop) → 21 (postpartum + supplies). Session 19 (ads) waits for its 6–8 week decision gate. Session 22 opportunistic.
+**Updated 2026-07-12: build everything, then publish once at the end (Session 23) — Google + Apple together.** No early soft launch; no shipping the paywall via post-launch update. Trade-off: lose early real-user feedback, gain a single complete launch.
+
+1. Sessions 10–14 (value + build rails/prep, **no submission**).
+2. Sessions 15–16 (paywall + gating) → 17–18 (auth + backup) → 20 (retention loop) → 21 (postpartum + supplies). Session 19 (ads) waits for its 6–8 week decision gate. Session 22 opportunistic.
+3. **Session 23 = the launch:** submit to Google Play + Apple App Store together (optional 1-week internal-testing cohort first per §7).
 
 North star = PDF reports/week. Kill/pivot criteria (growth plan §9) unchanged: 3 months <500 installs or conversion <1.5% → change channel/positioning; 6 months <2tr/tháng → maintenance mode. Don't loosen the criteria under income pressure — they protect your time.
 
