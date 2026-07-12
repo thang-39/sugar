@@ -73,7 +73,7 @@
         <div style="background:#fff; border-radius:20px; padding:16px 18px; display:flex; align-items:center; gap:14px; margin-top:22px; box-shadow:0 4px 16px rgba(27,43,36,.06); cursor:pointer;">
           <div style="width:44px; height:44px; border-radius:14px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:24px; color:{{ primary }};">calendar_month</span></div>
           <div style="flex:1;">
-            <div style="font-size:13px; font-weight:700; color:#5C6F66;">Expected delivery date</div>
+            <div style="font-size:13px; font-weight:700; color:#5C6F66;">Due date</div>
             <div style="font-size:19px; font-weight:900; margin-top:2px;">{{ dueDateLong }}</div>
           </div>
           <span class="msr" style="font-size:22px; color:#B7C7BE;">chevron_right</span>
@@ -164,7 +164,7 @@
         </div>
       </sc-if>
 
-      <!-- ===== TODAY TAB ===== -->
+      <!-- ===== TODAY TAB (GDM) ===== -->
       <sc-if value="{{ tabToday }}" hint-placeholder-val="{{ false }}">
         <div style="flex:1; overflow:auto; padding:8px 20px 20px; box-sizing:border-box;" data-screen-label="Today">
 
@@ -218,8 +218,8 @@
 
           <!-- postpartum -->
           <sc-if value="{{ isPostpartum }}" hint-placeholder-val="{{ false }}">
-            <div style="font-size:30px; font-weight:900;">After delivery</div>
-            <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:2px;">Expected date {{ dueDateShort }} has passed</div>
+            <div style="font-size:30px; font-weight:900;">Week 40</div>
+            <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:2px;">Due date {{ dueDateShort }} has passed</div>
 
             <div style="background:var(--surface,#E9F5EF); border-radius:20px; padding:20px; margin-top:18px;">
               <div style="font-size:19px; font-weight:900; line-height:1.35;">Have you had your baby yet? 🎉</div>
@@ -319,19 +319,10 @@
 
           <div style="margin-top:18px; font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Timing</div>
           <div style="display:flex; background:#fff; border-radius:999px; padding:4px; margin-top:10px; box-shadow:0 2px 10px rgba(27,43,36,.05);">
-            <button onClick="{{ setBefore }}" style="{{ beforeBtnStyle }}">Before meal</button>
-            <button onClick="{{ setAfter }}" style="{{ afterBtnStyle }}">After meal</button>
+            <sc-for list="{{ timingOptions }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onPick }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
           </div>
-          <sc-if value="{{ isAfter }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:14px;">
-              <div style="font-size:13px; font-weight:700; color:#5C6F66;">Hours after meal</div>
-              <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-                <sc-for list="{{ hourOptions }}" as="h" hint-placeholder-count="6">
-                  <button onClick="{{ h.onPick }}" style="{{ h.style }}">{{ h.label }}</button>
-                </sc-for>
-              </div>
-            </div>
-          </sc-if>
 
           <sc-if value="{{ notesCollapsed }}" hint-placeholder-val="{{ true }}">
             <button onClick="{{ expandNotes }}" style="margin-top:18px; display:flex; align-items:center; gap:6px; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:14px; color:var(--brand,#0FA36B); cursor:pointer; padding:0;">
@@ -603,8 +594,9 @@
       </div>
       <div style="margin-top:16px; font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Timing</div>
       <div style="display:flex; background:#fff; border-radius:999px; padding:4px; margin-top:10px; box-shadow:0 2px 10px rgba(27,43,36,.05);">
-        <button onClick="{{ setBefore }}" style="{{ beforeBtnStyle }}">Before meal</button>
-        <button onClick="{{ setAfter }}" style="{{ afterBtnStyle }}">After meal</button>
+        <sc-for list="{{ timingOptions }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.onPick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
       </div>
       <textarea value="{{ formNotes }}" onChange="{{ onNotesChange }}" placeholder="Notes…" style="margin-top:16px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:16px; padding:14px; font-family:'Nunito'; font-size:14px; font-weight:600; min-height:70px; resize:none; background:#fff; color:#1B2B24;"></textarea>
       <button onClick="{{ saveEdit }}" style="margin-top:18px; width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">SAVE CHANGES</button>
@@ -677,15 +669,14 @@
     </div>
   </sc-if>
 
-  <!-- ============ REMINDERS (all modes) ============ -->
+  <!-- ============ REMINDERS (GDM) ============ -->
   <sc-if value="{{ isReminders }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;" data-screen-label="Reminders">
       <div style="display:flex; align-items:center; gap:10px;">
         <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
-        <div style="font-size:18px; font-weight:900;">Reminders</div>
+        <div style="font-size:18px; font-weight:900;">Measurement reminders</div>
       </div>
-      <div style="margin-top:22px; font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Measurement reminders</div>
-      <div style="font-size:13px; font-weight:600; color:#8A9A91; margin-top:6px; line-height:1.45;">Tap a reminder to edit name or time.</div>
+      <div style="margin-top:22px; font-size:13px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Your reminders</div>
       <div style="background:#fff; border-radius:20px; margin-top:10px; box-shadow:0 3px 12px rgba(27,43,36,.05); overflow:hidden;">
         <sc-for list="{{ manualReminderRows }}" as="rm" hint-placeholder-count="2">
           <div style="{{ rm.rowStyle }}">
@@ -697,6 +688,7 @@
               </div>
             </div>
             <button onClick="{{ rm.onToggle }}" style="{{ rm.toggleStyle }}"><span style="{{ rm.knobStyle }}"></span></button>
+            <button onClick="{{ rm.onDelete }}" style="background:none; border:none; cursor:pointer; padding:4px; display:flex; flex-shrink:0;"><span class="msr" style="font-size:20px; color:#B7C7BE;">close</span></button>
           </div>
         </sc-for>
         <button onClick="{{ addReminder }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; background:none; border:none; border-top:1px solid #F1F6F3; padding:15px 18px; font-family:'Nunito'; font-weight:800; font-size:14.5px; color:var(--brand,#0FA36B); cursor:pointer;"><span class="msr" style="font-size:20px;">add_circle</span>Add reminder</button>
@@ -734,7 +726,7 @@
           <button onClick="{{ closeRemEditor }}" style="background:var(--surface,#E9F5EF); border:none; border-radius:99px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px; color:#5C6F66;">close</span></button>
         </div>
 
-        <div style="margin-top:18px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Reminder name</div>
+        <div style="margin-top:18px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Name</div>
         <input value="{{ remDraftLabel }}" onChange="{{ onRemNameChange }}" placeholder="e.g. Fasting · on waking" style="margin-top:8px; width:100%; box-sizing:border-box; border:1.5px solid var(--border-2,#CFE6DA); border-radius:14px; padding:13px 14px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
 
         <div style="margin-top:16px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Time</div>
@@ -743,7 +735,7 @@
         <div style="margin-top:16px; font-size:12px; font-weight:800; color:#5C6F66; text-transform:uppercase; letter-spacing:.8px;">Repeat</div>
         <div style="display:flex; background:var(--surface,#E9F5EF); border-radius:999px; padding:4px; margin-top:8px; gap:2px;">
           <button onClick="{{ setRemRepeatDaily }}" style="{{ remRepeatDailyStyle }}">Every day</button>
-          <button onClick="{{ setRemRepeatOnce }}" style="{{ remRepeatOnceStyle }}">One time only</button>
+          <button onClick="{{ setRemRepeatOnce }}" style="{{ remRepeatOnceStyle }}">One time</button>
         </div>
 
         <sc-if value="{{ remDraftRepeatOnce }}" hint-placeholder-val="{{ false }}">
@@ -760,7 +752,7 @@
     </div>
   </sc-if>
 
-  <!-- ============ DOCTOR REPORT ============ -->
+  <!-- ============ DOCTOR REPORT (GDM) ============ -->
   <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;" data-screen-label="Report">
       <div style="display:flex; align-items:center; gap:10px;">
@@ -894,7 +886,7 @@
 </x-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:500,&quot;height&quot;:960},&quot;primary&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#0FA36B&quot;,&quot;options&quot;:[&quot;#0FA36B&quot;,&quot;#10B981&quot;,&quot;#0E9F8C&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;main&quot;,&quot;options&quot;:[&quot;onboarding&quot;,&quot;main&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Flow&quot;},&quot;lifecycleStage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;postpartum&quot;,&quot;options&quot;:[&quot;pregnant&quot;,&quot;postpartum&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;GDM&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:500,&quot;height&quot;:960},&quot;primary&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#0FA36B&quot;,&quot;options&quot;:[&quot;#0FA36B&quot;,&quot;#10B981&quot;,&quot;#0E9F8C&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;onboarding&quot;,&quot;options&quot;:[&quot;onboarding&quot;,&quot;main&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Flow&quot;},&quot;lifecycleStage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;pregnant&quot;,&quot;options&quot;:[&quot;pregnant&quot;,&quot;postpartum&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;GDM&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -917,7 +909,7 @@ class Component extends DCLogic {
           value: Math.max(62, value),
           mealType: meal,
           mealTiming: after ? 'After' : 'Before',
-          hoursAfterMeal: after ? (1 + Math.floor(rnd() * 3)) : null,
+          hoursAfterMeal: after ? (rnd() > 0.5 ? 2 : 1) : null,
           notes: rnd() > 0.85 ? 'Felt a bit tired after the meal.' : '',
           recordedAt: now - d * day + (hour + (after ? 2 : -0.5)) * 3600000 + Math.floor(rnd() * 1800000),
         });
@@ -1275,7 +1267,7 @@ class Component extends DCLogic {
       // today
       isPregnant: isPreg, isPostpartum: isPost,
       pregWeek,
-      dueCountdown: daysToDue + ' days to expected delivery · ' + dueShort,
+      dueCountdown: daysToDue + ' days to your due date · ' + dueShort,
       dueDateShort: dueShort,
       todaySlots,
       hasExtras: extras.length > 0,
@@ -1313,11 +1305,11 @@ class Component extends DCLogic {
       remDraftRepeatOnce: dr ? dr.repeat === 'once' : false,
       remRepeatDailyStyle: remRepeatSeg(!dr || dr.repeat === 'daily'),
       remRepeatOnceStyle: remRepeatSeg(!!dr && dr.repeat === 'once'),
-      remDateLabel: isGest ? (isPost ? 'Postpartum date' : 'Special pregnancy date') : 'Specific date',
+      remDateLabel: isGest ? 'Special date' : 'Reminder date',
       remDateHelper: isGest
-        ? (isPost ? 'Pick a specific day after birth — e.g. your postpartum blood-sugar re-check appointment.'
-          : 'Pick a specific day during pregnancy — e.g. your next clinic visit or glucose test.')
-        : 'This reminder will ring once on the chosen date only.',
+        ? (isPost ? 'A one-off day after birth — like your postpartum blood-sugar re-check. Not your due date.'
+          : 'A one-off day during pregnancy — like your next clinic visit. Not your due date.')
+        : 'A one-time reminder that rings only on this day.',
       stopSheet: e => { if (e && e.stopPropagation) e.stopPropagation(); },
       closeRemEditor: () => this.setState({ remEditorOpen: false, remDraft: null }),
       onRemNameChange: e => this.setState({ remDraft: { ...S.remDraft, label: e.target.value } }),
@@ -1409,15 +1401,17 @@ class Component extends DCLogic {
         label: m, icon: this.mealIcon(m), style: mealBtn(m),
         onPick: () => this.setState({ form: { ...S.form, mealType: m } }),
       })),
-      isAfter: S.form.mealTiming === 'After',
-      setBefore: () => this.setState({ form: { ...S.form, mealTiming: 'Before' } }),
-      setAfter: () => this.setState({ form: { ...S.form, mealTiming: 'After' } }),
-      beforeBtnStyle: seg(S.form.mealTiming === 'Before'),
-      afterBtnStyle: seg(S.form.mealTiming === 'After'),
-      hourOptions: [1, 2, 3, 4, 5, 6].map(h => ({
-        label: h + 'h', style: this.chip(S.form.hoursAfter === h, primary),
-        onPick: () => this.setState({ form: { ...S.form, hoursAfter: h } }),
-      })),
+      timingOptions: [
+        { label: 'Before meal', timing: 'Before', hours: null },
+        { label: '1h after', timing: 'After', hours: 1 },
+        { label: '2h after', timing: 'After', hours: 2 },
+      ].map(o => {
+        const a = S.form.mealTiming === o.timing && (o.timing === 'Before' || S.form.hoursAfter === o.hours);
+        return {
+          label: o.label, style: seg(a),
+          onPick: () => this.setState({ form: { ...S.form, mealTiming: o.timing, hoursAfter: o.hours === null ? S.form.hoursAfter : o.hours } }),
+        };
+      }),
       notesCollapsed: !S.notesOpen,
       notesOpen: S.notesOpen,
       expandNotes: () => this.setState({ notesOpen: true }),
