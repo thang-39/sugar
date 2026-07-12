@@ -178,10 +178,10 @@ export default function SettingsScreen(): ReactElement {
           onPress={() => router.push('/(tabs)/settings/target-range')}
         />
         <SettingRow
-          icon="share-outline"
+          icon="document-text"
           iconColor={colors.accentBlue}
-          label={t('screens.settings.index.rows.export')}
-          onPress={() => router.push('/(tabs)/settings/export')}
+          label={t('screens.settings.index.rows.report')}
+          onPress={() => router.push('/(tabs)/settings/report')}
         />
         <SettingRow
           icon="information-circle"
