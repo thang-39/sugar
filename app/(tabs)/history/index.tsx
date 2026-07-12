@@ -187,7 +187,7 @@ export default function HistoryListScreen(): ReactElement {
               unit={preferredUnit}
               language={preferredLanguage}
               ranges={ranges}
-              onPress={() => router.push({ pathname: '/history/[id]', params: { id: item.id } })}
+              onPress={() => router.push({ pathname: '/reading/[id]', params: { id: item.id } })}
             />
           )}
           ListHeaderComponent={renderHeader}

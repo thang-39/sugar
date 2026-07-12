@@ -55,9 +55,14 @@ export function ReadingCard({ reading, unit, language, ranges, onPress }: Readin
         </AppText>
       </View>
 
-      <AppText variant="heading" color={valueColor}>
-        {formatValue(reading.value, unit)}
-      </AppText>
+      <View style={styles.valueRow}>
+        <AppText variant="heading" color={valueColor}>
+          {formatValue(reading.value, unit)}
+        </AppText>
+        <AppText variant="caption" color={colors.textFaint}>
+          {unit}
+        </AppText>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -81,4 +86,5 @@ const makeStyles = (colors: ColorScheme) =>
       justifyContent: 'center',
     },
     body: { flex: 1, gap: spacing.xs },
+    valueRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
   });
