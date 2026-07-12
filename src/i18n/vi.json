@@ -306,6 +306,11 @@
     "unitLabel": "Đơn vị hiển thị",
     "mealTypeLabel": "Bữa ăn",
     "mealTimingLabel": "Thời điểm đo",
+    "mealTimingOptions": {
+      "before": "Trước ăn",
+      "after1": "Sau ăn 1h",
+      "after2": "Sau ăn 2h"
+    },
     "hoursAfterLabel": "Thời gian sau ăn",
     "hoursSuffix": "giờ",
     "hoursChip": "{{h}}h",
