@@ -108,13 +108,13 @@ export default function SettingsScreen(): ReactElement {
           iconColor={colors.accentPurple}
           label={t('screens.settings.index.rows.trackingMode')}
           value={modeLabel}
-          onPress={() => router.push('/(tabs)/settings/tracking-mode')}
+          onPress={() => router.push('/tracking-mode')}
         />
         <SettingRow
           icon="alarm"
           iconColor={colors.accentOrange}
           label={t('screens.settings.index.rows.reminders')}
-          onPress={() => router.push('/(tabs)/settings/reminders')}
+          onPress={() => router.push('/reminders')}
         />
         <SettingRow
           icon="resize"
@@ -175,20 +175,20 @@ export default function SettingsScreen(): ReactElement {
           iconColor={colors.accentPurple}
           label={t('screens.settings.index.rows.targetRanges')}
           value={rangeSummary}
-          onPress={() => router.push('/(tabs)/settings/target-range')}
+          onPress={() => router.push('/target-range')}
         />
         <SettingRow
           icon="document-text"
           iconColor={colors.accentBlue}
           label={t('screens.settings.index.rows.report')}
-          onPress={() => router.push('/(tabs)/settings/report')}
+          onPress={() => router.push('/report')}
         />
         <SettingRow
           icon="information-circle"
           iconColor={colors.textFaint}
           label={t('screens.settings.index.rows.about')}
           isLast
-          onPress={() => router.push('/(tabs)/settings/about')}
+          onPress={() => router.push('/about')}
         />
       </Card>
 
