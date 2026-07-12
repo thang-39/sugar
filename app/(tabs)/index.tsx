@@ -118,7 +118,7 @@ export default function TodayScreen(): ReactElement {
         <Button
           label={t('today.exportReport')}
           variant="ghost"
-          onPress={() => router.push('/(tabs)/settings/export')}
+          onPress={() => router.push('/(tabs)/settings/report')}
         />
       </ScrollView>
     </SafeAreaView>
