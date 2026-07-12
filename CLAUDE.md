@@ -8,7 +8,7 @@ Mobile app for logging blood sugar readings, viewing history/trends, and exporti
 ## Tech Stack
 
 - **Expo** (latest stable SDK), TypeScript strict mode
-- **Expo Router** — file-based routing, bottom tabs: Log / History / Trends / Settings
+- **Expo Router** — file-based routing, bottom tabs: Today / Log / History / Trends / Settings
 - **expo-sqlite + Drizzle ORM** — local database (keep `syncStatus` column in schema; it stays `pending` until sync ships post-v1)
 - **Zustand** — UI/settings state only. Database is the source of truth for readings; do NOT mirror readings into Zustand
 - **react-native-gifted-charts** — trends line chart (needs react-native-svg + expo-linear-gradient)
@@ -28,11 +28,20 @@ npx tsc --noEmit          # type check — run before declaring a session done
 
 ```
 app/                      # Expo Router routes only — thin, no business logic
-  (tabs)/
-    index.tsx             # Log tab
-    history/              # list → [id] detail → [id]/edit
+  (tabs)/                 # the 5 tab roots ONLY (see Navigation convention)
+    index.tsx             # Today tab
+    log.tsx               # Log tab
+    history/              # list only (index.tsx)
     trends.tsx
-    settings/             # index, target-range, export, about
+    settings/             # index only
+  reading/[id]/           # detail + edit — root-stack screens (dynamic segment)
+    index.tsx
+    edit.tsx
+  report.tsx              # secondary screens: direct children of the root <Stack>
+  reminders.tsx
+  target-range.tsx
+  tracking-mode.tsx
+  about.tsx
   onboarding.tsx
 src/
   domain/                 # pure TS, no React imports
@@ -50,6 +59,12 @@ src/
 ```
 
 Layering rule (Clean Architecture, same as PRD): `app/ → src/ui/ → src/domain/ ← src/data/`. Domain layer imports nothing from React, Expo, or data. Repository **ports (interfaces)** live in `src/domain/repositories/` so use cases depend only on domain; their **sqlite adapters** live in `src/data/repositories/` and implement those ports. Repositories are injected into use cases.
+
+**Navigation convention (back button — read before adding any screen).** There are exactly two kinds of routes:
+- **The 5 tab roots** (Log / History list / Trends / Today / Settings index) live under `app/(tabs)/`. Header/title managed per tab as today (in-screen `ScreenHeader` or the tab's own nested Stack for the index title).
+- **Every other screen** (detail, edit, report, reminders, target-range, tracking-mode, about, and anything added later) is registered as a **direct child of the root `<Stack>` in `app/_layout.tsx`** — file at `app/<name>.tsx` or `app/<seg>/[id]/*.tsx`, with `options={{ headerShown: true, title: t('…') }}`. Push it from anywhere with an **absolute path** (`/report`, `/reading/[id]`).
+
+**Never wrap a secondary screen in its own intermediate `_layout.tsx` Stack.** A nested stack's *first* screen has `canGoBack() === false`, so React Navigation renders **no back button**. Registering directly under the root stack keeps `(tabs)` beneath the pushed screen → the native header back button appears and pops back to the exact opener (Today, History, or Settings) for free — no manual `headerLeft`/`router.back()`. Rationale + failed-attempt history: `docs/plans/2026-07-12-app-wide-root-navigation.md`.
 
 ## Conventions
 
