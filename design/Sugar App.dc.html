@@ -384,11 +384,16 @@
       <sc-if value="{{ tabTrends }}" hint-placeholder-val="{{ false }}">
         <div style="flex:1; overflow:auto; padding:8px 20px 20px; box-sizing:border-box;">
           <div style="font-size:24px; font-weight:900;">Trends</div>
+          <div style="display:flex; background:var(--surface,#E9F5EF); border-radius:999px; padding:4px; margin-top:14px;">
+            <button onClick="{{ viewLine }}" style="{{ segLineStyle }}">Trend line</button>
+            <button onClick="{{ viewMeal }}" style="{{ segMealStyle }}">By meal</button>
+          </div>
           <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
             <sc-for list="{{ scaleChips }}" as="c" hint-placeholder-count="4">
               <button onClick="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button>
             </sc-for>
           </div>
+          <sc-if value="{{ trendLine }}" hint-placeholder-val="{{ true }}">
           <div style="background:#fff; border-radius:20px; padding:18px 12px 10px; margin-top:16px; box-shadow:0 4px 16px rgba(27,43,36,.06); position:relative;">
             <sc-if value="{{ tipVisible }}" hint-placeholder-val="{{ false }}">
               <div style="position:absolute; top:6px; left:{{ tipLeft }}; transform:translateX(-50%); background:#1B2B24; color:#fff; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:800; white-space:nowrap; z-index:5;">{{ tipText }}</div>
@@ -417,6 +422,53 @@
             <div style="background:#F5B301; border-radius:16px; padding:14px 12px; color:#1B2B24;"><div style="font-size:22px; font-weight:900;">{{ statInRange }}</div><div style="font-size:11.5px; font-weight:700; opacity:.75;">In range</div></div>
             <div style="background:#4E7CF6; border-radius:16px; padding:14px 12px; color:#fff;"><div style="font-size:22px; font-weight:900;">{{ statCount }}</div><div style="font-size:11.5px; font-weight:700; opacity:.85;">Readings</div></div>
           </div>
+          </sc-if>
+
+          <sc-if value="{{ trendMeal }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;">
+            <div style="{{ mealStackStyle }}">
+              <sc-for list="{{ mealSlots }}" as="s" hint-placeholder-count="4">
+                <div style="background:#fff; border-radius:20px; padding:16px 18px; box-shadow:0 4px 16px rgba(27,43,36,.06);">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; border-radius:13px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><span class="msr" style="font-size:22px; color:{{ s.iconColor }};">{{ s.icon }}</span></div>
+                    <div style="flex:1; font-size:15.5px; font-weight:800; color:{{ s.titleColor }};">{{ s.title }}</div>
+                    <div style="{{ s.deltaStyle }}">{{ s.deltaText }}</div>
+                  </div>
+                  <sc-if value="{{ s.hasData }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; align-items:flex-end; gap:20px; margin-top:14px;">
+                      <div style="flex:1.3; min-width:0;">
+                        <div style="display:flex; align-items:baseline; gap:5px;"><span style="font-size:28px; font-weight:900; line-height:1; color:{{ s.avgColor }};">{{ s.avg }}</span><span style="font-size:12.5px; font-weight:700; color:#8A9A91;">{{ s.unit }}</span></div>
+                        <div style="font-size:12.5px; font-weight:700; color:#8A9A91; margin-top:4px;">Average</div>
+                      </div>
+                      <div style="flex:1;">
+                        <div style="font-size:20px; font-weight:900; line-height:1.2;">{{ s.inRange }}</div>
+                        <div style="font-size:12.5px; font-weight:700; color:#8A9A91; margin-top:4px;">In range</div>
+                      </div>
+                      <div style="flex:.8;">
+                        <div style="font-size:20px; font-weight:900; line-height:1.2;">{{ s.count }}</div>
+                        <div style="font-size:12.5px; font-weight:700; color:#8A9A91; margin-top:4px;">Readings</div>
+                      </div>
+                    </div>
+                    <div style="height:6px; border-radius:99px; background:#F1F6F3; margin-top:12px; overflow:hidden;"><div style="{{ s.barStyle }}"></div></div>
+                  </sc-if>
+                  <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:13.5px; font-weight:700; color:#8A9A91; margin-top:12px;">No readings in this period</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ mealLocked }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:10px; z-index:3;">
+                <div style="background:#fff; border-radius:20px; padding:24px 20px; box-shadow:0 12px 32px rgba(27,43,36,.16); text-align:center; width:100%; box-sizing:border-box; animation:popIn .25s ease;">
+                  <div style="width:52px; height:52px; border-radius:16px; background:{{ primary }}; display:flex; align-items:center; justify-content:center; margin:0 auto;"><span class="msr" style="font-size:26px; color:#fff;">lock</span></div>
+                  <div style="font-size:17px; font-weight:900; margin-top:12px; line-height:1.3;">Per-meal analysis is a Pro feature</div>
+                  <div style="font-size:13.5px; font-weight:600; color:#5C6F66; margin-top:6px; line-height:1.45;">See averages and in-range % for each meal of the day</div>
+                  <button onClick="{{ openProFromTrends }}" style="width:100%; margin-top:16px; background:{{ primary }}; color:#fff; border:none; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">Unlock Sugar Pro</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -821,11 +873,12 @@
         <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Unlimited PDF reports</div></div>
         <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Secure cloud backup</div></div>
         <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Trends by pregnancy week</div></div>
+        <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #F1F6F3;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">Per-meal analysis</div></div>
         <div style="display:flex; align-items:center; gap:12px; padding:13px 0;"><span class="msr" style="font-size:22px; color:{{ primary }};">check_circle</span><div style="font-size:15.5px; font-weight:700;">No ads, ever</div></div>
       </div>
-      <div style="display:flex; align-items:baseline; justify-content:center; gap:10px; margin-top:24px;">
+      <div style="display:flex; flex-direction:column; align-items:center; margin-top:24px;">
         <div style="font-size:40px; font-weight:900;">149,000₫</div>
-        <div style="font-size:16px; font-weight:600; color:#8A9A91; text-decoration:line-through;">199,000₫</div>
+        <div style="font-size:13px; font-weight:700; color:#8A9A91; margin-top:2px;">Launch price</div>
       </div>
       <div style="flex:1;"></div>
       <button onClick="{{ unlockPro }}" style="width:100%; background:#1B2B24; color:#fff; border:none; border-radius:999px; padding:16px; font-family:'Nunito'; font-weight:800; font-size:16px; cursor:pointer;">Unlock Sugar Pro</button>
@@ -936,6 +989,7 @@ class Component extends DCLogic {
       notesOpen: false,
       histRange: 'all', histMeal: 'All',
       scale: '30', tipIdx: -1,
+      trendView: 'line', proFrom: 'settings',
       targets: { fastMin: 70, fastMax: 100, postMin: 70, postMax: 140, post2Min: 70, post2Max: 120 },
       alertsEnabled: true,
       selectedId: null, savedId: null, pp: null,
@@ -1040,6 +1094,48 @@ class Component extends DCLogic {
     const tipX = tip ? xOf(S.tipIdx) : 0;
     const inCount = grouped.filter((r, i) => chartPoints[i].fill !== '#E8622C').length;
     const avgVal = grouped.length ? grouped.reduce((s, r) => s + r.value, 0) / grouped.length : 0;
+
+    // per-meal analysis (Pro) — demo stats per scale, mmol/L base
+    const trendSeg = a => ({ flex: 1, border: 'none', borderRadius: '999px', padding: '11px', fontFamily: 'Nunito', fontWeight: 800, fontSize: '14px', cursor: 'pointer', background: a ? '#fff' : 'transparent', color: a ? '#1B2B24' : '#5C6F66', boxShadow: a ? '0 2px 8px rgba(27,43,36,.10)' : 'none' });
+    const mealLocked = !S.pro;
+    const mealDemo = {
+      '7': [{ a: 5.0, ir: 93, n: 7, d: -0.1 }, { a: 7.1, ir: 57, n: 6, d: 0.6 }, { a: 6.2, ir: 86, n: 7, d: -0.2 }, null],
+      '30': [{ a: 5.1, ir: 92, n: 14, d: -0.2 }, { a: 6.9, ir: 64, n: 12, d: 0.4 }, { a: 6.3, ir: 83, n: 13, d: -0.1 }, { a: 6.6, ir: 75, n: 11, d: null }],
+      '90': [{ a: 5.2, ir: 90, n: 38, d: -0.3 }, { a: 6.8, ir: 68, n: 34, d: 0.2 }, { a: 6.4, ir: 81, n: 36, d: -0.1 }, { a: 6.5, ir: 77, n: 30, d: -0.2 }],
+      'all': [{ a: 5.2, ir: 90, n: 41, d: null }, { a: 6.8, ir: 67, n: 36, d: null }, { a: 6.4, ir: 81, n: 38, d: null }, { a: 6.5, ir: 76, n: 33, d: null }],
+    };
+    const mmolDisp = v => S.unit === 'mmol/L' ? v.toFixed(1) : String(Math.round(v / 0.0555));
+    const mealSlotDefs = [
+      { title: 'Fasting', icon: 'bedtime' },
+      { title: 'After breakfast', icon: 'bakery_dining' },
+      { title: 'After lunch', icon: 'lunch_dining' },
+      { title: 'After dinner', icon: 'dinner_dining' },
+    ];
+    const deltaPill = { borderRadius: '999px', padding: '5px 11px', fontSize: '12.5px', fontWeight: 800, flexShrink: 0 };
+    const mealSlots = mealSlotDefs.map((sd, i) => {
+      const st = (mealDemo[S.scale] || mealDemo['30'])[i];
+      if (!st) return {
+        title: sd.title, icon: sd.icon, iconColor: '#8A9A91', titleColor: '#8A9A91',
+        hasData: false, empty: true,
+        deltaText: '—', deltaStyle: { ...deltaPill, background: '#F1F6F3', color: '#8A9A91' },
+      };
+      const improved = st.d != null && st.d < 0;
+      const worse = st.d != null && st.d > 0;
+      return {
+        title: sd.title, icon: sd.icon, iconColor: primary, titleColor: '#1B2B24',
+        hasData: true, empty: false,
+        avg: mmolDisp(st.a), unit: S.unit,
+        avgColor: st.ir >= 80 ? primary : '#E8622C',
+        inRange: st.ir + '%', count: st.n,
+        barStyle: { height: '100%', width: st.ir + '%', background: primary, borderRadius: '99px' },
+        deltaText: st.d == null ? '—' : (improved ? '▼ ' : '▲ ') + mmolDisp(Math.abs(st.d)),
+        deltaStyle: {
+          ...deltaPill,
+          background: improved ? 'var(--surface,#E9F5EF)' : worse ? 'rgba(232,98,44,.13)' : '#F1F6F3',
+          color: improved ? 'var(--brand-ink,#0A7350)' : worse ? '#E8622C' : '#8A9A91',
+        },
+      };
+    });
 
     // export
     const exCounts = {
@@ -1363,9 +1459,9 @@ class Component extends DCLogic {
       changeCondition: () => this.setState({ condFrom: 'settings', screen: 'onboarding', onbStep: 'condition' }),
       openReminders: () => this.setState({ screen: 'reminders' }),
       showProCard: !S.pro,
-      openPro: () => this.setState({ screen: 'pro' }),
-      closePro: () => this.setState({ screen: 'main', tab: 'settings' }),
-      unlockPro: () => { this.setState({ pro: true, screen: 'main', tab: 'settings' }); this.toast('Sugar Pro unlocked — thank you!'); },
+      openPro: () => this.setState({ screen: 'pro', proFrom: 'settings' }),
+      closePro: () => this.setState({ screen: 'main', tab: S.proFrom }),
+      unlockPro: () => { this.setState({ pro: true, screen: 'main', tab: S.proFrom }); this.toast('Sugar Pro unlocked — thank you!'); },
 
       // onboarding
       skipOnboarding: () => {
@@ -1484,6 +1580,22 @@ class Component extends DCLogic {
       statAvg: grouped.length ? this.disp(avgVal) : '—',
       statInRange: grouped.length ? Math.round(100 * inCount / grouped.length) + '%' : '—',
       statCount: grouped.length,
+
+      // trends — view toggle + per-meal analysis (Pro)
+      trendLine: S.trendView === 'line',
+      trendMeal: S.trendView === 'meal',
+      viewLine: () => this.setState({ trendView: 'line' }),
+      viewMeal: () => this.setState({ trendView: 'meal' }),
+      segLineStyle: trendSeg(S.trendView === 'line'),
+      segMealStyle: trendSeg(S.trendView === 'meal'),
+      mealLocked,
+      mealStackStyle: {
+        display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px',
+        filter: mealLocked ? 'blur(9px)' : 'none', opacity: mealLocked ? .4 : 1,
+        pointerEvents: mealLocked ? 'none' : 'auto', userSelect: mealLocked ? 'none' : 'auto',
+      },
+      openProFromTrends: () => this.setState({ screen: 'pro', proFrom: 'trends' }),
+      mealSlots,
 
       // detail
       detailValue: sel ? this.disp(sel.value) : '',
