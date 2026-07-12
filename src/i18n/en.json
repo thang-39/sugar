@@ -132,6 +132,10 @@
           "devPro": "Enable Pro (dev)"
         },
         "proUnlocked": "Unlocked ✓",
+        "proPromo": {
+          "tagline": "Unlimited exports · No ads · Backup",
+          "upgrade": "Upgrade"
+        },
         "languageShort": {
           "vi": "VI",
           "en": "EN"
