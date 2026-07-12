@@ -67,6 +67,7 @@ function buildColors(p: Palette) {
     primaryDark: p.brandDark,
     primaryLight: p.surface,
     onPrimary: constant.white,
+    heroBadgeBg: 'rgba(255,255,255,0.25)', // semi-transparent pill behind the status badge on a colored hero
 
     // CTA button (dark ink pill — constant across themes)
     primaryButton: constant.ink,
