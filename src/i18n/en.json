@@ -306,6 +306,11 @@
     "unitLabel": "Display Unit",
     "mealTypeLabel": "Meal Context",
     "mealTimingLabel": "Timing",
+    "mealTimingOptions": {
+      "before": "Before meal",
+      "after1": "1h after",
+      "after2": "2h after"
+    },
     "hoursAfterLabel": "Time After Meal",
     "hoursSuffix": "hr",
     "hoursChip": "{{h}}h",
