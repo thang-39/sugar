@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps, ReactElement, ReactNode } from 'react';
+import { useMemo, type ComponentProps, type ReactElement, type ReactNode } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { AppText } from '@/ui/components/ui';
-import { colors, spacing } from '@/ui/theme';
+import { spacing, useTheme, type ColorScheme } from '@/ui/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -33,6 +33,8 @@ export function SettingRow({
   onPress,
   isLast = false,
 }: SettingRowProps): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const body = (
     <View style={[styles.row, !isLast && styles.divider]}>
       <Ionicons name={icon} size={22} color={iconColor} style={styles.icon} />
@@ -69,32 +71,33 @@ export function SettingRow({
   return body;
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    minHeight: 56,
-    gap: spacing.md,
-  },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.divider,
-  },
-  icon: {
-    width: 24,
-    textAlign: 'center',
-  },
-  label: {
-    flex: 1,
-  },
-  trailing: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  value: {
-    textAlign: 'right',
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      minHeight: 56,
+      gap: spacing.md,
+    },
+    divider: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.divider,
+    },
+    icon: {
+      width: 24,
+      textAlign: 'center',
+    },
+    label: {
+      flex: 1,
+    },
+    trailing: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    value: {
+      textAlign: 'right',
+    },
+  });

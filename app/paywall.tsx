@@ -99,9 +99,7 @@ export default function PaywallScreen(): ReactElement {
   }
 
   const priceString = proProduct?.priceString;
-  const ctaLabel = priceString
-    ? t('paywall.cta', { price: priceString })
-    : t('paywall.ctaLoading');
+  const ctaLabel = priceString ? t('paywall.cta') : t('paywall.ctaLoading');
 
   return (
     <ScrollView
@@ -149,16 +147,18 @@ export default function PaywallScreen(): ReactElement {
         style={styles.cta}
       />
 
+      {priceString !== undefined && (
+        <AppText variant="caption" color={colors.textMuted} style={styles.centerText}>
+          {t('paywall.priceLine', { price: priceString })}
+        </AppText>
+      )}
+
       <Button
         label={t('paywall.restore.action')}
         variant="ghost"
         onPress={() => void onRestore()}
         disabled={isBusy}
       />
-
-      <AppText variant="caption" color={colors.textFaint} style={styles.centerText}>
-        {t('paywall.oneTime')}
-      </AppText>
     </ScrollView>
   );
 }

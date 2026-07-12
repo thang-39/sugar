@@ -15,7 +15,7 @@ import { StatCard } from '@/ui/components/stat-card';
 import { AppText, Chip, ScreenHeader } from '@/ui/components/ui';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, radius, spacing } from '@/ui/theme';
+import { radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { formatDate } from '@/ui/utils/format';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -86,6 +86,8 @@ function rangeFor(scale: Scale, customFrom: Date, customTo: Date): ReadingListFi
 
 export default function TrendsScreen(): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { preferredUnit, preferredLanguage, fastingRange, postMealRange, postMeal2hRange } =
     useSettingsStore();
 
@@ -238,7 +240,8 @@ export default function TrendsScreen(): ReactElement {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

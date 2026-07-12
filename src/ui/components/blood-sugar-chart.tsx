@@ -10,7 +10,7 @@ import { Unit } from '@/domain/models/unit';
 import { mgdlToMmol } from '@/domain/use-cases/convert-unit';
 import { evaluateReading } from '@/domain/use-cases/evaluate-reading';
 import { AppText, Card } from '@/ui/components/ui';
-import { colors, fontSize, radius, spacing } from '@/ui/theme';
+import { fontSize, radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 import { formatDate, formatDateTime } from '@/ui/utils/format';
 
 const CHART_HEIGHT = 240;
@@ -52,6 +52,8 @@ export function BloodSugarChart({
 }: BloodSugarChartProps): ReactElement {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const chart = useMemo(() => {
     const bandLow = toDisplay(ranges.fasting.low, unit);
@@ -93,7 +95,7 @@ export function BloodSugarChart({
       items.length > 1 ? Math.max(24, plotWidth / (items.length - 1)) : plotWidth;
 
     return { items, maxValue, bandTop, bandHeight, spacingBetween, chartWidth, endSpacing };
-  }, [data.points, ranges, unit, width]);
+  }, [data.points, ranges, unit, width, colors]);
 
   const avgDisplay = useMemo(() => {
     if (data.points.length === 0) return '—';
@@ -209,66 +211,67 @@ export function BloodSugarChart({
   );
 }
 
-const styles = StyleSheet.create({
-  aggregatedNote: {
-    marginBottom: spacing.sm,
-  },
-  chartCard: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-  },
-  chartWrap: {
-    position: 'relative',
-  },
-  band: {
-    position: 'absolute',
-    right: 0,
-    backgroundColor: colors.inRangeBg,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.inRange,
-    zIndex: 0,
-  },
-  axisText: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  axisRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingLeft: Y_AXIS_LABEL_WIDTH,
-    marginTop: spacing.xs,
-  },
-  tooltip: {
-    backgroundColor: colors.text,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    gap: spacing.xs,
-  },
-  legendRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    marginTop: spacing.md,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  bandSwatch: {
-    width: 14,
-    height: 14,
-    borderRadius: radius.sm,
-    backgroundColor: colors.inRangeBg,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-  },
-  dotSwatch: {
-    width: 12,
-    height: 12,
-    borderRadius: radius.pill,
-    backgroundColor: colors.outOfRange,
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    aggregatedNote: {
+      marginBottom: spacing.sm,
+    },
+    chartCard: {
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.sm,
+    },
+    chartWrap: {
+      position: 'relative',
+    },
+    band: {
+      position: 'absolute',
+      right: 0,
+      backgroundColor: colors.inRangeBg,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: colors.inRange,
+      zIndex: 0,
+    },
+    axisText: {
+      fontSize: fontSize.xs,
+      color: colors.textMuted,
+    },
+    axisRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingLeft: Y_AXIS_LABEL_WIDTH,
+      marginTop: spacing.xs,
+    },
+    tooltip: {
+      backgroundColor: colors.text,
+      borderRadius: radius.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      gap: spacing.xs,
+    },
+    legendRow: {
+      flexDirection: 'row',
+      gap: spacing.lg,
+      marginTop: spacing.md,
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    bandSwatch: {
+      width: 14,
+      height: 14,
+      borderRadius: radius.sm,
+      backgroundColor: colors.inRangeBg,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+    },
+    dotSwatch: {
+      width: 12,
+      height: 12,
+      borderRadius: radius.pill,
+      backgroundColor: colors.outOfRange,
+    },
+  });
