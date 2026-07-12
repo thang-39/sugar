@@ -18,6 +18,7 @@ import {
   Toggle,
 } from '@/ui/components/ui';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
+import { useEntitlementStore, useIsPro } from '@/ui/hooks/use-entitlement';
 import { colors, spacing } from '@/ui/theme';
 import { formatValue } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
@@ -32,9 +33,12 @@ export default function SettingsScreen(): ReactElement {
     fastingRange,
     postMealRange,
     conditionType,
+    analyticsEnabled,
     updateSetting,
     resetToDefaults,
   } = useSettingsStore();
+  const isPro = useIsPro();
+  const setDevPro = useEntitlementStore((s) => s.setDevPro);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const modeLabel =
@@ -165,6 +169,48 @@ export default function SettingsScreen(): ReactElement {
           }
         />
       </Card>
+
+      <SectionLabel style={styles.sectionLabel}>
+        {t('screens.settings.index.sections.pro')}
+      </SectionLabel>
+      <Card style={styles.group}>
+        <SettingRow
+          icon="star"
+          iconColor={colors.accentAmber}
+          label={t('screens.settings.index.rows.pro')}
+          value={isPro ? t('screens.settings.index.proUnlocked') : undefined}
+          onPress={
+            isPro
+              ? undefined
+              : () => router.push({ pathname: '/paywall', params: { paywallSource: 'settings' } })
+          }
+        />
+        <SettingRow
+          icon="bar-chart"
+          iconColor={colors.accentBlue}
+          label={t('screens.settings.index.rows.analytics')}
+          isLast
+          trailing={
+            <Toggle
+              value={analyticsEnabled}
+              onValueChange={(v) => void updateSetting('analyticsEnabled', v)}
+              accessibilityLabel={t('screens.settings.index.rows.analytics')}
+            />
+          }
+        />
+      </Card>
+
+      {__DEV__ && (
+        <Card style={styles.group}>
+          <SettingRow
+            icon="bug"
+            iconColor={colors.accentPurple}
+            label={t('screens.settings.index.rows.devPro')}
+            isLast
+            trailing={<Toggle value={isPro} onValueChange={setDevPro} accessibilityLabel="devPro" />}
+          />
+        </Card>
+      )}
 
       <SectionLabel style={styles.sectionLabel}>
         {t('screens.settings.index.sections.data')}

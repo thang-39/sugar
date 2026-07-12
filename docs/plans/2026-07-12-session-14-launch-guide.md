@@ -185,7 +185,9 @@ Sugar là công cụ ghi chép và theo dõi. Ứng dụng không chẩn đoán,
 
 ---
 
-## ADMIN TRACK — bắt đầu NGAY (chặn Session 15)
+## ADMIN TRACK — bắt đầu NGAY (gate cho Session 23, KHÔNG còn chặn Session 15)
+
+> Cập nhật 2026-07-12: Session 15 đã đổi sang dùng **dev adapter** (paywall chạy được không cần tài khoản). Các bước dưới giờ chỉ cần cho **Session 23** (wiring RevenueCat thật + phát hành). Cứ làm song song, không phải chờ.
 
 Các bước này mất **vài ngày–vài tuần** để duyệt, làm song song đừng chờ:
 
@@ -207,4 +209,4 @@ Chi tiết đầy đủ xem "Admin track" trong `PLAN-2.md`.
 - [ ] BƯỚC 5: Store listing điền xong (tiêu đề/mô tả/icon/feature graphic)
 - [ ] BƯỚC 6: Data Safety = No, các form khai xong
 - [ ] BƯỚC 7: Upload `.aab` + gửi duyệt
-- [ ] ADMIN: Merchant profile + RevenueCat project (cho Session 15)
+- [ ] ADMIN: Merchant profile + RevenueCat project (cho Session 23 — wiring IAP thật)

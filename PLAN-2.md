@@ -125,22 +125,21 @@ Everything from the original Session 10 block (EAS config, bundle IDs, permissio
 
 **Accept:** original Session 10 criteria (installable EAS build on a real device) + vi listing assets ready. **No store submission this session.** Commit: `chore: eas build config and store assets`
 
-→ After this session: continue building (Sessions 15–22). **Do NOT submit to stores yet** — that is Session 23. But the Admin track below (merchant profile, RevenueCat) must already be moving, since it blocks Session 15.
+→ After this session: continue building (Sessions 15–22). **Do NOT submit to stores yet** — that is Session 23. The Admin track below (Play merchant profile, RevenueCat) is worth starting in parallel, but it **no longer blocks Session 15** — Session 15 was re-scoped to a dev adapter (2026-07-12). RevenueCat wiring + accounts are now part of Session 23.
 
 ---
 
-### Session 15: IAP rails + Paywall — RevenueCat (growth plan S13)
-Unchanged from the monetization addition (see money principles below). Summary:
+### Session 15: IAP rails + Paywall — dev adapter (growth plan S13)
+**Split from RevenueCat wiring (decided 2026-07-12):** Play account verification was blocking, so Session 15 builds the entire entitlement + paywall surface against a **dev adapter** — no Play/RevenueCat accounts, no EAS build, runs in Expo Go. The real `react-native-purchases` adapter is a drop-in behind the factory seam and is wired at the end (**→ Session 23 "RevenueCat wiring"**). Nothing here changes when it lands. **DONE 2026-07-12** (branch `feature/session-15-`, `tsc`/tests/lint green).
 
-- **Prereq (admin track):** Play merchant profile verified; RevenueCat project created.
-- `react-native-purchases` (EAS dev build only). Play in-app product `sugar_pro_lifetime` **149.000₫**; RC entitlement `pro`, offering `default`. iOS later (checklist at bottom) — provider/config arrays leave the seam.
-- Price always from `product.priceString` — never hardcoded. **No fake "199k gạch ngang" anchor** — "Giá ra mắt" copy instead (store-policy + advertising-law risk).
-- Layering: port `EntitlementRepository` in `src/domain/repositories/` (`isPro/purchasePro/restore/getProProduct`); RevenueCat adapter in `src/data/`; `useIsPro()` hook (zustand cache, refresh on foreground + after purchase/restore); RC offline cache keeps Pro when offline.
-- Paywall `app/paywall.tsx` (modal): Free/Pro comparison from `PRO_BENEFITS` config (only shipped features, ever); CTA "Mở khóa Sugar Pro — {priceString}"; "Khôi phục giao dịch"; loading/pending/cancelled/error/success states. Route param `paywallSource` (`report_gate | csv_gate | charts_gate | backup_gate | settings`) → local counters.
-- **Aptabase analytics (recommended, removable):** exactly 6 anonymous events, never a glucose value: `onboarding_completed {mode}` · `first_reading_logged` · `report_exported {count}` · `paywall_viewed {source}` · `purchase_completed` · `backup_enabled`; thin `src/data/analytics.ts` wrapper + Settings opt-out toggle.
-- Settings row "Sugar Pro" (→ paywall; "Đã mở khóa ✓" when Pro). `__DEV__`-only `devPro` escape hatch. Sandbox test via Play license testers/internal track. i18n vi + en.
+- No account prereq. Price always from `product.priceString` — never hardcoded. **No fake "199k gạch ngang" anchor** — "Giá ra mắt" copy instead (store-policy + advertising-law risk).
+- **Layering + the seam:** port `EntitlementRepository` in `src/domain/repositories/` (`isPro/purchasePro/restore/getProProduct`); `DevEntitlementRepository` in `src/data/` (module-level `devIsPro`, always-succeeds purchase) is the current adapter; `getEntitlementRepository()` in `factory.ts` is **the one place** the RevenueCat adapter swaps in (Session 23). `useIsPro()` / `useEntitlementStore` (zustand cache, refresh on boot + AppState foreground + after purchase/restore).
+- Paywall `app/paywall.tsx` (modal): Free/Pro comparison from `PRO_BENEFITS` config; CTA "Mở khóa Sugar Pro — {priceString}"; "Khôi phục giao dịch"; loading/pending/cancelled/error/success + already-Pro states. Route param `paywallSource` (`report_gate | csv_gate | charts_gate | backup_gate | settings`) → contextual copy / counters. *Note: `PRO_BENEFITS` currently pre-lists the 5 committed benefits (ship in S16/S18) so the build-ahead paywall shows value — mild stretch of money-principle #3; tighten if desired.*
+- **Aptabase analytics (recommended, removable):** exactly 6 anonymous events, never a glucose value: `onboarding_completed {mode}` · `first_reading_logged` · `report_exported {count}` · `paywall_viewed {source}` · `purchase_completed` · `backup_enabled`; thin `src/data/analytics.ts` wrapper (Aptabase send deferred = dev-log no-op) + `analyticsEnabled` opt-out setting. Paywall wires `paywall_viewed` + `purchase_completed`; other events wired by their owning sessions.
+- Settings row "Sugar Pro" (→ paywall; "Đã mở khóa ✓" when Pro) + analytics opt-out toggle + `__DEV__`-only `devPro` toggle (flip entitlement without a purchase). i18n vi + en.
 
-**Accept:** sandbox purchase unlocks `pro`, survives restart + airplane mode; reinstall → Restore unlocks free; mid-flow cancel clean; console price change shows without release; `tsc` + tests green (hook tested with mock adapter). Commit: `feat: revenuecat iap and paywall`
+**Accept (this session, dev adapter):** paywall reachable + themed (rose in gestational); devPro toggle flips gating; mid-flow cancel clean; price shown from product; `tsc` + tests green (hook + dev adapter tested with mock). Commit: `feat: iap rails and paywall (dev adapter)`.
+**Deferred to Session 23 (real store):** sandbox purchase unlocks `pro`, survives restart + airplane mode; reinstall → Restore; console price change without release. Manual device smoke.
 
 ---
 
@@ -236,6 +235,8 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 ### Session 23: Publish to Google Play + Apple App Store ⭐ (final launch)
 **Goal:** the single launch moment — submit the fully-built app to both stores. Everything before this was build/prep; nothing shipped to real users yet.
 
+**RevenueCat wiring (moved here 2026-07-12 — Session 15 shipped only the dev adapter):** this is where the real IAP finally goes in, once the Play merchant profile + RevenueCat project are verified. Steps: create Play merchant/payments profile → in-app product `sugar_pro_lifetime` **149.000₫** → RevenueCat project + Android app (`io.minhthang.sugar`) + entitlement `pro` + offering `default` → Google Cloud service account nối RC↔Play → `npm i react-native-purchases` → write `RevenueCatEntitlementRepository` (`src/data/`) implementing `EntitlementRepository` → return it from `getEntitlementRepository()` in `factory.ts` (the only line that changes) → set the RC public SDK key + Aptabase key via EAS env → run the deferred Session-15 acceptance on an EAS dev build (sandbox purchase unlocks `pro`, survives restart + airplane mode, reinstall→Restore, mid-flow cancel clean, console price change without release), Play **license testers** for no-charge sandbox. iOS product/`RevenueCat` app added alongside the Apple prerequisites below.
+
 **Accounts & payment (decided 2026-07-12):** pay with **Vietcombank ECard** (Visa debit — enable international online payment + keep balance first). **Google Play: self-register under the user's own name** ($25 one-time) — no friend/third-party account. **Apple**: $99/yr recurring on the same ECard (keep balance for annual renewal), or defer/use a friend's Developer account at first if the yearly fee is heavy — but self-owned is preferred once there is revenue. Android is the priority store (VN GDM users are mostly Android).
 
 **iOS-opening code prerequisites (must land before submitting Apple):** Apple Developer $99/năm → Paid Apps agreement + bank/tax → non-consumable `sugar_pro_lifetime` + add iOS app to RevenueCat → one code pass: **Sign in with Apple** (the auth provider config array from Session 17 gets its Apple entry enabled) + **StoreKit sandbox** verification + **App Privacy** answers. iOS `bundleIdentifier` already set (Session 14).
@@ -288,10 +289,10 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 
 ## Admin track — no code, start NOW (parallel to Sessions 10–14)
 
-Approval steps take days-to-weeks and **block Session 15** if late:
+Approval steps take days-to-weeks. **None of them block Sessions 15–22 anymore** (re-scoped 2026-07-12 — the paywall runs on a dev adapter); they gate **Session 23 (launch + RevenueCat wiring)**, so keep them moving in parallel:
 
-1. **Play Console:** payments + merchant profile (VN supported; USD/EUR payout). Days to verify.
-2. **RevenueCat:** account + project + Android app (iOS later). Free tier covers the 10tr/tháng goal.
+1. **Play Console:** payments + merchant profile (VN supported; USD/EUR payout). Days to verify. *(Play account verification was the original blocker — it's fine if it's slow now.)*
+2. **RevenueCat:** account + project + Android app (iOS later). Free tier covers the 10tr/tháng goal. **Wiring happens in Session 23**, not Session 15.
 3. **Soft-launch cohort (recommended, not required):** account predates 13/11/2023 → no closed-testing gate; still invite 10–15 mẹ to internal testing ~1 week pre-public (interview pool + early crash/copy catch).
 4. **Supabase:** org + project (Singapore) — Session 17.
 5. **Google Cloud Console:** OAuth web client ID + Android client (EAS SHA-1) — Session 17.
