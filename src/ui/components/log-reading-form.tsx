@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { Unit } from '@/domain/models/unit';
-import { MealType, MealTiming } from '@/domain/models/meal';
+import { MealType } from '@/domain/models/meal';
 import type { Reading } from '@/domain/models/reading';
 import { RangeEvaluation } from '@/domain/models/target-range';
 import {
@@ -32,6 +32,11 @@ import { formatDateTime } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
 import { mealIcon } from '@/ui/utils/meal-display';
 import type { LogPrefill } from '@/ui/utils/log-prefill';
+import {
+  TimingChoice,
+  timingChoiceToFields,
+  fieldsToTimingChoice,
+} from '@/ui/utils/timing-choice';
 import { spacing, radius, fontSize, fontFamily, mealColor, useTheme, type ColorScheme } from '@/ui/theme';
 import {
   AppText,
@@ -57,8 +62,6 @@ const MEAL_TYPES: readonly MealType[] = [
   MealType.Dinner,
   MealType.Snack,
 ];
-
-const HOUR_OPTIONS: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
 
 interface LogReadingFormProps {
   /** When provided, the form runs in edit mode: prefilled and saving via updateReading. */
@@ -105,12 +108,11 @@ export function LogReadingForm({
   );
   // A deep-link meal type counts as an explicit choice, so time changes don't clobber it.
   const [isMealTypeManual, setIsMealTypeManual] = useState(isEdit || prefill?.mealType !== undefined);
-  const [mealTiming, setMealTiming] = useState<MealTiming>(
-    initialReading?.mealTiming ?? prefill?.mealTiming ?? MealTiming.Before,
-  );
-  const [hoursAfterMeal, setHoursAfterMeal] = useState(
-    initialReading?.hoursAfterMeal ?? prefill?.hoursAfterMeal ?? 2,
-  );
+  const [timingChoice, setTimingChoice] = useState<TimingChoice>(() => {
+    const timing = initialReading?.mealTiming ?? prefill?.mealTiming;
+    if (timing === undefined) return TimingChoice.Before;
+    return fieldsToTimingChoice(timing, initialReading?.hoursAfterMeal ?? prefill?.hoursAfterMeal);
+  });
   const [notes, setNotes] = useState(initialReading?.notes ?? '');
   const [recordedAt, setRecordedAt] = useState<Date>(() =>
     initialReading ? new Date(initialReading.recordedAt) : new Date(),
@@ -182,8 +184,7 @@ export function LogReadingForm({
     setRecordedAt(now);
     setMealType(getDefaultMealType(now));
     setIsMealTypeManual(false);
-    setMealTiming(MealTiming.Before);
-    setHoursAfterMeal(2);
+    setTimingChoice(TimingChoice.Before);
     setInputError(null);
   };
 
@@ -213,11 +214,12 @@ export function LogReadingForm({
   const performSave = async (mgdl: number): Promise<void> => {
     try {
       setIsSaving(true);
+      const { mealTiming, hoursAfterMeal } = timingChoiceToFields(timingChoice);
       const input = {
         value: mgdl,
         mealType,
         mealTiming,
-        hoursAfterMeal: mealTiming === MealTiming.After ? hoursAfterMeal : undefined,
+        hoursAfterMeal,
         notes: notes.trim() || undefined,
         recordedAt: recordedAt.getTime(),
       };
@@ -345,51 +347,37 @@ export function LogReadingForm({
           ))}
         </View>
 
-        {/* Before / After Meal Timing Switch */}
+        {/* Timing — Before meal / 1h after / 2h after */}
         <SectionLabel style={styles.timingLabel}>{t('logForm.mealTimingLabel')}</SectionLabel>
         <SegmentedControl
-          value={mealTiming}
-          onChange={setMealTiming}
+          value={timingChoice}
+          onChange={setTimingChoice}
           activeColor={colors.primaryButton}
           segments={[
             {
-              value: MealTiming.Before,
-              label: t('logForm.mealTimings.Before'),
+              value: TimingChoice.Before,
+              label: t('logForm.mealTimingOptions.before'),
               accessibilityLabel: t('logForm.a11y.timingToggle', {
-                timing: t('logForm.mealTimings.Before'),
+                timing: t('logForm.mealTimingOptions.before'),
               }),
             },
             {
-              value: MealTiming.After,
-              label: t('logForm.mealTimings.After'),
+              value: TimingChoice.After1,
+              label: t('logForm.mealTimingOptions.after1'),
               accessibilityLabel: t('logForm.a11y.timingToggle', {
-                timing: t('logForm.mealTimings.After'),
+                timing: t('logForm.mealTimingOptions.after1'),
+              }),
+            },
+            {
+              value: TimingChoice.After2,
+              label: t('logForm.mealTimingOptions.after2'),
+              accessibilityLabel: t('logForm.a11y.timingToggle', {
+                timing: t('logForm.mealTimingOptions.after2'),
               }),
             },
           ]}
           style={styles.timing}
         />
-
-        {/* Hours After Meal — chip row (design 0h–6h) */}
-        {mealTiming === MealTiming.After && (
-          <View style={styles.hoursSection}>
-            <AppText variant="caption" weight="bold" color={colors.textMuted}>
-              {t('logForm.hoursAfterLabel')}
-            </AppText>
-            <View style={styles.hoursGrid}>
-              {HOUR_OPTIONS.map((h) => (
-                <Chip
-                  key={h}
-                  label={t('logForm.hoursChip', { h })}
-                  selected={hoursAfterMeal === h}
-                  activeColor={colors.primaryButton}
-                  onPress={() => setHoursAfterMeal(h)}
-                  accessibilityLabel={t('logForm.a11y.hoursChip', { hours: h })}
-                />
-              ))}
-            </View>
-          </View>
-        )}
       </View>
 
       {/* Date Time Picker Button */}
@@ -540,15 +528,6 @@ const makeStyles = (colors: ColorScheme) =>
       marginTop: spacing.lg,
     },
     timing: {
-      marginTop: spacing.sm,
-    },
-    hoursSection: {
-      marginTop: spacing.md,
-    },
-    hoursGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: spacing.sm,
       marginTop: spacing.sm,
     },
     dateTimeButton: {
