@@ -6,8 +6,8 @@ import { Alert, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card } from '@/ui/components/ui';
 import { colors, spacing } from '@/ui/theme';
 
-// Placeholder — replaced with the real policy URL in Session 10.
-const PRIVACY_URL = 'https://example.com/privacy';
+// Hosted via GitHub Pages (see docs/privacy.html + the Session 14 launch guide).
+const PRIVACY_URL = 'https://thang-39.github.io/sugar/privacy.html';
 
 export default function AboutScreen(): ReactElement {
   const { t } = useTranslation();
