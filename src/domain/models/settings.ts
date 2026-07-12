@@ -29,6 +29,9 @@ export interface AppSettings {
   // --- Session 13: doctor report ---
   /** Number of successful PDF report exports. Session 16 gates on it. */
   reportCount: number;
+  // --- Session 15: monetization ---
+  /** Anonymous analytics opt-out (default on). Never records a glucose value. */
+  analyticsEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -45,4 +48,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   manualReminders: [],
   smartAfterMeal: { enabled: false, offset: '1h' },
   reportCount: 0,
+  analyticsEnabled: true,
 };

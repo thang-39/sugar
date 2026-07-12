@@ -2,7 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactElement } from 'react';
-import { StyleSheet, ActivityIndicator, View, Text, TextInput } from 'react-native';
+import { AppState, StyleSheet, ActivityIndicator, View, Text, TextInput } from 'react-native';
 import type { TextStyle } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ import type * as schema from '@/data/db/schema';
 
 // Settings store
 import { useSettingsStore } from '@/ui/hooks/use-settings';
+import { useEntitlementStore } from '@/ui/hooks/use-entitlement';
 
 // Side-effect import: initializes i18next before any screen renders.
 import '@/i18n';
@@ -108,6 +109,18 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
 
   useEffect(() => {
     void configureNotifications().catch(() => {});
+  }, []);
+
+  // Entitlement: pull once at boot and re-pull on every foreground so a purchase
+  // made elsewhere (or the RC offline cache expiring) is reflected. Single source
+  // of truth is the zustand cache in useEntitlementStore.
+  useEffect(() => {
+    const refresh = (): void => void useEntitlementStore.getState().refresh();
+    refresh();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refresh();
+    });
+    return () => sub.remove();
   }, []);
 
   // Capture the notification response (cold-start + warm) without routing yet —
@@ -201,6 +214,10 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
             <Stack.Screen
               name="about"
               options={{ headerShown: true, title: t('screens.settings.about.title') }}
+            />
+            <Stack.Screen
+              name="paywall"
+              options={{ headerShown: true, presentation: 'modal', title: t('paywall.title') }}
             />
           </Stack>
         </SafeAreaProvider>
