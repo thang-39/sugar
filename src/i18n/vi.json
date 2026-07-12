@@ -422,6 +422,12 @@
   },
   "readingDetail": {
     "mealLabel": "Bữa ăn",
+    "dateLabel": "Ngày",
+    "timeLabel": "Giờ",
+    "timingValues": {
+      "before": "Trước ăn",
+      "after": "{{n}} giờ sau ăn"
+    },
     "timingLabel": "Thời điểm đo",
     "hoursAfterLabel": "Thời gian sau ăn",
     "notesLabel": "Ghi chú",

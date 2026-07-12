@@ -422,6 +422,12 @@
   },
   "readingDetail": {
     "mealLabel": "Meal",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "timingValues": {
+      "before": "Before meal",
+      "after": "{{n}} hours after meal"
+    },
     "timingLabel": "Timing",
     "hoursAfterLabel": "Time after meal",
     "notesLabel": "Notes",
