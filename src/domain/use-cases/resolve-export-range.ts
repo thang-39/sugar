@@ -41,6 +41,8 @@ export function resolveExportRange(
   opts: ResolveExportRangeOptions,
 ): ReadingListFilter {
   switch (preset) {
+    case ExportRangePreset.Last7Days:
+      return { from: daysAgo(opts.now, 6) };
     case ExportRangePreset.Last14Days:
       return { from: daysAgo(opts.now, 13) };
     case ExportRangePreset.Last30Days:

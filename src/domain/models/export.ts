@@ -17,6 +17,7 @@ export interface ExportOptions {
 /** Time-range presets offered on the Export screen. */
 export const ExportRangePreset = {
   All: 'all',
+  Last7Days: 'last7d',
   Last14Days: 'last14d',
   Last30Days: 'last30d',
   Last3Months: 'last3m',

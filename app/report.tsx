@@ -26,18 +26,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const ReportMode = { Pdf: 'pdf', Csv: 'csv' } as const;
 type ReportMode = (typeof ReportMode)[keyof typeof ReportMode];
 
-// The two flows serve different purposes, so each keeps its own range presets:
-// the PDF is a recent snapshot for a doctor visit; the CSV is a full data dump.
-const PDF_PRESETS: readonly ExportRangePreset[] = [
+// PDF and CSV share one set of range presets so the badges stay consistent.
+const REPORT_PRESETS: readonly ExportRangePreset[] = [
+  ExportRangePreset.Last7Days,
   ExportRangePreset.Last14Days,
-  ExportRangePreset.Last30Days,
-  ExportRangePreset.Custom,
-];
-
-const CSV_PRESETS: readonly ExportRangePreset[] = [
   ExportRangePreset.All,
-  ExportRangePreset.Last3Months,
-  ExportRangePreset.Last6Months,
   ExportRangePreset.Custom,
 ];
 
@@ -58,8 +51,8 @@ export default function ReportScreen(): ReactElement {
   } = useSettingsStore();
 
   const [mode, setMode] = useState<ReportMode>(ReportMode.Pdf);
-  const [pdfPreset, setPdfPreset] = useState<ExportRangePreset>(ExportRangePreset.Last14Days);
-  const [csvPreset, setCsvPreset] = useState<ExportRangePreset>(ExportRangePreset.All);
+  const [pdfPreset, setPdfPreset] = useState<ExportRangePreset>(ExportRangePreset.Last7Days);
+  const [csvPreset, setCsvPreset] = useState<ExportRangePreset>(ExportRangePreset.Last7Days);
   const [customFrom, setCustomFrom] = useState<Date>(() => new Date(Date.now() - 13 * DAY_MS));
   const [customTo, setCustomTo] = useState<Date>(() => new Date());
   const [activePicker, setActivePicker] = useState<'from' | 'to' | undefined>(undefined);
@@ -67,7 +60,7 @@ export default function ReportScreen(): ReactElement {
   const [isSharingCsv, setIsSharingCsv] = useState(false);
 
   const isPdf = mode === ReportMode.Pdf;
-  const presets = isPdf ? PDF_PRESETS : CSV_PRESETS;
+  const presets = REPORT_PRESETS;
   const preset = isPdf ? pdfPreset : csvPreset;
   const setPreset = isPdf ? setPdfPreset : setCsvPreset;
 
