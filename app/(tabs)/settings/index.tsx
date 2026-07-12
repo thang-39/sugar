@@ -8,6 +8,7 @@ import { ConditionType } from '@/domain/models/condition';
 import { Language } from '@/domain/models/settings';
 import { Unit } from '@/domain/models/unit';
 import { clearAllData } from '@/domain/use-cases/clear-all-data';
+import { ProPromoCard } from '@/ui/components/pro-promo-card';
 import { SettingRow } from '@/ui/components/setting-row';
 import {
   AppText,
@@ -41,6 +42,9 @@ export default function SettingsScreen(): ReactElement {
   const isPro = useIsPro();
   const setDevPro = useEntitlementStore((s) => s.setDevPro);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const openPaywall = (): void =>
+    router.push({ pathname: '/paywall', params: { paywallSource: 'settings' } });
 
   const modeLabel =
     conditionType === ConditionType.Gestational
@@ -104,6 +108,8 @@ export default function SettingsScreen(): ReactElement {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      {!isPro && <ProPromoCard onPress={openPaywall} />}
+
       <SectionLabel style={styles.sectionLabel}>
         {t('screens.settings.index.sections.preferences')}
       </SectionLabel>
@@ -175,17 +181,14 @@ export default function SettingsScreen(): ReactElement {
         {t('screens.settings.index.sections.pro')}
       </SectionLabel>
       <Card style={styles.group}>
-        <SettingRow
-          icon="star"
-          iconColor={colors.accentAmber}
-          label={t('screens.settings.index.rows.pro')}
-          value={isPro ? t('screens.settings.index.proUnlocked') : undefined}
-          onPress={
-            isPro
-              ? undefined
-              : () => router.push({ pathname: '/paywall', params: { paywallSource: 'settings' } })
-          }
-        />
+        {isPro && (
+          <SettingRow
+            icon="star"
+            iconColor={colors.accentAmber}
+            label={t('screens.settings.index.rows.pro')}
+            value={t('screens.settings.index.proUnlocked')}
+          />
+        )}
         <SettingRow
           icon="bar-chart"
           iconColor={colors.accentBlue}
