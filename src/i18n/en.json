@@ -172,6 +172,7 @@
         "rangeLabel": "Time range",
         "ranges": {
           "all": "All",
+          "last7d": "7 days",
           "last14d": "14 days",
           "last30d": "30 days",
           "last3m": "3 months",

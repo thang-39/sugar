@@ -172,6 +172,7 @@
         "rangeLabel": "Khoảng thời gian",
         "ranges": {
           "all": "Tất cả",
+          "last7d": "7 ngày",
           "last14d": "14 ngày",
           "last30d": "30 ngày",
           "last3m": "3 tháng",
