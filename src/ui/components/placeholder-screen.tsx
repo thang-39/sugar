@@ -1,7 +1,7 @@
-import type { ReactElement } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, fontSize, fontWeight, spacing } from '@/ui/theme';
+import { fontSize, fontWeight, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 
 interface PlaceholderScreenProps {
   title: string;
@@ -13,6 +13,8 @@ interface PlaceholderScreenProps {
  * their real implementation in later PLAN.md sessions.
  */
 export function PlaceholderScreen({ title, subtitle }: PlaceholderScreenProps): ReactElement {
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <Text style={styles.title} accessibilityRole="header">
@@ -23,24 +25,25 @@ export function PlaceholderScreen({ title, subtitle }: PlaceholderScreenProps): 
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    padding: spacing.xl,
-    gap: spacing.sm,
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+      padding: spacing.xl,
+      gap: spacing.sm,
+    },
+    title: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
+  });

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { MealTiming, MealType } from '@/domain/models/meal';
 import type { Reading } from '@/domain/models/reading';
 import { RangeEvaluation } from '@/domain/models/target-range';
-import { colors, mealColor } from '@/ui/theme';
+import { mealColor, type ColorScheme } from '@/ui/theme';
 import { mealIcon } from '@/ui/utils/meal-display';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -31,7 +31,7 @@ export function readingDisplay(reading: Reading): ReadingDisplay {
 }
 
 /** Contrast-safe foreground/text color for a target-range evaluation. */
-export function statusColor(evaluation: RangeEvaluation): string {
+export function statusColor(evaluation: RangeEvaluation, colors: ColorScheme): string {
   switch (evaluation) {
     case RangeEvaluation.Low:
       return colors.lowText;
@@ -43,7 +43,7 @@ export function statusColor(evaluation: RangeEvaluation): string {
 }
 
 /** Soft background tint matching {@link statusColor}. */
-export function statusBgColor(evaluation: RangeEvaluation): string {
+export function statusBgColor(evaluation: RangeEvaluation, colors: ColorScheme): string {
   switch (evaluation) {
     case RangeEvaluation.Low:
       return colors.lowBg;
@@ -55,9 +55,15 @@ export function statusBgColor(evaluation: RangeEvaluation): string {
 }
 
 /** Badge foreground + background pair for a status pill (contrast-safe). */
-export function statusBadge(evaluation: RangeEvaluation): {
+export function statusBadge(
+  evaluation: RangeEvaluation,
+  colors: ColorScheme,
+): {
   color: string;
   backgroundColor: string;
 } {
-  return { color: statusColor(evaluation), backgroundColor: statusBgColor(evaluation) };
+  return {
+    color: statusColor(evaluation, colors),
+    backgroundColor: statusBgColor(evaluation, colors),
+  };
 }

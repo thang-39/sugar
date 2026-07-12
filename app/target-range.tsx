@@ -9,7 +9,7 @@ import { Unit } from '@/domain/models/unit';
 import { mgdlToMmol, mmolToMgdl } from '@/domain/use-cases/convert-unit';
 import { AppText, Button, Card, Stepper } from '@/ui/components/ui';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, spacing } from '@/ui/theme';
+import { spacing, useTheme } from '@/ui/theme';
 
 // Physical clamps. mmol bounds are the mg/dL bounds converted (20→1.1, 600→33.3).
 const BOUNDS = {
@@ -22,6 +22,7 @@ type RangeKey = 'fastingRange' | 'postMealRange';
 export default function TargetRangeScreen(): ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
+  const colors = useTheme();
   const { preferredUnit, fastingRange, postMealRange, updateSetting } = useSettingsStore();
 
   const isMmol = preferredUnit === Unit.MmolL;

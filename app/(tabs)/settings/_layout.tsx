@@ -2,10 +2,11 @@ import { Stack } from 'expo-router';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { colors, fontSize, fontFamily } from '@/ui/theme';
+import { fontSize, fontFamily, useTheme } from '@/ui/theme';
 
 export default function SettingsStackLayout(): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <Stack

@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Linking, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Card } from '@/ui/components/ui';
-import { colors, spacing } from '@/ui/theme';
+import { spacing, useTheme } from '@/ui/theme';
 
 // Hosted via GitHub Pages (see docs/privacy.html + the Session 14 launch guide).
 const PRIVACY_URL = 'https://thang-39.github.io/sugar/privacy.html';
 
 export default function AboutScreen(): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
   const [isOpening, setIsOpening] = useState(false);
   const version = Constants.expoConfig?.version ?? '1.0.0';
 

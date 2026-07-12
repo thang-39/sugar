@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import { type ReactElement, useCallback, useEffect, useState } from 'react';
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -25,10 +25,12 @@ import {
   type ReminderDateContext,
 } from '@/ui/components/reminder-editor-sheet';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
-import { colors, radius, spacing } from '@/ui/theme';
+import { radius, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 
 export default function RemindersScreen(): ReactElement {
   const { t } = useTranslation();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const params = useLocalSearchParams<{ new?: string }>();
   const { manualReminders, smartAfterMeal, conditionType, updateSetting } = useSettingsStore();
 
@@ -239,34 +241,35 @@ export default function RemindersScreen(): ReactElement {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { padding: spacing.lg, gap: spacing.sm },
-  notice: { marginBottom: spacing.md },
-  sectionLabel: { marginTop: spacing.md, marginBottom: spacing.xs, marginLeft: spacing.xs },
-  hint: { marginLeft: spacing.xs, marginBottom: spacing.xs },
-  group: { padding: 0, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, gap: spacing.sm },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  rowMain: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, flex: 1, minWidth: 0 },
-  timePill: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  rowText: { flex: 1, minWidth: 0 },
-  addRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  smartCard: { gap: spacing.md },
-  smartHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  smartSeg: { marginTop: spacing.xs },
-  smartHelper: { marginTop: spacing.sm, marginLeft: spacing.xs, lineHeight: 22 },
-  debug: { marginTop: spacing.xl, gap: 2 },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    content: { padding: spacing.lg, gap: spacing.sm },
+    notice: { marginBottom: spacing.md },
+    sectionLabel: { marginTop: spacing.md, marginBottom: spacing.xs, marginLeft: spacing.xs },
+    hint: { marginLeft: spacing.xs, marginBottom: spacing.xs },
+    group: { padding: 0, overflow: 'hidden' },
+    row: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, gap: spacing.sm },
+    rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
+    rowMain: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, flex: 1, minWidth: 0 },
+    timePill: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+    },
+    rowText: { flex: 1, minWidth: 0 },
+    addRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      paddingVertical: spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    smartCard: { gap: spacing.md },
+    smartHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+    smartSeg: { marginTop: spacing.xs },
+    smartHelper: { marginTop: spacing.sm, marginLeft: spacing.xs, lineHeight: 22 },
+    debug: { marginTop: spacing.xl, gap: 2 },
+  });

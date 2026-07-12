@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import type { ReactElement } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -14,11 +14,13 @@ import {
 
 import { LogReadingForm } from '@/ui/components/log-reading-form';
 import { useReading } from '@/ui/hooks/use-readings';
-import { colors, fontSize, spacing } from '@/ui/theme';
+import { fontSize, spacing, useTheme, type ColorScheme } from '@/ui/theme';
 
 export default function EditReadingScreen(): ReactElement {
   const { t } = useTranslation();
   const router = useRouter();
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { reading, isLoading } = useReading(id);
 
@@ -51,25 +53,26 @@ export default function EditReadingScreen(): ReactElement {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scroll: {
-    flexGrow: 1,
-  },
-  centerState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    padding: spacing.xxl,
-    gap: spacing.md,
-  },
-  notFound: {
-    fontSize: fontSize.lg,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-});
+const makeStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scroll: {
+      flexGrow: 1,
+    },
+    centerState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+      padding: spacing.xxl,
+      gap: spacing.md,
+    },
+    notFound: {
+      fontSize: fontSize.lg,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
+  });
