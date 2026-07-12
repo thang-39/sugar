@@ -132,6 +132,10 @@
           "devPro": "Bật Pro (dev)"
         },
         "proUnlocked": "Đã mở khóa ✓",
+        "proPromo": {
+          "tagline": "Xuất không giới hạn · Không quảng cáo · Sao lưu",
+          "upgrade": "Nâng cấp"
+        },
         "languageShort": {
           "vi": "VI",
           "en": "EN"
