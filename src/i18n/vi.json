@@ -3,6 +3,50 @@
     "name": "Sugar",
     "tagline": "Theo dõi đường huyết đơn giản"
   },
+  "paywall": {
+    "title": "Sugar Pro",
+    "subtitle": "Mở khóa toàn bộ tính năng cao cấp — trả một lần, dùng mãi mãi.",
+    "cta": "Mở khóa Sugar Pro — {{price}}",
+    "ctaLoading": "Đang tải giá…",
+    "launchNote": "Giá ra mắt — mua một lần, không phí hằng tháng.",
+    "oneTime": "Thanh toán một lần qua Google Play. Không tự động gia hạn.",
+    "benefits": {
+      "unlimitedReports": "Xuất báo cáo PDF không giới hạn",
+      "noWatermark": "Báo cáo sạch, không có dòng chữ quảng cáo",
+      "csvExport": "Xuất file CSV cho bác sĩ",
+      "perMealAnalysis": "Phân tích “Theo bữa” chi tiết",
+      "cloudBackup": "Sao lưu & khôi phục trên đám mây"
+    },
+    "context": {
+      "report_gate": "Mẹ đã dùng 1 báo cáo miễn phí. Mở Sugar Pro để xuất báo cáo không giới hạn.",
+      "csv_gate": "Xuất file CSV là tính năng của Sugar Pro.",
+      "charts_gate": "Phân tích “Theo bữa” là tính năng của Sugar Pro.",
+      "backup_gate": "Sao lưu đám mây là tính năng của Sugar Pro."
+    },
+    "restore": {
+      "action": "Khôi phục giao dịch",
+      "successTitle": "Đã khôi phục",
+      "successMessage": "Sugar Pro đã được kích hoạt lại trên máy này.",
+      "noneTitle": "Không tìm thấy giao dịch",
+      "noneMessage": "Chưa có giao dịch Sugar Pro nào để khôi phục."
+    },
+    "success": {
+      "title": "Cảm ơn mẹ! 🎉",
+      "message": "Sugar Pro đã được mở khóa."
+    },
+    "pending": {
+      "title": "Đang xử lý",
+      "message": "Giao dịch đang chờ xác nhận. Sugar Pro sẽ mở khóa khi hoàn tất."
+    },
+    "error": {
+      "title": "Không thể hoàn tất",
+      "message": "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại."
+    },
+    "alreadyPro": {
+      "title": "Đã mở khóa Sugar Pro",
+      "subtitle": "Cảm ơn mẹ đã ủng hộ! Tất cả tính năng cao cấp đã sẵn sàng."
+    }
+  },
   "common": {
     "comingSoon": "Màn hình này sẽ hoàn thiện ở phiên tới.",
     "ok": "Đồng ý",
@@ -71,6 +115,7 @@
         "title": "Cài đặt",
         "sections": {
           "preferences": "Tuỳ chọn",
+          "pro": "Sugar Pro",
           "data": "Dữ liệu"
         },
         "rows": {
@@ -81,8 +126,12 @@
           "report": "Báo cáo cho bác sĩ",
           "about": "Giới thiệu",
           "trackingMode": "Chế độ theo dõi",
-          "reminders": "Nhắc đo đường huyết"
+          "reminders": "Nhắc đo đường huyết",
+          "pro": "Sugar Pro",
+          "analytics": "Chia sẻ dữ liệu ẩn danh",
+          "devPro": "Bật Pro (dev)"
         },
+        "proUnlocked": "Đã mở khóa ✓",
         "languageShort": {
           "vi": "VI",
           "en": "EN"

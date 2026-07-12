@@ -3,6 +3,7 @@ import { CONDITION_PRESETS, type ConditionType } from '@/domain/models/condition
 import { type AppSettings, type Language, DEFAULT_SETTINGS } from '@/domain/models/settings';
 import { SqliteSettingsRepository } from '@/data/repositories/sqlite-settings-repository';
 import { getDb } from '@/data/db/client';
+import { setAnalyticsEnabled } from '@/data/analytics';
 import i18n from '@/i18n';
 
 // Built lazily: the DB is opened asynchronously at boot (see initDatabase), so the
@@ -45,6 +46,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       manualReminders,
       smartAfterMeal,
       reportCount,
+      analyticsEnabled,
     ] = await Promise.all([
       getSettingsRepo().get('preferredUnit'),
       getSettingsRepo().get('preferredLanguage'),
@@ -59,6 +61,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       getSettingsRepo().get('manualReminders'),
       getSettingsRepo().get('smartAfterMeal'),
       getSettingsRepo().get('reportCount'),
+      getSettingsRepo().get('analyticsEnabled'),
     ]);
 
     set({
@@ -75,8 +78,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       manualReminders,
       smartAfterMeal,
       reportCount,
+      analyticsEnabled,
       isInitialized: true,
     });
+    setAnalyticsEnabled(analyticsEnabled);
   },
   updateSetting: async (key, value) => {
     await getSettingsRepo().set(key, value);
@@ -84,6 +89,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({ [key]: value } as Pick<AppSettings, typeof key>);
     if (key === 'preferredLanguage') {
       void i18n.changeLanguage(value as Language);
+    }
+    if (key === 'analyticsEnabled') {
+      setAnalyticsEnabled(value as boolean);
     }
   },
   applyConditionPreset: async (conditionType) => {

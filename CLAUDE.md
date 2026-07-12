@@ -87,6 +87,14 @@ Layering rule (Clean Architecture, same as PRD): `app/ → src/ui/ → src/domai
 - Target range auto-selection: `mealTiming === 'Before'` → fasting range (default 70–100), `'After'` → post-meal range (default 70–140). In-app `Alert.alert` on save when out of range, respecting `alertsEnabled`.
 - `recordedAt` = when the reading was taken (user-editable), `createdAt` = when the row was inserted. Never conflate them.
 
+**Monetization & entitlement (Session 15+)**
+- **One entitlement source of truth:** every Pro gate reads `useIsPro()` / `useProGate()` (from `useEntitlementStore`, zustand) — never scatter purchase checks. Blood-sugar data (log/view/edit/delete) is NEVER gated; only derived value is (money-principles in `PLAN-2.md`).
+- **The store adapter is swappable behind one seam:** `getEntitlementRepository()` in `src/data/repositories/factory.ts` is the ONLY place the adapter is chosen. It currently returns `DevEntitlementRepository` (in-memory, runs in Expo Go + tests). The real `RevenueCatEntitlementRepository` is a drop-in wired in **Session 23** — do NOT add `react-native-purchases` or account setup earlier; it's native and breaks Expo Go/jest. Both implement the `EntitlementRepository` port (`src/domain/repositories/`).
+- **Price is always `product.priceString`** from the store — never hardcode or reformat a price. No fake strikethrough anchor (advertising-law risk); use "Giá ra mắt" copy.
+- `PRO_BENEFITS` (`src/config/`) is the paywall's Free/Pro list — add a line only in the session that ships that feature.
+- `__DEV__`-only `devPro` toggle (Settings) flips entitlement without a purchase — use it to exercise gating locally.
+- Analytics (`src/data/analytics.ts`): exactly 6 anonymous events, NEVER a glucose value; honor the `analyticsEnabled` opt-out. Aptabase SDK send is deferred (dev-log no-op) until an app key exists.
+
 **UI rules**
 - Elderly-friendly: base font ≥ 17, primary actions as large full-width buttons, max 1 required decision per screen beyond the value itself. Smart defaults: time = now, mealType by time of day, mealTiming = Before.
 - All user-facing strings through i18n — no hardcoded text in components, ever. (Canonical strings like the wellness disclaimer live in PRD, not here.)
