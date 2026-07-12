@@ -86,7 +86,7 @@ export default function TodayScreen(): ReactElement {
                 language={preferredLanguage}
                 ranges={ranges}
                 onPress={() =>
-                  router.push({ pathname: '/history/[id]', params: { id: reading.id } })
+                  router.push({ pathname: '/reading/[id]', params: { id: reading.id } })
                 }
               />
             ))}
@@ -113,12 +113,12 @@ export default function TodayScreen(): ReactElement {
           label={t('today.addReminder')}
           icon="alarm-outline"
           variant="ghost"
-          onPress={() => router.push('/(tabs)/settings/reminders?new=1')}
+          onPress={() => router.push('/reminders?new=1')}
         />
         <Button
           label={t('today.exportReport')}
           variant="ghost"
-          onPress={() => router.push('/(tabs)/settings/report')}
+          onPress={() => router.push('/report')}
         />
       </ScrollView>
     </SafeAreaView>

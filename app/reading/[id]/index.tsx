@@ -130,7 +130,7 @@ export default function ReadingDetailScreen(): ReactElement {
 
       <Button
         label={t('readingDetail.edit')}
-        onPress={() => router.push({ pathname: '/history/[id]/edit', params: { id: reading.id } })}
+        onPress={() => router.push({ pathname: '/reading/[id]/edit', params: { id: reading.id } })}
         icon="create-outline"
         uppercase={false}
       />

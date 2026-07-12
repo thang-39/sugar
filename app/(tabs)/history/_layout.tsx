@@ -17,8 +17,6 @@ export default function HistoryStackLayout(): ReactElement {
       }}
     >
       <Stack.Screen name="index" options={{ title: t('tabs.history'), headerShown: false }} />
-      <Stack.Screen name="[id]/index" options={{ title: t('screens.readingDetail.title') }} />
-      <Stack.Screen name="[id]/edit" options={{ title: t('screens.editReading.title') }} />
     </Stack>
   );
 }
