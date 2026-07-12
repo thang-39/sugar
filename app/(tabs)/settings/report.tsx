@@ -1,5 +1,5 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useMemo, useState, type ReactElement } from 'react';
+import { useCallback, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -116,8 +116,11 @@ export default function ReportScreen(): ReactElement {
     [readings, preferredUnit, ranges, afterMealProtocol, formatVal, formatDay],
   );
 
-  const rangeStr = (r: { low: number; high: number }): string =>
-    `${formatValue(r.low, preferredUnit)}–${formatValue(r.high, preferredUnit)}`;
+  const rangeStr = useCallback(
+    (r: { low: number; high: number }): string =>
+      `${formatValue(r.low, preferredUnit)}–${formatValue(r.high, preferredUnit)}`,
+    [preferredUnit],
+  );
 
   const subhead = useMemo(() => {
     const isGdm = conditionType === ConditionType.Gestational && dueDate !== null;
@@ -133,7 +136,7 @@ export default function ReportScreen(): ReactElement {
       });
     }
     return t('screens.settings.report.subheadGeneral', params);
-  }, [conditionType, dueDate, fastingRange, postMealRange, preferredUnit, t]);
+  }, [conditionType, dueDate, fastingRange, postMealRange, preferredUnit, rangeStr, t]);
 
   const onPickDate = (_event: DateTimePickerEvent, selected?: Date): void => {
     const which = activePicker;
