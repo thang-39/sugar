@@ -110,12 +110,22 @@
       "report": {
         "title": "Doctor report",
         "description": "Create a PDF report or CSV file to give your doctor.",
+        "tabs": {
+          "pdf": "PDF",
+          "csv": "CSV"
+        },
+        "pdfDescription": "An A4 readings table to print or send to your doctor.",
+        "csvDescription": "Export all readings to a CSV file to open in Excel or send to your doctor.",
         "rangeLabel": "Time range",
         "ranges": {
+          "all": "All",
           "last14d": "14 days",
           "last30d": "30 days",
+          "last3m": "3 months",
+          "last6m": "6 months",
           "custom": "Custom"
         },
+        "summary": "{{n}} readings in the selected range",
         "from": "From",
         "to": "To",
         "docTitle": "Blood Sugar Log",

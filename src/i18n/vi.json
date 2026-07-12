@@ -110,12 +110,22 @@
       "report": {
         "title": "Báo cáo cho bác sĩ",
         "description": "Tạo báo cáo PDF hoặc tệp CSV để đưa cho bác sĩ.",
+        "tabs": {
+          "pdf": "PDF",
+          "csv": "CSV"
+        },
+        "pdfDescription": "Bảng số đo dạng A4 để in hoặc gửi cho bác sĩ.",
+        "csvDescription": "Xuất toàn bộ chỉ số ra tệp CSV để mở bằng Excel hoặc gửi bác sĩ.",
         "rangeLabel": "Khoảng thời gian",
         "ranges": {
+          "all": "Tất cả",
           "last14d": "14 ngày",
           "last30d": "30 ngày",
+          "last3m": "3 tháng",
+          "last6m": "6 tháng",
           "custom": "Tuỳ chọn"
         },
+        "summary": "{{n}} lần đo trong khoảng đã chọn",
         "from": "Từ ngày",
         "to": "Đến ngày",
         "docTitle": "Nhật ký đường huyết",
