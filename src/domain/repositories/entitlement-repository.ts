@@ -15,4 +15,10 @@ export interface EntitlementRepository {
   purchasePro(): Promise<PurchaseResult>;
   /** Restore prior purchases. Resolves to `isPro` after restoring. */
   restore(): Promise<boolean>;
+  /**
+   * Stable per-install identifier shown to the user as a "support code" so we can
+   * look up their account when they report a problem. Dev returns a locally
+   * persisted code; Session 23's RevenueCat adapter returns `Purchases.getAppUserID()`.
+   */
+  getAppUserId(): Promise<string>;
 }

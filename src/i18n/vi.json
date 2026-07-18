@@ -125,6 +125,7 @@
           "report": "Báo cáo cho bác sĩ",
           "backup": "Sao lưu dữ liệu",
           "about": "Giới thiệu",
+          "feedback": "Góp ý cho Sugar",
           "trackingMode": "Chế độ theo dõi",
           "reminders": "Nhắc đo đường huyết",
           "pro": "Sugar Pro",
@@ -133,7 +134,7 @@
         },
         "proUnlocked": "Đã mở khóa ✓",
         "proPromo": {
-          "tagline": "Xuất không giới hạn · Không quảng cáo · Sao lưu",
+          "tagline": "Báo cáo PDF không giới hạn · Không watermark · Xuất CSV · Phân tích Theo bữa",
           "upgrade": "Nâng cấp"
         },
         "languageShort": {
@@ -202,12 +203,20 @@
         "watermarkNote": "Bản miễn phí có thêm dòng \"Tạo bởi app Sugar\".",
         "empty": "Không có chỉ số nào trong khoảng thời gian này.",
         "shareUnavailable": "Thiết bị không hỗ trợ chia sẻ tệp.",
-        "failed": "Không thể tạo báo cáo. Vui lòng thử lại."
+        "failed": "Không thể tạo báo cáo. Vui lòng thử lại.",
+        "feedbackCard": {
+          "title": "Sugar có giúp ích cho mẹ không?",
+          "subtitle": "Một góp ý nhỏ của mẹ giúp Sugar tốt hơn mỗi ngày.",
+          "cta": "Gửi góp ý"
+        }
       },
       "about": {
         "title": "Giới thiệu",
         "version": "Phiên bản {{version}}",
-        "privacyPolicy": "Chính sách bảo mật"
+        "privacyPolicy": "Chính sách bảo mật",
+        "supportCode": "Mã hỗ trợ",
+        "supportHint": "Gửi mã này cho chúng tôi khi cần hỗ trợ",
+        "copied": "Đã sao chép"
       },
       "backup": {
         "title": "Sao lưu dữ liệu",
@@ -539,7 +548,9 @@
       "smartTitle": "Đến giờ đo sau ăn 🌿",
       "smartBody": "Đến giờ đo sau {{meal}} rồi mẹ ơi 🌿",
       "recheckTitle": "Đo lại nhé mẹ 🌿",
-      "recheckBody": "Chỉ số sau {{meal}} hơi cao — đo lại lúc 2 giờ giúp mẹ theo dõi nhé 🌿"
+      "recheckBody": "Chỉ số sau {{meal}} hơi cao — đo lại lúc 2 giờ giúp mẹ theo dõi nhé 🌿",
+      "weeklyTitle": "Tổng kết tuần này 🌿",
+      "weeklyBody": "Tuần này mẹ đã đo {{count}} lần, {{percent}}% trong ngưỡng 👍"
     },
     "onboarding": {
       "title": "Bật nhắc đo?",
