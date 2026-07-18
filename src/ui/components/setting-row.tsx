@@ -11,6 +11,8 @@ interface SettingRowProps {
   icon: IconName;
   iconColor: string;
   label: string;
+  /** Muted second line stacked under the label (two-line nav rows). */
+  subtitle?: string;
   /** Muted value shown before the chevron (navigation rows). */
   value?: string;
   /** Interactive control on the right (Toggle / SegmentedControl). Wins over value + chevron. */
@@ -28,6 +30,7 @@ export function SettingRow({
   icon,
   iconColor,
   label,
+  subtitle,
   value,
   trailing,
   onPress,
@@ -38,9 +41,14 @@ export function SettingRow({
   const body = (
     <View style={[styles.row, !isLast && styles.divider]}>
       <Ionicons name={icon} size={22} color={iconColor} style={styles.icon} />
-      <AppText weight="extrabold" style={styles.label}>
-        {label}
-      </AppText>
+      <View style={styles.labelCol}>
+        <AppText weight="extrabold">{label}</AppText>
+        {subtitle !== undefined && (
+          <AppText variant="caption" color={colors.textMuted} style={styles.subtitle}>
+            {subtitle}
+          </AppText>
+        )}
+      </View>
       {trailing ? (
         <View style={styles.trailing}>{trailing}</View>
       ) : (
@@ -62,7 +70,7 @@ export function SettingRow({
         onPress={onPress}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel={value !== undefined ? `${label}: ${value}` : label}
+        accessibilityLabel={[label, subtitle, value].filter(Boolean).join(', ')}
       >
         {body}
       </TouchableOpacity>
@@ -89,8 +97,11 @@ const makeStyles = (colors: ColorScheme) =>
       width: 24,
       textAlign: 'center',
     },
-    label: {
+    labelCol: {
       flex: 1,
+    },
+    subtitle: {
+      marginTop: 2,
     },
     trailing: {
       flexDirection: 'row',

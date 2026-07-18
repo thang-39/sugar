@@ -21,7 +21,7 @@ import {
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { useEntitlementStore, useIsPro } from '@/ui/hooks/use-entitlement';
 import { spacing, useTheme } from '@/ui/theme';
-import { formatValue } from '@/ui/utils/format';
+import { formatDate, formatValue } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
 
 export default function SettingsScreen(): ReactElement {
@@ -36,6 +36,7 @@ export default function SettingsScreen(): ReactElement {
     postMealRange,
     conditionType,
     analyticsEnabled,
+    lastLocalBackupAt,
     updateSetting,
     resetToDefaults,
   } = useSettingsStore();
@@ -232,6 +233,17 @@ export default function SettingsScreen(): ReactElement {
           iconColor={colors.accentBlue}
           label={t('screens.settings.index.rows.report')}
           onPress={() => router.push('/report')}
+        />
+        <SettingRow
+          icon="cloud-upload"
+          iconColor={colors.primary}
+          label={t('screens.settings.index.rows.backup')}
+          value={
+            lastLocalBackupAt !== null
+              ? formatDate(new Date(lastLocalBackupAt), preferredLanguage)
+              : t('screens.settings.backup.neverBackedUp')
+          }
+          onPress={() => router.push('/backup')}
         />
         <SettingRow
           icon="information-circle"

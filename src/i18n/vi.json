@@ -14,8 +14,7 @@
       "unlimitedReports": "Xuất báo cáo PDF không giới hạn",
       "noWatermark": "Báo cáo sạch, không có dòng chữ quảng cáo",
       "csvExport": "Xuất file CSV cho bác sĩ",
-      "perMealAnalysis": "Phân tích “Theo bữa” chi tiết",
-      "cloudBackup": "Sao lưu & khôi phục trên đám mây"
+      "perMealAnalysis": "Phân tích “Theo bữa” chi tiết"
     },
     "context": {
       "report_gate": "Mẹ đã dùng 1 báo cáo miễn phí. Mở Sugar Pro để xuất báo cáo không giới hạn.",
@@ -124,6 +123,7 @@
           "alerts": "Cảnh báo",
           "targetRanges": "Ngưỡng mục tiêu",
           "report": "Báo cáo cho bác sĩ",
+          "backup": "Sao lưu dữ liệu",
           "about": "Giới thiệu",
           "trackingMode": "Chế độ theo dõi",
           "reminders": "Nhắc đo đường huyết",
@@ -208,6 +208,34 @@
         "title": "Giới thiệu",
         "version": "Phiên bản {{version}}",
         "privacyPolicy": "Chính sách bảo mật"
+      },
+      "backup": {
+        "title": "Sao lưu dữ liệu",
+        "description": "Dữ liệu của bạn nằm trên điện thoại này. Lưu một tệp sao lưu để khôi phục sau hoặc chuyển sang máy mới.",
+        "export": {
+          "label": "Xuất tệp sao lưu",
+          "subtitle": "Lưu toàn bộ chỉ số & cài đặt ra một tệp"
+        },
+        "restore": {
+          "label": "Khôi phục từ tệp",
+          "subtitle": "Thay dữ liệu hiện tại bằng tệp sao lưu"
+        },
+        "lastBackup": "Lần sao lưu gần nhất: {{date}}",
+        "neverBackedUp": "Chưa sao lưu",
+        "confirm": {
+          "title": "Khôi phục bản sao lưu này?",
+          "message": "Dữ liệu hiện tại trên điện thoại sẽ được thay bằng tệp sao lưu.",
+          "restore": "Khôi phục",
+          "cancel": "Huỷ"
+        },
+        "exported": "Đã xuất tệp sao lưu",
+        "success": "Đã khôi phục {{count}} chỉ số",
+        "successSkipped": "Đã khôi phục {{count}} chỉ số (bỏ qua {{skipped}})",
+        "tooNew": "Tệp này từ phiên bản Sugar mới hơn — hãy cập nhật app.",
+        "malformed": "Tệp này không phải là bản sao lưu Sugar hợp lệ.",
+        "unavailable": "Thiết bị không hỗ trợ chia sẻ tệp.",
+        "exportFailed": "Không thể tạo tệp sao lưu. Vui lòng thử lại.",
+        "restoreFailed": "Không thể khôi phục bản sao lưu. Vui lòng thử lại."
       },
       "deleteAll": {
         "row": "Xoá toàn bộ dữ liệu",
