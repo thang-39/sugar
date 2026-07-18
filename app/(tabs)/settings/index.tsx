@@ -255,6 +255,12 @@ export default function SettingsScreen(): ReactElement {
           onPress={() => router.push('/backup')}
         />
         <SettingRow
+          icon="cart"
+          iconColor={colors.accentAmber}
+          label={t('screens.settings.index.rows.supplies')}
+          onPress={() => router.push('/supplies')}
+        />
+        <SettingRow
           icon="chatbox-ellipses"
           iconColor={colors.accentBlue}
           label={t('screens.settings.index.rows.feedback')}
