@@ -78,6 +78,18 @@
       "yes": "Yes",
       "no": "Not yet"
     },
+    "postpartum": {
+      "ogttTitle": "Re-check your blood sugar: 4–12 weeks after birth",
+      "ogttSubtitle": "Sugar will remind you when it's time.",
+      "weeksSinceBirth": "{{weeks}} weeks since birth",
+      "markDone": "Done OGTT ✓",
+      "doneTitle": "OGTT re-check completed ✓",
+      "doneSubtitle": "Sugar will remind you about your yearly check.",
+      "continueLongTerm": "Keep tracking blood sugar long-term",
+      "switchConfirmTitle": "Switch to daily tracking?",
+      "switchConfirmMessage": "The theme and default ranges will change to daily-tracking mode — your logged data is untouched.",
+      "switchConfirm": "Switch"
+    },
     "slots": {
       "before": {
         "Breakfast": "Fasting (before breakfast)",
