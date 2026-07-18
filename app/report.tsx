@@ -3,12 +3,14 @@ import { useCallback, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
+import { analytics } from '@/data/analytics';
 import { generateAndShareCsv, ShareCsvStatus } from '@/data/export/share-csv';
 import { getReadingRepository } from '@/data/repositories/factory';
 import { generateAndSharePdf, SharePdfStatus } from '@/data/report/share-pdf';
 import { ConditionType } from '@/domain/models/condition';
 import { ExportRangePreset } from '@/domain/models/export';
 import { MealType } from '@/domain/models/meal';
+import { PaywallSource } from '@/domain/models/paywall';
 import type { ReadingListFilter } from '@/domain/repositories/reading-repository';
 import type { TargetRanges } from '@/domain/models/target-range';
 import { buildReport } from '@/domain/use-cases/build-report';
@@ -16,6 +18,7 @@ import { pregnancyWeek } from '@/domain/use-cases/pregnancy-week';
 import { resolveExportRange } from '@/domain/use-cases/resolve-export-range';
 import { AppText, Button, Card, Chip, SegmentedControl } from '@/ui/components/ui';
 import { ReportPreviewTable } from '@/ui/components/report-preview-table';
+import { useProGate } from '@/ui/hooks/use-pro-gate';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { radius, spacing, useTheme } from '@/ui/theme';
@@ -37,6 +40,7 @@ const REPORT_PRESETS: readonly ExportRangePreset[] = [
 export default function ReportScreen(): ReactElement {
   const { t } = useTranslation();
   const colors = useTheme();
+  const { isPro, requirePro } = useProGate();
   const {
     preferredUnit,
     preferredLanguage,
@@ -159,6 +163,8 @@ export default function ReportScreen(): ReactElement {
   };
 
   const onSharePdf = async (): Promise<void> => {
+    // Gate 1: the first PDF is always free; the second onward needs Pro.
+    if (reportCount >= 1 && !requirePro(PaywallSource.ReportGate)) return;
     try {
       setIsSharingPdf(true);
       const result = await generateAndSharePdf({
@@ -173,13 +179,15 @@ export default function ReportScreen(): ReactElement {
           title: t('screens.settings.report.docTitle'),
           subhead,
           labels,
-          watermark: t('screens.settings.report.watermark'),
+          // Gate 2: free reports carry the watermark; Pro drops it.
+          watermark: isPro ? undefined : t('screens.settings.report.watermark'),
           statsText: (percent, total) =>
             t('screens.settings.report.stats', { percent, count: total }),
         },
       });
       if (result.status === SharePdfStatus.Shared) {
         void updateSetting('reportCount', reportCount + 1);
+        analytics.reportExported(reportCount + 1);
       } else if (result.status === SharePdfStatus.Unavailable) {
         Alert.alert(t('screens.settings.report.title'), t('screens.settings.report.shareUnavailable'));
       }
@@ -191,6 +199,8 @@ export default function ReportScreen(): ReactElement {
   };
 
   const onExportCsv = async (): Promise<void> => {
+    // Gate 3: CSV export is Pro-only.
+    if (!requirePro(PaywallSource.CsvGate)) return;
     try {
       setIsSharingCsv(true);
       const result = await generateAndShareCsv({
@@ -305,7 +315,7 @@ export default function ReportScreen(): ReactElement {
       ) : (
         <Button
           label={t('screens.settings.report.exportCsv')}
-          icon="share-outline"
+          icon={isPro ? 'share-outline' : 'lock-closed-outline'}
           onPress={() => void onExportCsv()}
           isLoading={isSharingCsv}
           disabled={count === 0}
@@ -313,7 +323,7 @@ export default function ReportScreen(): ReactElement {
         />
       )}
 
-      {isPdf && (
+      {isPdf && !isPro && (
         <AppText variant="caption" color={colors.textFaint} style={styles.watermarkNote}>
           {t('screens.settings.report.watermarkNote')}
         </AppText>
