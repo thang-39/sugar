@@ -1,15 +1,17 @@
-import type { AfterMealProtocol } from '../models/condition';
-import { MealTiming, type MealType } from '../models/meal';
+import { AfterMealProtocol } from '../models/condition';
+import { MealTiming, MealType } from '../models/meal';
 import type { Reading } from '../models/reading';
 import { RangeEvaluation, type TargetRanges } from '../models/target-range';
 import { evaluateReading } from './evaluate-reading';
-import { buildSlotDefs, getDaySlots, type SlotDef } from './get-day-slots';
+import { getDaySlots, type SlotDef } from './get-day-slots';
 
 /** Per-meal aggregate for the Trends "By meal" view (gestational). */
 export interface SlotStat {
   slotId: string;
   mealType: MealType;
   mealTiming: MealTiming;
+  /** After-meal band this slot represents (1 or 2 hours); undefined for fasting. */
+  hoursAfterMeal?: number;
   count: number;
   /** mg/dL, rounded; undefined when count === 0. */
   average?: number;
@@ -64,11 +66,39 @@ function aggregate(
   return buckets;
 }
 
-/** Keep only the 4 design slots (fasting + 3 after-meal), dropping before-lunch/dinner. */
+const AFTER_MEALS: readonly MealType[] = [MealType.Breakfast, MealType.Lunch, MealType.Dinner];
+
+/**
+ * Per-meal slot defs: fasting (before breakfast) + one after-meal slot per meal.
+ * Under the 1h+2h protocol each meal splits into a separate 1h and a 2h slot so the
+ * two bands (different targets) are never averaged together; single protocols keep
+ * one after-meal slot per meal. before-lunch/dinner are intentionally excluded.
+ */
 function perMealDefs(protocol: AfterMealProtocol): SlotDef[] {
-  return buildSlotDefs(protocol).filter(
-    (def) => def.mealTiming === MealTiming.After || def.id === 'before-Breakfast',
-  );
+  const fasting: SlotDef = {
+    id: 'before-Breakfast',
+    mealType: MealType.Breakfast,
+    mealTiming: MealTiming.Before,
+  };
+  if (protocol === AfterMealProtocol.OneThenTwo) {
+    return [
+      fasting,
+      ...AFTER_MEALS.flatMap((meal): SlotDef[] => [
+        { id: `after-${meal}-1h`, mealType: meal, mealTiming: MealTiming.After, hoursAfterMeal: 1 },
+        { id: `after-${meal}-2h`, mealType: meal, mealTiming: MealTiming.After, hoursAfterMeal: 2 },
+      ]),
+    ];
+  }
+  const hours = protocol === AfterMealProtocol.TwoHours ? 2 : 1;
+  return [
+    fasting,
+    ...AFTER_MEALS.map((meal): SlotDef => ({
+      id: `after-${meal}`,
+      mealType: meal,
+      mealTiming: MealTiming.After,
+      hoursAfterMeal: hours,
+    })),
+  ];
 }
 
 /**
@@ -83,9 +113,13 @@ export function computeSlotStats(
   ranges: TargetRanges,
 ): SlotStat[] {
   const defs = perMealDefs(protocol);
+  // Aggregate with the 2h slot processed before its 1h sibling: getDaySlots' 1h slot
+  // captures a later >=2h reading as a follow-up, which would otherwise steal the 2h
+  // reading before its own slot can claim it. Output stays in display order (1h, 2h).
+  const aggDefs = [...defs].sort((a, b) => (b.hoursAfterMeal ?? 0) - (a.hoursAfterMeal ?? 0));
   const span = range.to - range.from;
-  const current = aggregate(readings, range.from, range.to, defs, ranges);
-  const previous = aggregate(readings, range.from - span, range.from, defs, ranges);
+  const current = aggregate(readings, range.from, range.to, aggDefs, ranges);
+  const previous = aggregate(readings, range.from - span, range.from, aggDefs, ranges);
 
   return defs.map((def) => {
     const cur = current.get(def.id) ?? { sum: 0, count: 0, inRange: 0 };
@@ -96,6 +130,7 @@ export function computeSlotStats(
       slotId: def.id,
       mealType: def.mealType,
       mealTiming: def.mealTiming,
+      hoursAfterMeal: def.hoursAfterMeal,
       count: cur.count,
       average: avgNow !== undefined ? Math.round(avgNow) : undefined,
       percentInRange: cur.count > 0 ? Math.round((cur.inRange / cur.count) * 100) : 0,

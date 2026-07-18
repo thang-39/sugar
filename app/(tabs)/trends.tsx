@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ConditionType } from '@/domain/models/condition';
+import { AfterMealProtocol, ConditionType } from '@/domain/models/condition';
 import { MealTiming } from '@/domain/models/meal';
 import { PaywallSource } from '@/domain/models/paywall';
 import { Unit } from '@/domain/models/unit';
@@ -242,10 +242,14 @@ export default function TrendsScreen(): ReactElement {
   const slotIcon = (slot: SlotStat): ComponentProps<typeof Ionicons>['name'] =>
     slot.mealTiming === MealTiming.Before ? 'bed-outline' : mealIcon[slot.mealType];
 
-  const slotTitle = (slot: SlotStat): string =>
-    slot.mealTiming === MealTiming.Before
-      ? t('trends.byMeal.slots.fasting')
-      : t(`trends.byMeal.slots.after${slot.mealType}`);
+  const slotTitle = (slot: SlotStat): string => {
+    if (slot.mealTiming === MealTiming.Before) return t('trends.byMeal.slots.fasting');
+    const base = t(`trends.byMeal.slots.after${slot.mealType}`);
+    // Under the 1h+2h protocol each meal shows two slots, so disambiguate by band.
+    return afterMealProtocol === AfterMealProtocol.OneThenTwo && slot.hoursAfterMeal !== undefined
+      ? `${base} · ${t('trends.byMeal.band', { hours: slot.hoursAfterMeal })}`
+      : base;
+  };
 
   // Negative delta = average dropped = improved (▼ green); positive = worse (▲ orange).
   const deltaVM = (delta: number | undefined): { text: string; tone: DeltaTone; a11yLabel: string } => {

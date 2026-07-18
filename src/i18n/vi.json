@@ -435,6 +435,7 @@
         "afterLunch": "Sau bữa trưa",
         "afterDinner": "Sau bữa tối"
       },
+      "band": "{{hours}} giờ",
       "empty": "Chưa có chỉ số trong kỳ này",
       "delta": {
         "improved": "Giảm {{value}} {{unit}} so với kỳ trước",
