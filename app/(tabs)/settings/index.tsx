@@ -23,6 +23,7 @@ import { useEntitlementStore, useIsPro } from '@/ui/hooks/use-entitlement';
 import { spacing, useTheme } from '@/ui/theme';
 import { formatDate, formatValue } from '@/ui/utils/format';
 import { haptics } from '@/ui/utils/haptics';
+import { openFeedbackForm } from '@/ui/utils/open-feedback';
 
 export default function SettingsScreen(): ReactElement {
   const { t } = useTranslation();
@@ -46,6 +47,14 @@ export default function SettingsScreen(): ReactElement {
 
   const openPaywall = (): void =>
     router.push({ pathname: '/paywall', params: { paywallSource: 'settings' } });
+
+  const openFeedback = async (): Promise<void> => {
+    try {
+      await openFeedbackForm();
+    } catch {
+      Alert.alert(t('common.errorTitle'));
+    }
+  };
 
   const modeLabel =
     conditionType === ConditionType.Gestational
@@ -244,6 +253,12 @@ export default function SettingsScreen(): ReactElement {
               : t('screens.settings.backup.neverBackedUp')
           }
           onPress={() => router.push('/backup')}
+        />
+        <SettingRow
+          icon="chatbox-ellipses"
+          iconColor={colors.accentBlue}
+          label={t('screens.settings.index.rows.feedback')}
+          onPress={() => void openFeedback()}
         />
         <SettingRow
           icon="information-circle"

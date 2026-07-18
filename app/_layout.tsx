@@ -35,6 +35,9 @@ import {
   configureNotifications,
   type ReminderPayload,
 } from '@/data/notifications/notification-service';
+import { rescheduleWeeklySummary } from '@/data/notifications/weekly-summary';
+import { getReadingRepository } from '@/data/repositories/factory';
+import { maybeRequestReview } from '@/data/review/request-review';
 import { toLogParams } from '@/ui/utils/log-prefill';
 
 type Db = ExpoSQLiteDatabase<typeof schema>;
@@ -152,6 +155,10 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
       router.push('/(tabs)');
       return;
     }
+    if (payload.kind === 'weekly') {
+      router.push('/(tabs)/trends');
+      return;
+    }
     router.push({
       pathname: '/(tabs)/log',
       params: toLogParams({
@@ -161,6 +168,22 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
       }),
     });
   }, [isBooted, pendingResponse, router]);
+
+  // Session 20 retention loop: on every foreground (once booted so the DB +
+  // settings are ready) reconcile the weekly-summary notification and — as a
+  // fallback for users who never export a report — check the review prompt gate.
+  useEffect(() => {
+    if (!isBooted) return;
+    const run = (): void => {
+      void rescheduleWeeklySummary().catch(() => {});
+      void maybeReviewFallback().catch(() => {});
+    };
+    run();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') run();
+    });
+    return () => sub.remove();
+  }, [isBooted]);
 
   const bootError = dbError?.message ?? initError;
   if (bootError !== undefined) {
@@ -242,6 +265,16 @@ function RootStack(): ReactElement {
         options={{ headerShown: true, presentation: 'modal', title: t('paywall.title') }}
       />
     </Stack>
+  );
+}
+
+/** Review-prompt fallback (20th reading) for users who never export a report. */
+async function maybeReviewFallback(): Promise<void> {
+  const store = useSettingsStore.getState();
+  const readingCount = await getReadingRepository().count();
+  await maybeRequestReview(
+    { reviewAskedAt: store.reviewAskedAt, reportCount: store.reportCount, readingCount },
+    () => useSettingsStore.getState().updateSetting('reviewAskedAt', Date.now()),
   );
 }
 

@@ -13,6 +13,7 @@ const mockRepo: EntitlementRepository = {
   getProProduct: async () => ({ identifier: 'sugar_pro_lifetime', priceString: '149.000 ₫' }),
   purchasePro: async () => fake.purchaseResult,
   restore: async () => fake.isProValue,
+  getAppUserId: async () => 'SGR-TEST-0000',
 };
 
 // Hoisted above the imports by babel-jest; references the `mock`-prefixed repo.
