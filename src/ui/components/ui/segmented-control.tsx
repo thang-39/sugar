@@ -23,6 +23,8 @@ interface SegmentedControlProps<T extends string> {
   onChange: (value: T) => void;
   /** Fill color for the active segment (default: primary green). */
   activeColor?: string;
+  /** Text color for the active segment (default: onPrimary). Use for light active fills. */
+  activeTextColor?: string;
   style?: StyleProp<ViewStyle>;
   segmentStyle?: StyleProp<ViewStyle>;
   activeSegmentStyle?: StyleProp<ViewStyle>;
@@ -35,6 +37,7 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   activeColor,
+  activeTextColor,
   style,
   segmentStyle,
   activeSegmentStyle,
@@ -43,6 +46,7 @@ export function SegmentedControl<T extends string>({
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const fill = activeColor ?? colors.primary;
+  const activeText = activeTextColor ?? colors.onPrimary;
   return (
     <View style={[styles.track, style]}>
       {segments.map((segment) => {
@@ -64,7 +68,7 @@ export function SegmentedControl<T extends string>({
           >
             <AppText
               weight={isActive ? 'extrabold' : 'bold'}
-              color={isActive ? colors.onPrimary : colors.textMuted}
+              color={isActive ? activeText : colors.textMuted}
               style={labelStyle}
               numberOfLines={1}
               adjustsFontSizeToFit

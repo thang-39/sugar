@@ -1,11 +1,11 @@
 import { AfterMealProtocol } from '../models/condition';
-import { MealTiming, MealType } from '../models/meal';
+import { MealType } from '../models/meal';
 import type { Reading } from '../models/reading';
 import type { MealCell, ReportModel, ReportRow, ReportStats, SubCell } from '../models/report';
 import { RangeEvaluation, type TargetRanges } from '../models/target-range';
 import type { Unit } from '../models/unit';
 import { evaluateReading } from './evaluate-reading';
-import { getDaySlots, type SlotDef } from './get-day-slots';
+import { buildSlotDefs, getDaySlots } from './get-day-slots';
 
 export interface BuildReportOptions {
   unit: Unit;
@@ -20,17 +20,6 @@ export interface BuildReportOptions {
 /** Column order: breakfast, lunch, dinner. */
 const MEALS: readonly MealType[] = [MealType.Breakfast, MealType.Lunch, MealType.Dinner];
 const EMPTY_CELL: SubCell = { status: 'none', isOutOfRange: false };
-
-/** before + after slot defs per meal. after-slot timing follows the protocol. */
-function reportSlotDefs(protocol: AfterMealProtocol): SlotDef[] {
-  // 2h-only protocol makes the 2h reading the after value; otherwise the 1h
-  // reading is primary and getDaySlots captures a 2h re-check as followUp.
-  const afterHours = protocol === AfterMealProtocol.TwoHours ? 2 : 1;
-  return MEALS.flatMap((meal) => [
-    { id: `before-${meal}`, mealType: meal, mealTiming: MealTiming.Before },
-    { id: `after-${meal}`, mealType: meal, mealTiming: MealTiming.After, hoursAfterMeal: afterHours },
-  ]);
-}
 
 /** Local-midnight timestamp for a reading's day (device timezone). */
 function dayStart(ts: number): number {
@@ -47,7 +36,7 @@ function dayStart(ts: number): number {
  */
 export function buildReport(readings: readonly Reading[], opts: BuildReportOptions): ReportModel {
   const hasSecondHour = opts.protocol === AfterMealProtocol.OneThenTwo;
-  const defs = reportSlotDefs(opts.protocol);
+  const defs = buildSlotDefs(opts.protocol);
 
   const dayTimestamps = [...new Set(readings.map((reading) => dayStart(reading.recordedAt)))].sort(
     (a, b) => a - b,
