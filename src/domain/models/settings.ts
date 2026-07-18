@@ -35,6 +35,15 @@ export interface AppSettings {
   // --- Session 17.5: local backup ---
   /** Unix ms of the last successful local backup export. `null` = never backed up. */
   lastLocalBackupAt: number | null;
+  // --- Session 20: retention loop ---
+  /** Unix ms the store-review prompt was last requested. `null` = never asked (one-shot). */
+  reviewAskedAt: number | null;
+  /**
+   * Stable support code shown in About (dev entitlement adapter persists it here).
+   * `null` = not generated yet. Session 23's RevenueCat adapter ignores this and
+   * returns `Purchases.getAppUserID()` instead.
+   */
+  supportCode: string | null;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -53,4 +62,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   reportCount: 0,
   analyticsEnabled: true,
   lastLocalBackupAt: null,
+  reviewAskedAt: null,
+  supportCode: null,
 };
