@@ -251,6 +251,7 @@
       "about": {
         "title": "Giới thiệu",
         "version": "Phiên bản {{version}}",
+        "website": "Trang web",
         "privacyPolicy": "Chính sách bảo mật",
         "supportCode": "Mã hỗ trợ",
         "supportHint": "Gửi mã này cho chúng tôi khi cần hỗ trợ",

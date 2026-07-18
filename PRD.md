@@ -324,6 +324,15 @@ Tools: Jest + React Native Testing Library. In-memory SQLite for repository test
 - Paid tier design — candidate premium feature: **family view** (adult children remotely view a parent's readings; requires sync first)
 - Social login (OAuth)
 
+### Growth-plan S21 backlog triage (recorded Session 22, 2026-07-18)
+
+- **Widget quick-log** — *Deferred.* Requires a native home-screen widget target (WidgetKit / App Widget), which is outside the Expo managed workflow; revisit only if a config plugin / dev-client path is adopted.
+- **Apple Health / Google Fit integration** — *Deferred* (also implied by Out of Scope: no Bluetooth glucometer / wearable companion in v1).
+- **Food / meal database** — *Deferred.* Pairs with meal-content logging below.
+- **Meal-content logging + meal-photo AI analysis** — *Deferred.* Idea logged 2026-07-11; revisit only with real usage traction. Pairs with the food-database deferral (a food DB is a prerequisite for structured meal logging).
+- **Community features** — *Deferred* (see Out of Scope: social features / provider portal).
+- **Onboarding steps** — *Done* in Session 10 (multi-step onboarding shipped). No further action; recorded here to close the triage item.
+
 ---
 
 ## Further Notes
