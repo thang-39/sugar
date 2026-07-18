@@ -17,7 +17,7 @@ import { transformChartData } from '@/domain/use-cases/transform-chart-data';
 import { BloodSugarChart } from '@/ui/components/blood-sugar-chart';
 import { SlotStatCard, type DeltaTone } from '@/ui/components/slot-stat-card';
 import { StatCard } from '@/ui/components/stat-card';
-import { AppText, Button, Chip, IconTile, ScreenHeader, SegmentedControl } from '@/ui/components/ui';
+import { AppText, Chip, ScreenHeader, SegmentedControl } from '@/ui/components/ui';
 import { useProGate } from '@/ui/hooks/use-pro-gate';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
@@ -145,6 +145,14 @@ export default function TrendsScreen(): ReactElement {
   // shows the segment and behaves exactly as before.
   const showByMeal = conditionType === ConditionType.Gestational;
 
+  // Selecting "By meal" while free opens the paywall directly (money-principle #2):
+  // no intermediate lock card — the paywall itself carries the reason. The view
+  // only flips to ByMeal once entitled, so its render path is always Pro.
+  const onSelectView = (next: TrendsView): void => {
+    if (next === TrendsView.ByMeal && !requirePro(PaywallSource.ChartsGate)) return;
+    setView(next);
+  };
+
   const filter = useMemo(() => rangeFor(scale, customFrom, customTo), [scale, customFrom, customTo]);
   const { readings, isLoading, error } = useReadings(filter);
 
@@ -262,51 +270,29 @@ export default function TrendsScreen(): ReactElement {
       : { text: `▲ ${magnitude}`, tone: 'worse', a11yLabel: t('trends.byMeal.delta.worse', { value: magnitude, unit: preferredUnit }) };
   };
 
+  // Only rendered once entitled (the "By meal" segment gates entry via onSelectView).
   const renderByMeal = (): ReactElement => (
-    <View style={styles.byMealWrap}>
-      <View
-        style={[styles.slotStack, !isPro && styles.slotStackLocked]}
-        pointerEvents={isPro ? 'auto' : 'none'}
-      >
-        {slotStats.map((slot) => (
-          <SlotStatCard
-            key={slot.slotId}
-            icon={slotIcon(slot)}
-            title={slotTitle(slot)}
-            hasData={slot.count > 0}
-            averageText={slot.average !== undefined ? formatValue(slot.average, preferredUnit) : undefined}
-            unit={preferredUnit}
-            inRangeText={`${slot.percentInRange}%`}
-            countText={String(slot.count)}
-            inRangePercent={slot.percentInRange}
-            delta={deltaVM(slot.deltaAverage)}
-            labels={{
-              average: t('trends.stats.average'),
-              inRange: t('trends.stats.inRange'),
-              readings: t('trends.stats.readings'),
-              empty: t('trends.byMeal.empty'),
-            }}
-          />
-        ))}
-      </View>
-      {!isPro && (
-        <View style={styles.lockOverlay}>
-          <View style={styles.lockCard}>
-            <IconTile icon="lock-closed" size={52} color={colors.primary} iconColor={colors.onPrimary} />
-            <AppText variant="heading" weight="extrabold" style={styles.lockTitle}>
-              {t('trends.byMeal.lock.title')}
-            </AppText>
-            <AppText color={colors.textMuted} style={styles.lockSub}>
-              {t('trends.byMeal.lock.subtitle')}
-            </AppText>
-            <Button
-              label={t('trends.byMeal.lock.button')}
-              onPress={() => requirePro(PaywallSource.ChartsGate)}
-              style={styles.lockButton}
-            />
-          </View>
-        </View>
-      )}
+    <View style={styles.slotStack}>
+      {slotStats.map((slot) => (
+        <SlotStatCard
+          key={slot.slotId}
+          icon={slotIcon(slot)}
+          title={slotTitle(slot)}
+          hasData={slot.count > 0}
+          averageText={slot.average !== undefined ? formatValue(slot.average, preferredUnit) : undefined}
+          unit={preferredUnit}
+          inRangeText={`${slot.percentInRange}%`}
+          countText={String(slot.count)}
+          inRangePercent={slot.percentInRange}
+          delta={deltaVM(slot.deltaAverage)}
+          labels={{
+            average: t('trends.stats.average'),
+            inRange: t('trends.stats.inRange'),
+            readings: t('trends.stats.readings'),
+            empty: t('trends.byMeal.empty'),
+          }}
+        />
+      ))}
     </View>
   );
 
@@ -322,7 +308,7 @@ export default function TrendsScreen(): ReactElement {
               { value: TrendsView.ByMeal, label: t('trends.byMeal.segment.byMeal') },
             ]}
             value={view}
-            onChange={setView}
+            onChange={onSelectView}
             activeColor={colors.card}
             activeTextColor={colors.text}
             style={styles.segment}
@@ -365,7 +351,7 @@ export default function TrendsScreen(): ReactElement {
           </View>
         )}
 
-        {showByMeal && view === TrendsView.ByMeal ? renderByMeal() : renderBody()}
+        {showByMeal && view === TrendsView.ByMeal && isPro ? renderByMeal() : renderBody()}
       </ScrollView>
 
       {activePicker !== undefined && (
@@ -440,47 +426,7 @@ const makeStyles = (colors: ColorScheme) =>
     gap: spacing.sm,
     marginTop: spacing.lg,
   },
-  byMealWrap: {
-    position: 'relative',
-  },
   slotStack: {
     gap: spacing.md,
-  },
-  slotStackLocked: {
-    opacity: 0.4,
-  },
-  lockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.md,
-  },
-  lockCard: {
-    width: '100%',
-    backgroundColor: colors.card,
-    borderRadius: radius.card,
-    padding: spacing.xl,
-    alignItems: 'center',
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  lockTitle: {
-    marginTop: spacing.md,
-    textAlign: 'center',
-  },
-  lockSub: {
-    marginTop: spacing.xs,
-    textAlign: 'center',
-  },
-  lockButton: {
-    marginTop: spacing.lg,
-    alignSelf: 'stretch',
   },
 });
