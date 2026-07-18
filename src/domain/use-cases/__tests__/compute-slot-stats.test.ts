@@ -60,15 +60,49 @@ describe('computeSlotStats', () => {
     expect(fasting?.deltaAverage).toBeUndefined();
   });
 
-  it('averages both the 1h primary and the 2h follow-up into the after-meal slot (1h+2h)', () => {
+  it('splits after-meal into separate 1h and 2h slots per meal under the 1h+2h protocol', () => {
+    const stats = computeSlotStats([], RANGE, AfterMealProtocol.OneThenTwo, RANGES);
+    expect(stats.map((s) => s.slotId)).toEqual([
+      'before-Breakfast',
+      'after-Breakfast-1h',
+      'after-Breakfast-2h',
+      'after-Lunch-1h',
+      'after-Lunch-2h',
+      'after-Dinner-1h',
+      'after-Dinner-2h',
+    ]);
+  });
+
+  it('routes the 1h and 2h readings to their own slots without mixing (1h+2h)', () => {
     const readings = [
       r({ id: 'bk-1h', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 150, recordedAt: now(8) }),
       r({ id: 'bk-2h', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 2, value: 130, recordedAt: now(9) }),
     ];
     const stats = computeSlotStats(readings, RANGE, AfterMealProtocol.OneThenTwo, RANGES);
-    const slot = bySlot(stats, 'after-Breakfast');
-    expect(slot?.count).toBe(2);
-    expect(slot?.average).toBe(140); // (150 + 130) / 2
+    const oneH = bySlot(stats, 'after-Breakfast-1h');
+    const twoH = bySlot(stats, 'after-Breakfast-2h');
+    expect(oneH?.count).toBe(1);
+    expect(oneH?.average).toBe(150);
+    expect(twoH?.count).toBe(1);
+    expect(twoH?.average).toBe(130);
+  });
+
+  it('evaluates each split slot against its own band under 1h+2h', () => {
+    // 130 is in range under the 1h band (<=140) but out of range under the 2h band (<=120).
+    const readings = [
+      r({ id: 'bk-1h', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 1, value: 130, recordedAt: now(8) }),
+      r({ id: 'bk-2h', mealType: MealType.Breakfast, mealTiming: MealTiming.After, hoursAfterMeal: 2, value: 130, recordedAt: now(9) }),
+    ];
+    const stats = computeSlotStats(readings, RANGE, AfterMealProtocol.OneThenTwo, RANGES);
+    expect(bySlot(stats, 'after-Breakfast-1h')?.percentInRange).toBe(100);
+    expect(bySlot(stats, 'after-Breakfast-2h')?.percentInRange).toBe(0);
+  });
+
+  it('carries hoursAfterMeal on after-meal slots, undefined for fasting', () => {
+    const stats = computeSlotStats([], RANGE, AfterMealProtocol.OneThenTwo, RANGES);
+    expect(bySlot(stats, 'before-Breakfast')?.hoursAfterMeal).toBeUndefined();
+    expect(bySlot(stats, 'after-Breakfast-1h')?.hoursAfterMeal).toBe(1);
+    expect(bySlot(stats, 'after-Breakfast-2h')?.hoursAfterMeal).toBe(2);
   });
 
   it('ignores Snack readings — they belong to no slot', () => {
