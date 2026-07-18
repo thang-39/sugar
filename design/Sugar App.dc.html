@@ -150,19 +150,7 @@
           <div style="width:32px; height:32px; border-radius:10px; background:{{ primary }}; display:flex; align-items:center; justify-content:center;"><span class="msr" style="font-size:18px; color:#fff;">water_drop</span></div>
           <div style="font-weight:900; font-size:15px; letter-spacing:.4px;">SUGAR</div>
         </div>
-        <button onClick="{{ toggleSyncPop }}" style="display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:999px; padding:6px 12px; cursor:pointer; font-family:'Nunito';">
-          <span class="msr" style="font-size:16px; color:{{ syncColor }};">{{ syncIcon }}</span>
-          <span style="font-size:12px; font-weight:700; color:#5C6F66;">{{ syncLabel }}</span>
-        </button>
       </div>
-      <sc-if value="{{ syncPopOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="position:absolute; top:104px; right:16px; z-index:40; background:#fff; border-radius:16px; box-shadow:0 12px 30px rgba(27,43,36,.18); padding:16px; width:220px; animation:popIn .15s ease;">
-          <div style="font-weight:800; font-size:14px;">Sync status</div>
-          <div style="font-size:12.5px; color:#5C6F66; margin-top:6px; font-weight:600;">Last synced: {{ lastSynced }}</div>
-          <div style="font-size:12.5px; color:#5C6F66; margin-top:2px; font-weight:600;">{{ pendingLabel }}</div>
-          <button onClick="{{ syncNow }}" style="margin-top:12px; width:100%; background:{{ primary }}; color:#fff; border:none; border-radius:999px; padding:10px; font-family:'Nunito'; font-weight:800; font-size:13px; cursor:pointer;">Sync Now</button>
-        </div>
-      </sc-if>
 
       <!-- ===== TODAY TAB (GDM) ===== -->
       <sc-if value="{{ tabToday }}" hint-placeholder-val="{{ false }}">
@@ -477,22 +465,6 @@
         <div style="flex:1; overflow:auto; padding:8px 20px 20px; box-sizing:border-box;">
           <div style="font-size:24px; font-weight:900;">Settings</div>
 
-          <sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}">
-            <div onClick="{{ openLogin }}" style="margin-top:16px; background:#8B5CF6; border-radius:20px; padding:18px; color:#fff; cursor:pointer; position:relative; overflow:hidden;">
-              <div style="position:absolute; right:-18px; top:-18px; width:70px; height:70px; border-radius:99px; background:rgba(255,255,255,.18);"></div>
-              <div style="font-size:16px; font-weight:900;">Create an account</div>
-              <div style="font-size:12.5px; font-weight:600; opacity:.9; margin-top:2px;">Back up &amp; sync your readings</div>
-              <div style="margin-top:12px; display:inline-flex; align-items:center; gap:6px; background:#fff; color:#8B5CF6; border-radius:999px; padding:8px 16px; font-size:13px; font-weight:800;">SIGN UP <span class="msr" style="font-size:16px;">arrow_forward</span></div>
-            </div>
-          </sc-if>
-          <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:16px; background:#fff; border-radius:20px; padding:16px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 3px 12px rgba(27,43,36,.05);">
-              <div style="width:46px; height:46px; border-radius:99px; background:{{ primary }}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:18px;">{{ userInitial }}</div>
-              <div style="flex:1;"><div style="font-weight:800; font-size:15px;">{{ userEmail }}</div><div style="font-size:12px; font-weight:700; color:var(--brand,#0FA36B);">Synced account</div></div>
-              <button onClick="{{ logout }}" style="background:#F1F6F3; border:none; border-radius:999px; padding:8px 14px; font-family:'Nunito'; font-weight:800; font-size:12.5px; color:#5C6F66; cursor:pointer;">Log out</button>
-            </div>
-          </sc-if>
-
           <sc-if value="{{ showProCard }}" hint-placeholder-val="{{ false }}">
             <div onClick="{{ openPro }}" style="margin-top:16px; background:{{ primary }}; border-radius:20px; padding:18px; color:#fff; cursor:pointer; position:relative; overflow:hidden;">
               <div style="position:absolute; right:-18px; top:-18px; width:70px; height:70px; border-radius:99px; background:rgba(255,255,255,.16);"></div>
@@ -541,6 +513,13 @@
               <span class="msr" style="font-size:22px; color:#E8622C;">notifications</span>
               <div style="flex:1; font-weight:800; font-size:14.5px;">Range alerts</div>
               <button onClick="{{ toggleAlerts }}" style="{{ alertsToggleStyle }}"><span style="{{ alertsKnobStyle }}"></span></button>
+            </div>
+            <div style="height:1px; background:#F1F6F3; margin:0 18px;"></div>
+            <div onClick="{{ openBackup }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
+              <span class="msr" style="font-size:22px; color:var(--brand,#0FA36B);">backup</span>
+              <div style="flex:1; font-weight:800; font-size:14.5px;">Data backup</div>
+              <div style="font-size:12.5px; font-weight:700; color:#8A9A91;">{{ lastBackupDate }}</div>
+              <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
             </div>
           </div>
 
@@ -887,43 +866,46 @@
     </div>
   </sc-if>
 
-  <!-- ============ LOGIN / REGISTER ============ -->
-  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
-    <div style="flex:1; overflow:auto; display:flex; flex-direction:column;">
-      <div style="background:#F5B301; padding:22px 24px 26px; position:relative; overflow:hidden;">
-        <div style="position:absolute; left:24px; top:-30px; width:14px; height:90px; border-radius:99px; background:rgba(255,255,255,.35);"></div>
-        <div style="position:absolute; left:48px; top:-30px; width:14px; height:64px; border-radius:99px; background:rgba(255,255,255,.25);"></div>
-        <div style="position:absolute; right:70px; top:-30px; width:14px; height:76px; border-radius:99px; background:rgba(255,255,255,.3);"></div>
-        <div style="display:flex; justify-content:flex-end;">
-          <button onClick="{{ closeLogin }}" style="background:rgba(255,255,255,.4); border:none; border-radius:99px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:19px; color:#1B2B24;">close</span></button>
+  <!-- ============ DATA BACKUP ============ -->
+  <sc-if value="{{ isBackup }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1; overflow:auto; padding:14px 20px 20px; box-sizing:border-box;" data-screen-label="Data backup">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button onClick="{{ backToSettings }}" style="background:#fff; border:1px solid var(--border,#E2EDE7); border-radius:99px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="msr" style="font-size:20px;">arrow_back</span></button>
+        <div style="font-size:18px; font-weight:900;">Data backup</div>
+      </div>
+      <div style="font-size:12.5px; font-weight:600; color:#5C6F66; margin-top:12px; line-height:1.5;">Your data stays on this phone. Save a backup file you can restore later or move to a new device.</div>
+      <div style="margin-top:18px; background:#fff; border-radius:20px; box-shadow:0 3px 12px rgba(27,43,36,.05); overflow:hidden;">
+        <div onClick="{{ exportBackup }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
+          <span class="msr" style="font-size:22px; color:var(--brand,#0FA36B);">upload_file</span>
+          <div style="flex:1;">
+            <div style="font-weight:800; font-size:14.5px;">Export backup file</div>
+            <div style="font-size:12px; font-weight:600; color:#8A9A91; margin-top:2px;">Save all your readings &amp; settings to a file</div>
+          </div>
+          <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
         </div>
-        <span class="msr" style="font-size:28px; color:#fff; background:rgba(255,255,255,.35); border-radius:12px; padding:6px;">cloud_done</span>
-        <div style="font-size:13.5px; font-weight:800; color:#1B2B24; margin-top:10px;">Sign up &amp; keep</div>
-        <div style="font-size:26px; font-weight:900; color:#1B2B24; line-height:1.1;">Every Reading<br><span style="font-size:15px; font-weight:800;">backed up &amp; synced</span></div>
+        <div style="height:1px; background:#F1F6F3; margin:0 18px;"></div>
+        <div onClick="{{ openRestore }}" style="display:flex; align-items:center; gap:12px; padding:15px 18px; cursor:pointer;">
+          <span class="msr" style="font-size:22px; color:#8B5CF6;">download</span>
+          <div style="flex:1;">
+            <div style="font-weight:800; font-size:14.5px;">Restore from file</div>
+            <div style="font-size:12px; font-weight:600; color:#8A9A91; margin-top:2px;">Replace current data with a backup file</div>
+          </div>
+          <span class="msr" style="font-size:20px; color:#B7C7BE;">chevron_right</span>
+        </div>
       </div>
-      <div style="padding:24px; flex:1; display:flex; flex-direction:column;">
-        <div style="font-size:22px; font-weight:900;">{{ authTitle }} <span style="font-size:14px; color:#8A9A91; font-weight:700;">or</span> <button onClick="{{ toggleAuthMode }}" style="background:none; border:none; font-family:'Nunito'; font-size:22px; font-weight:900; color:var(--brand,#0FA36B); cursor:pointer; padding:0;">{{ authAlt }}</button></div>
-        <input value="{{ authEmail }}" onChange="{{ onEmailChange }}" placeholder="Email" style="margin-top:20px; border:1.5px solid var(--brand,#0FA36B); border-radius:12px; padding:15px 16px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
-        <input value="{{ authPass }}" onChange="{{ onPassChange }}" type="password" placeholder="Password" style="margin-top:12px; border:1.5px solid var(--border-2,#CFE6DA); border-radius:12px; padding:15px 16px; font-family:'Nunito'; font-size:15px; font-weight:700; background:#fff; color:#1B2B24;" />
-        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:10px; color:#E8622C; font-size:12.5px; font-weight:700;">{{ authErrorText }}</div>
-        </sc-if>
-        <button onClick="{{ submitAuth }}" style="margin-top:16px; background:{{ primary }}; color:#fff; border:none; border-radius:12px; padding:15px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">{{ authCta }}</button>
-        <div style="flex:1;"></div>
-        <div style="font-size:12px; color:#8A9A91; text-align:center; font-weight:600; margin-top:20px;">By continuing you agree to the<br><span style="color:var(--brand,#0FA36B); font-weight:800;">Terms &amp; Conditions</span> and <span style="color:var(--brand,#0FA36B); font-weight:800;">Privacy Policy</span></div>
-      </div>
+      <div style="font-size:11.5px; font-weight:600; color:#8A9A91; margin-top:12px; padding:0 4px;">Last backup: {{ lastBackupDate }}</div>
     </div>
   </sc-if>
 
-  <!-- ============ MIGRATION PROMPT ============ -->
-  <sc-if value="{{ isMigrate }}" hint-placeholder-val="{{ false }}">
+  <!-- ============ RESTORE BACKUP CONFIRM ============ -->
+  <sc-if value="{{ isRestore }}" hint-placeholder-val="{{ false }}">
     <div style="position:absolute; inset:0; background:rgba(27,43,36,.45); display:flex; align-items:flex-end; z-index:60;">
       <div style="background:#fff; border-radius:28px 28px 0 0; padding:26px 24px 30px; width:100%; box-sizing:border-box; animation:popIn .2s ease;">
-        <div style="width:56px; height:56px; border-radius:18px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; margin:0 auto;"><span class="msr" style="font-size:30px; color:var(--brand,#0FA36B);">move_up</span></div>
-        <div style="font-size:19px; font-weight:900; text-align:center; margin-top:14px;">Import your device data?</div>
-        <div style="font-size:13.5px; font-weight:600; color:#5C6F66; text-align:center; margin-top:6px; line-height:1.5;">We found <b>{{ migrateCount }} readings</b> on this device ({{ migrateRange }}). Import them into your new account?</div>
-        <button onClick="{{ acceptMigrate }}" style="margin-top:18px; width:100%; background:{{ primary }}; color:#fff; border:none; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">Import readings</button>
-        <button onClick="{{ declineMigrate }}" style="margin-top:10px; width:100%; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:13.5px; color:#8A9A91; cursor:pointer;">Not now</button>
+        <div style="width:56px; height:56px; border-radius:18px; background:var(--surface,#E9F5EF); display:flex; align-items:center; justify-content:center; margin:0 auto;"><span class="msr" style="font-size:30px; color:var(--brand,#0FA36B);">download</span></div>
+        <div style="font-size:19px; font-weight:900; text-align:center; margin-top:14px;">Restore this backup?</div>
+        <div style="font-size:13.5px; font-weight:600; color:#5C6F66; text-align:center; margin-top:6px; line-height:1.5;">Your current data on this phone will be replaced with the backup file.</div>
+        <button onClick="{{ doRestore }}" style="margin-top:18px; width:100%; background:{{ primary }}; color:#fff; border:none; border-radius:999px; padding:14px; font-family:'Nunito'; font-weight:800; font-size:15px; cursor:pointer;">Restore</button>
+        <button onClick="{{ cancelRestore }}" style="margin-top:10px; width:100%; background:none; border:none; font-family:'Nunito'; font-weight:800; font-size:13.5px; color:#8A9A91; cursor:pointer;">Cancel</button>
       </div>
     </div>
   </sc-if>
@@ -994,8 +976,7 @@ class Component extends DCLogic {
       alertsEnabled: true,
       selectedId: null, savedId: null, pp: null,
       exportRange: 'all',
-      loggedIn: false, authMode: 'signup', authEmail: '', authPass: '', authError: '',
-      syncPop: false, pending: 3, lastSynced: 'Today, 09:12',
+      lastBackup: 'Jul 12, 2026 · 08:14', restoreOpen: false,
       toast: '', toastOn: false,
     };
     this._toastTimer = null;
@@ -1312,8 +1293,6 @@ class Component extends DCLogic {
       isEdit: S.screen === 'edit',
       isTargets: S.screen === 'targets',
       isExport: S.screen === 'export',
-      isLogin: S.screen === 'login',
-      isMigrate: S.screen === 'migrate',
       tabLog: S.tab === 'log', tabHistory: S.tab === 'history', tabTrends: S.tab === 'trends', tabSettings: S.tab === 'settings',
       tabToday: S.tab === 'today',
       isReminders: S.screen === 'reminders',
@@ -1476,15 +1455,6 @@ class Component extends DCLogic {
       unitLabel: S.unit,
       toggleUnit: () => this.setState({ unit: S.unit === 'mg/dL' ? 'mmol/L' : 'mg/dL' }),
 
-      // header / sync
-      syncPopOpen: S.syncPop,
-      toggleSyncPop: () => this.setState({ syncPop: !S.syncPop }),
-      syncIcon: S.pending > 0 ? 'cloud_upload' : 'cloud_done',
-      syncColor: S.pending > 0 ? '#E8622C' : primary,
-      syncLabel: S.pending > 0 ? S.pending + ' pending' : 'Synced',
-      lastSynced: S.lastSynced,
-      pendingLabel: S.pending > 0 ? S.pending + ' readings pending' : 'All readings synced',
-      syncNow: () => { this.setState({ pending: 0, syncPop: false, lastSynced: 'Just now' }); this.toast('Sync complete. 3 readings synced.'); },
 
       // log form
       nowLabel: 'Today, ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
@@ -1522,7 +1492,6 @@ class Component extends DCLogic {
         };
         this.setState({
           readings: [r, ...S.readings], savedId: r.id, screen: 'saved',
-          pending: S.pending + 1,
           form: { value: '', mealType: 'Breakfast', mealTiming: 'Before', hoursAfter: 2, notes: '' },
           notesOpen: false,
         });
@@ -1630,12 +1599,15 @@ class Component extends DCLogic {
         this.toast('Changes saved');
       },
 
-      // settings
-      loggedIn: S.loggedIn, loggedOut: !S.loggedIn,
-      userEmail: S.authEmail || 'you@example.com',
-      userInitial: (S.authEmail || 'Y')[0].toUpperCase(),
-      logout: () => { this.setState({ loggedIn: false }); this.toast('Logged out — back to guest mode'); },
-      openLogin: () => this.setState({ screen: 'login', authError: '' }),
+      // settings — local file backup
+      lastBackupDate: S.lastBackup,
+      openBackup: () => this.setState({ screen: 'backup' }),
+      isBackup: S.screen === 'backup',
+      exportBackup: () => { this.setState({ lastBackup: 'Just now' }); this.toast('Backup file exported'); },
+      openRestore: () => this.setState({ restoreOpen: true }),
+      isRestore: S.restoreOpen,
+      cancelRestore: () => this.setState({ restoreOpen: false }),
+      doRestore: () => { this.setState({ restoreOpen: false, screen: 'main', tab: 'settings' }); this.toast('Data restored from backup'); },
       openTargets: () => this.setState({ screen: 'targets' }),
       openExport: () => this.setState({ screen: 'export' }),
       targetSummary: this.disp(t.fastMin) + '–' + this.disp(t.fastMax) + ' / ' + this.disp(t.postMin) + '–' + this.disp(t.postMax),
@@ -1676,32 +1648,12 @@ class Component extends DCLogic {
       csvPreview: 'Date,Time,Value,Unit,Meal,Timing,Hours After,Notes\n' + csvRows.join('\n'),
       doExport: () => this.toast('CSV exported — opening share sheet'),
 
-      // auth
-      authTitle: S.authMode === 'signup' ? 'Signup' : 'Login',
-      authAlt: S.authMode === 'signup' ? 'Login' : 'Signup',
-      authCta: S.authMode === 'signup' ? 'Create Account' : 'Log In',
-      toggleAuthMode: () => this.setState({ authMode: S.authMode === 'signup' ? 'login' : 'signup', authError: '' }),
-      authEmail: S.authEmail, authPass: S.authPass,
-      onEmailChange: e => this.setState({ authEmail: e.target.value, authError: '' }),
-      onPassChange: e => this.setState({ authPass: e.target.value, authError: '' }),
-      authError: !!S.authError, authErrorText: S.authError,
-      closeLogin: () => this.setState({ screen: 'main', tab: 'settings' }),
-      submitAuth: () => {
-        if (!S.authEmail.includes('@')) { this.setState({ authError: 'Please enter a valid email address' }); return; }
-        if (S.authPass.length < 6) { this.setState({ authError: 'Password must be at least 6 characters' }); return; }
-        if (S.authMode === 'signup') this.setState({ loggedIn: true, screen: 'migrate' });
-        else { this.setState({ loggedIn: true, screen: 'main', tab: 'settings' }); this.toast('Welcome back!'); }
-      },
-      migrateCount: guestCount,
-      migrateRange: S.readings.length ? this.fmtDate(S.readings[S.readings.length - 1].recordedAt) + ' – ' + this.fmtDate(S.readings[0].recordedAt) : '',
-      acceptMigrate: () => { this.setState({ screen: 'main', tab: 'settings' }); this.toast(guestCount + ' readings imported to your account'); },
-      declineMigrate: () => this.setState({ screen: 'main', tab: 'settings' }),
 
       // tabs
       tabs: tabDefs.map(td => ({
         label: td.label, icon: td.icon,
         style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', color: S.tab === td.key ? primary : '#9FB0A7', padding: '6px 0' },
-        onPick: () => this.setState({ tab: td.key, syncPop: false }),
+        onPick: () => this.setState({ tab: td.key }),
       })),
 
       // toast

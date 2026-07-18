@@ -19,6 +19,8 @@ interface SettingsStore extends AppSettings {
   isInitialized: boolean;
   initError?: string;
   initialize: () => Promise<void>;
+  /** Re-read every persisted key unconditionally — call after a restore replaces the rows. */
+  rehydrate: () => Promise<void>;
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => Promise<void>;
   /** Re-apply a condition preset over target ranges + theme + protocol. Never touches readings. */
   applyConditionPreset: (conditionType: ConditionType) => Promise<void>;
@@ -26,62 +28,75 @@ interface SettingsStore extends AppSettings {
   resetToDefaults: () => void;
 }
 
+// Read every persisted key in parallel (the repo hits SQLite once per key) and
+// push them into the store. Shared by `initialize` (guarded, once at boot) and
+// `rehydrate` (unconditional, after a restore rewrites the rows).
+async function load(set: (partial: Partial<SettingsStore>) => void): Promise<void> {
+  const [
+    preferredUnit,
+    preferredLanguage,
+    fastingRange,
+    postMealRange,
+    alertsEnabled,
+    onboardingDone,
+    conditionType,
+    dueDate,
+    afterMealProtocol,
+    postMeal2hRange,
+    manualReminders,
+    smartAfterMeal,
+    reportCount,
+    analyticsEnabled,
+    lastLocalBackupAt,
+  ] = await Promise.all([
+    getSettingsRepo().get('preferredUnit'),
+    getSettingsRepo().get('preferredLanguage'),
+    getSettingsRepo().get('fastingRange'),
+    getSettingsRepo().get('postMealRange'),
+    getSettingsRepo().get('alertsEnabled'),
+    getSettingsRepo().get('onboardingDone'),
+    getSettingsRepo().get('conditionType'),
+    getSettingsRepo().get('dueDate'),
+    getSettingsRepo().get('afterMealProtocol'),
+    getSettingsRepo().get('postMeal2hRange'),
+    getSettingsRepo().get('manualReminders'),
+    getSettingsRepo().get('smartAfterMeal'),
+    getSettingsRepo().get('reportCount'),
+    getSettingsRepo().get('analyticsEnabled'),
+    getSettingsRepo().get('lastLocalBackupAt'),
+  ]);
+
+  set({
+    preferredUnit,
+    preferredLanguage,
+    fastingRange,
+    postMealRange,
+    alertsEnabled,
+    onboardingDone,
+    conditionType,
+    dueDate,
+    afterMealProtocol,
+    postMeal2hRange,
+    manualReminders,
+    smartAfterMeal,
+    reportCount,
+    analyticsEnabled,
+    lastLocalBackupAt,
+    isInitialized: true,
+  });
+  setAnalyticsEnabled(analyticsEnabled);
+}
+
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   ...DEFAULT_SETTINGS,
   isInitialized: false,
   initialize: async () => {
     if (get().isInitialized) return;
-    // Read every persisted key in parallel — the repo hits SQLite once per key.
-    const [
-      preferredUnit,
-      preferredLanguage,
-      fastingRange,
-      postMealRange,
-      alertsEnabled,
-      onboardingDone,
-      conditionType,
-      dueDate,
-      afterMealProtocol,
-      postMeal2hRange,
-      manualReminders,
-      smartAfterMeal,
-      reportCount,
-      analyticsEnabled,
-    ] = await Promise.all([
-      getSettingsRepo().get('preferredUnit'),
-      getSettingsRepo().get('preferredLanguage'),
-      getSettingsRepo().get('fastingRange'),
-      getSettingsRepo().get('postMealRange'),
-      getSettingsRepo().get('alertsEnabled'),
-      getSettingsRepo().get('onboardingDone'),
-      getSettingsRepo().get('conditionType'),
-      getSettingsRepo().get('dueDate'),
-      getSettingsRepo().get('afterMealProtocol'),
-      getSettingsRepo().get('postMeal2hRange'),
-      getSettingsRepo().get('manualReminders'),
-      getSettingsRepo().get('smartAfterMeal'),
-      getSettingsRepo().get('reportCount'),
-      getSettingsRepo().get('analyticsEnabled'),
-    ]);
-
-    set({
-      preferredUnit,
-      preferredLanguage,
-      fastingRange,
-      postMealRange,
-      alertsEnabled,
-      onboardingDone,
-      conditionType,
-      dueDate,
-      afterMealProtocol,
-      postMeal2hRange,
-      manualReminders,
-      smartAfterMeal,
-      reportCount,
-      analyticsEnabled,
-      isInitialized: true,
-    });
-    setAnalyticsEnabled(analyticsEnabled);
+    await load(set);
+  },
+  rehydrate: async () => {
+    await load(set);
+    void i18n.changeLanguage(get().preferredLanguage);
   },
   updateSetting: async (key, value) => {
     await getSettingsRepo().set(key, value);

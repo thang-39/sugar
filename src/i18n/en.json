@@ -14,8 +14,7 @@
       "unlimitedReports": "Unlimited PDF report exports",
       "noWatermark": "Clean reports, no app watermark",
       "csvExport": "CSV export for your doctor",
-      "perMealAnalysis": "Detailed “Per-meal” analysis",
-      "cloudBackup": "Cloud backup & restore"
+      "perMealAnalysis": "Detailed “Per-meal” analysis"
     },
     "context": {
       "report_gate": "You've used your 1 free report. Unlock Sugar Pro for unlimited exports.",
@@ -124,6 +123,7 @@
           "alerts": "Alerts",
           "targetRanges": "Target ranges",
           "report": "Doctor report",
+          "backup": "Data backup",
           "about": "About",
           "trackingMode": "Tracking mode",
           "reminders": "Measurement reminders",
@@ -208,6 +208,34 @@
         "title": "About",
         "version": "Version {{version}}",
         "privacyPolicy": "Privacy policy"
+      },
+      "backup": {
+        "title": "Data backup",
+        "description": "Your data stays on this phone. Save a backup file you can restore later or move to a new device.",
+        "export": {
+          "label": "Export backup file",
+          "subtitle": "Save all your readings & settings to a file"
+        },
+        "restore": {
+          "label": "Restore from file",
+          "subtitle": "Replace current data with a backup file"
+        },
+        "lastBackup": "Last backup: {{date}}",
+        "neverBackedUp": "Not backed up yet",
+        "confirm": {
+          "title": "Restore this backup?",
+          "message": "Your current data on this phone will be replaced with the backup file.",
+          "restore": "Restore",
+          "cancel": "Cancel"
+        },
+        "exported": "Backup file exported",
+        "success": "Restored {{count}} readings",
+        "successSkipped": "Restored {{count}} readings ({{skipped}} skipped)",
+        "tooNew": "This file is from a newer version of Sugar — please update the app.",
+        "malformed": "This file isn't a valid Sugar backup.",
+        "unavailable": "This device cannot share files.",
+        "exportFailed": "Could not create the backup file. Please try again.",
+        "restoreFailed": "Could not restore the backup. Please try again."
       },
       "deleteAll": {
         "row": "Delete all data",
