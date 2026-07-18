@@ -64,4 +64,16 @@ describe('SqliteSettingsRepository', () => {
     await repo.set('reportCount', 3);
     expect(await repo.get('reportCount')).toBe(3);
   });
+
+  it('round-trips postpartum keys, defaulting to null', async () => {
+    const repo = newRepo();
+    expect(await repo.get('babyBornAt')).toBeNull();
+    expect(await repo.get('postpartumPromptSnoozedAt')).toBeNull();
+    expect(await repo.get('ogttDoneAt')).toBeNull();
+
+    await repo.set('babyBornAt', 1_700_000_000_000);
+    await repo.set('ogttDoneAt', 1_700_500_000_000);
+    expect(await repo.get('babyBornAt')).toBe(1_700_000_000_000);
+    expect(await repo.get('ogttDoneAt')).toBe(1_700_500_000_000);
+  });
 });
