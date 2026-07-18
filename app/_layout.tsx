@@ -36,6 +36,7 @@ import {
   type ReminderPayload,
 } from '@/data/notifications/notification-service';
 import { rescheduleWeeklySummary } from '@/data/notifications/weekly-summary';
+import { rescheduleOgttReminders } from '@/data/notifications/ogtt-reminders';
 import { getReadingRepository } from '@/data/repositories/factory';
 import { maybeRequestReview } from '@/data/review/request-review';
 import { toLogParams } from '@/ui/utils/log-prefill';
@@ -159,6 +160,10 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
       router.push('/(tabs)/trends');
       return;
     }
+    if (payload.kind === 'ogtt') {
+      router.push('/(tabs)');
+      return;
+    }
     router.push({
       pathname: '/(tabs)/log',
       params: toLogParams({
@@ -176,6 +181,7 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
     if (!isBooted) return;
     const run = (): void => {
       void rescheduleWeeklySummary().catch(() => {});
+      void rescheduleOgttReminders().catch(() => {});
       void maybeReviewFallback().catch(() => {});
     };
     run();

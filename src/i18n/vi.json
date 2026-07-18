@@ -550,7 +550,11 @@
       "recheckTitle": "Đo lại nhé mẹ 🌿",
       "recheckBody": "Chỉ số sau {{meal}} hơi cao — đo lại lúc 2 giờ giúp mẹ theo dõi nhé 🌿",
       "weeklyTitle": "Tổng kết tuần này 🌿",
-      "weeklyBody": "Tuần này mẹ đã đo {{count}} lần, {{percent}}% trong ngưỡng 👍"
+      "weeklyBody": "Tuần này mẹ đã đo {{count}} lần, {{percent}}% trong ngưỡng 👍",
+      "ogttTitle": "Đến hẹn kiểm tra đường huyết sau sinh 🌿",
+      "ogttBody": "Bác sĩ thường hẹn kiểm tra lại trong 4–12 tuần sau sinh. Mẹ đặt lịch nhé.",
+      "ogttYearlyTitle": "Nhắc kiểm tra đường huyết hằng năm 🌿",
+      "ogttYearlyBody": "Đã một năm rồi — mẹ nhớ kiểm tra đường huyết định kỳ nhé."
     },
     "onboarding": {
       "title": "Bật nhắc đo?",
