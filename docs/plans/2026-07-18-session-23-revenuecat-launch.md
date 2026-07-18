@@ -324,7 +324,7 @@ Not unit-tested — it only calls `Purchases.*` and delegates to the tested mapp
 
 ```ts
 // src/data/repositories/revenuecat-entitlement-repository.ts
-import Purchases, { PurchasesErrorCode } from 'react-native-purchases';
+import Purchases, { PURCHASES_ERROR_CODE } from 'react-native-purchases';
 import type { PurchasesError } from 'react-native-purchases';
 
 import type { ProProduct, PurchaseResult } from '@/domain/models/entitlement';
@@ -374,8 +374,8 @@ export class RevenueCatEntitlementRepository implements EntitlementRepository {
     } catch (e) {
       const err = e as PurchasesError;
       return mapPurchaseError({
-        userCancelled: Boolean(err.userCancelled),
-        isPending: err.code === PurchasesErrorCode.PaymentPendingError,
+        userCancelled: err.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR,
+        isPending: err.code === PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR,
         message: err.message,
       });
     }
@@ -396,16 +396,14 @@ export class RevenueCatEntitlementRepository implements EntitlementRepository {
 
 ```ts
 // src/data/repositories/revenuecat-configure.ts
-import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 
 /** Idempotent per process. Call once at boot with the resolved platform key. */
 export function configureRevenueCat(apiKey: string): void {
-  if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+  if (__DEV__) void Purchases.setLogLevel(LOG_LEVEL.DEBUG);
   Purchases.configure({ apiKey });
   // Anonymous app user id by default — no login. RevenueCat generates a stable
   // $RCAnonymousID surfaced via getAppUserID() as the support code.
-  void Platform.OS; // platform-specific key already resolved in getRevenueCatConfig()
 }
 ```
 
