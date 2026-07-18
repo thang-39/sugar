@@ -67,6 +67,17 @@ export class SqliteReadingRepository implements ReadingRepository {
     this.db.delete(readings).run();
   }
 
+  async replaceAll(list: Reading[]): Promise<void> {
+    const rows = list.map(toRow);
+    // First use of db.transaction — atomic clear + bulk insert so a restore never
+    // leaves the table half-wiped. The sync SQLite driver runs the callback
+    // synchronously (both expo-sqlite and better-sqlite3 support this).
+    this.db.transaction((tx) => {
+      tx.delete(readings).run();
+      if (rows.length > 0) tx.insert(readings).values(rows).run();
+    });
+  }
+
   async getById(id: string): Promise<Reading | undefined> {
     const row = this.db.select().from(readings).where(eq(readings.id, id)).get();
     return row ? toDomain(row) : undefined;

@@ -32,6 +32,9 @@ export interface AppSettings {
   // --- Session 15: monetization ---
   /** Anonymous analytics opt-out (default on). Never records a glucose value. */
   analyticsEnabled: boolean;
+  // --- Session 17.5: local backup ---
+  /** Unix ms of the last successful local backup export. `null` = never backed up. */
+  lastLocalBackupAt: number | null;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -49,4 +52,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   smartAfterMeal: { enabled: false, offset: '1h' },
   reportCount: 0,
   analyticsEnabled: true,
+  lastLocalBackupAt: null,
 };
