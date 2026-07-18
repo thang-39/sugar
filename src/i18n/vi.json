@@ -469,11 +469,6 @@
         "improved": "Giảm {{value}} {{unit}} so với kỳ trước",
         "worse": "Tăng {{value}} {{unit}} so với kỳ trước",
         "none": "Không đổi so với kỳ trước"
-      },
-      "lock": {
-        "title": "Phân tích theo bữa là tính năng Pro",
-        "subtitle": "Xem trung bình và tỉ lệ đạt ngưỡng cho từng bữa trong ngày.",
-        "button": "Mở khóa Sugar Pro"
       }
     }
   },
