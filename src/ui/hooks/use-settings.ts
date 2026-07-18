@@ -49,6 +49,9 @@ async function load(set: (partial: Partial<SettingsStore>) => void): Promise<voi
     analyticsEnabled,
     lastLocalBackupAt,
     reviewAskedAt,
+    babyBornAt,
+    postpartumPromptSnoozedAt,
+    ogttDoneAt,
   ] = await Promise.all([
     getSettingsRepo().get('preferredUnit'),
     getSettingsRepo().get('preferredLanguage'),
@@ -66,6 +69,9 @@ async function load(set: (partial: Partial<SettingsStore>) => void): Promise<voi
     getSettingsRepo().get('analyticsEnabled'),
     getSettingsRepo().get('lastLocalBackupAt'),
     getSettingsRepo().get('reviewAskedAt'),
+    getSettingsRepo().get('babyBornAt'),
+    getSettingsRepo().get('postpartumPromptSnoozedAt'),
+    getSettingsRepo().get('ogttDoneAt'),
   ]);
 
   set({
@@ -85,6 +91,9 @@ async function load(set: (partial: Partial<SettingsStore>) => void): Promise<voi
     analyticsEnabled,
     lastLocalBackupAt,
     reviewAskedAt,
+    babyBornAt,
+    postpartumPromptSnoozedAt,
+    ogttDoneAt,
     isInitialized: true,
   });
   setAnalyticsEnabled(analyticsEnabled);

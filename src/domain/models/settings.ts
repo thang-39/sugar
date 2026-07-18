@@ -44,6 +44,13 @@ export interface AppSettings {
    * returns `Purchases.getAppUserID()` instead.
    */
   supportCode: string | null;
+  // --- Session 21: postpartum lifecycle (JSON kv, no migration) ---
+  /** Unix ms the baby was born. `null` = not yet born; `!= null` = postpartum phase. */
+  babyBornAt: number | null;
+  /** Unix ms the post-due-date "Mẹ sinh bé chưa?" prompt was last snoozed. `null` = never. */
+  postpartumPromptSnoozedAt: number | null;
+  /** Unix ms the postpartum OGTT re-check was marked done. `null` = not done. */
+  ogttDoneAt: number | null;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -64,4 +71,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   lastLocalBackupAt: null,
   reviewAskedAt: null,
   supportCode: null,
+  babyBornAt: null,
+  postpartumPromptSnoozedAt: null,
+  ogttDoneAt: null,
 };
