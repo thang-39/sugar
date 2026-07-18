@@ -151,4 +151,27 @@ describe('SqliteReadingRepository', () => {
     await expect(repo.deleteAll()).resolves.toBeUndefined();
     expect(await repo.count()).toBe(0);
   });
+
+  it('replaceAll atomically clears then bulk-inserts the given readings', async () => {
+    const repo = newRepo();
+    await repo.create(makeReading({ id: 'old1' }));
+    await repo.create(makeReading({ id: 'old2' }));
+
+    await repo.replaceAll([
+      makeReading({ id: 'new1', value: 120, createdAt: 10 }),
+      makeReading({ id: 'new2', value: 130, createdAt: 20 }),
+    ]);
+
+    const rows = await repo.list();
+    expect(rows.map((r) => r.id).sort()).toEqual(['new1', 'new2']);
+    expect(await repo.getById('old1')).toBeUndefined();
+    expect((await repo.getById('new1'))?.createdAt).toBe(10);
+  });
+
+  it('replaceAll with an empty array clears the table', async () => {
+    const repo = newRepo();
+    await repo.create(makeReading({ id: 'a' }));
+    await repo.replaceAll([]);
+    expect(await repo.count()).toBe(0);
+  });
 });

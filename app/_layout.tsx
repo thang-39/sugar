@@ -234,6 +234,10 @@ function RootStack(): ReactElement {
         options={{ headerShown: true, title: t('screens.settings.about.title') }}
       />
       <Stack.Screen
+        name="backup"
+        options={{ headerShown: true, title: t('screens.settings.backup.title') }}
+      />
+      <Stack.Screen
         name="paywall"
         options={{ headerShown: true, presentation: 'modal', title: t('paywall.title') }}
       />

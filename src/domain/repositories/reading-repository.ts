@@ -15,4 +15,6 @@ export interface ReadingRepository {
   count(filter?: ReadingListFilter): Promise<number>;
   /** Remove every reading (used by the "delete all data" flow). */
   deleteAll(): Promise<void>;
+  /** Atomically replace every reading (clear + bulk insert) — used by restore. */
+  replaceAll(readings: Reading[]): Promise<void>;
 }
