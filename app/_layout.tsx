@@ -37,7 +37,7 @@ import {
 } from '@/data/notifications/notification-service';
 import { rescheduleWeeklySummary } from '@/data/notifications/weekly-summary';
 import { rescheduleOgttReminders } from '@/data/notifications/ogtt-reminders';
-import { getReadingRepository } from '@/data/repositories/factory';
+import { getReadingRepository, initEntitlement } from '@/data/repositories/factory';
 import { maybeRequestReview } from '@/data/review/request-review';
 import { toLogParams } from '@/ui/utils/log-prefill';
 
@@ -119,6 +119,7 @@ function RootLayoutReady({ db }: { db: Db }): ReactElement {
   // made elsewhere (or the RC offline cache expiring) is reflected. Single source
   // of truth is the zustand cache in useEntitlementStore.
   useEffect(() => {
+    initEntitlement(); // configure RevenueCat before any entitlement call (no-op if unconfigured)
     const refresh = (): void => void useEntitlementStore.getState().refresh();
     refresh();
     const sub = AppState.addEventListener('change', (state) => {
