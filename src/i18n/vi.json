@@ -78,6 +78,18 @@
       "yes": "Rồi ạ",
       "no": "Chưa"
     },
+    "postpartum": {
+      "ogttTitle": "Kiểm tra đường huyết lại: tuần 4–12 sau sinh",
+      "ogttSubtitle": "Sugar sẽ nhắc mẹ khi đến lúc.",
+      "weeksSinceBirth": "Bé được {{weeks}} tuần",
+      "markDone": "Đã làm OGTT ✓",
+      "doneTitle": "Đã hoàn thành kiểm tra OGTT ✓",
+      "doneSubtitle": "Sugar sẽ nhắc mẹ kiểm tra định kỳ hằng năm.",
+      "continueLongTerm": "Tiếp tục theo dõi đường huyết dài hạn",
+      "switchConfirmTitle": "Chuyển sang theo dõi thường ngày?",
+      "switchConfirmMessage": "Giao diện và ngưỡng mặc định sẽ đổi sang chế độ thường ngày — dữ liệu đã ghi giữ nguyên.",
+      "switchConfirm": "Chuyển"
+    },
     "slots": {
       "before": {
         "Breakfast": "Đói (trước ăn sáng)",
