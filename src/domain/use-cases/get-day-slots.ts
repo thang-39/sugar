@@ -1,13 +1,31 @@
-import type { MealTiming, MealType } from '../models/meal';
+import { AfterMealProtocol } from '../models/condition';
+import { MealTiming, MealType } from '../models/meal';
 import type { Reading } from '../models/reading';
 
 export interface SlotDef {
-  /** Stable id, e.g. 'fasting', 'after-breakfast'. */
+  /** Stable id, e.g. 'before-Breakfast', 'after-Breakfast'. */
   id: string;
   mealType: MealType;
   mealTiming: MealTiming;
   /** After-meal slots: the protocol timing (in hours) this slot represents. */
   hoursAfterMeal?: number;
+}
+
+/** Column order shared by the report grid and per-meal analysis. */
+const SLOT_MEALS: readonly MealType[] = [MealType.Breakfast, MealType.Lunch, MealType.Dinner];
+
+/**
+ * before + after slot defs per meal (breakfast, lunch, dinner). The after slot's
+ * primary timing follows the protocol: the 2h-only protocol makes the 2h reading
+ * the after value; otherwise the 1h reading is primary and `getDaySlots` captures
+ * a later 2h re-check as `followUp`. Shared by `build-report` and `compute-slot-stats`.
+ */
+export function buildSlotDefs(protocol: AfterMealProtocol): SlotDef[] {
+  const afterHours = protocol === AfterMealProtocol.TwoHours ? 2 : 1;
+  return SLOT_MEALS.flatMap((meal) => [
+    { id: `before-${meal}`, mealType: meal, mealTiming: MealTiming.Before },
+    { id: `after-${meal}`, mealType: meal, mealTiming: MealTiming.After, hoursAfterMeal: afterHours },
+  ]);
 }
 
 export interface DaySlot {

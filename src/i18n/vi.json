@@ -423,6 +423,29 @@
     },
     "a11y": {
       "chart": "Biểu đồ xu hướng đường huyết. {{count}} điểm. Trung bình {{avg}} {{unit}}."
+    },
+    "byMeal": {
+      "segment": {
+        "trend": "Xu hướng",
+        "byMeal": "Theo bữa"
+      },
+      "slots": {
+        "fasting": "Lúc đói",
+        "afterBreakfast": "Sau bữa sáng",
+        "afterLunch": "Sau bữa trưa",
+        "afterDinner": "Sau bữa tối"
+      },
+      "empty": "Chưa có chỉ số trong kỳ này",
+      "delta": {
+        "improved": "Giảm {{value}} {{unit}} so với kỳ trước",
+        "worse": "Tăng {{value}} {{unit}} so với kỳ trước",
+        "none": "Không đổi so với kỳ trước"
+      },
+      "lock": {
+        "title": "Phân tích theo bữa là tính năng Pro",
+        "subtitle": "Xem trung bình và tỉ lệ đạt ngưỡng cho từng bữa trong ngày.",
+        "button": "Mở khóa Sugar Pro"
+      }
     }
   },
   "readingDetail": {
