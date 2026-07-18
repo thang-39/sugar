@@ -550,7 +550,11 @@
       "recheckTitle": "Time for a re-check 🌿",
       "recheckBody": "Your reading after {{meal}} was a little high — a 2-hour re-check helps you keep track 🌿",
       "weeklyTitle": "This week's summary 🌿",
-      "weeklyBody": "You measured {{count}} times this week, {{percent}}% in range 👍"
+      "weeklyBody": "You measured {{count}} times this week, {{percent}}% in range 👍",
+      "ogttTitle": "Time for your postpartum blood-sugar check 🌿",
+      "ogttBody": "Doctors usually re-check 4–12 weeks after birth. Book your test.",
+      "ogttYearlyTitle": "Yearly blood-sugar check reminder 🌿",
+      "ogttYearlyBody": "It's been a year — remember your routine blood-sugar check."
     },
     "onboarding": {
       "title": "Turn on reminders?",
