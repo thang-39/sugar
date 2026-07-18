@@ -13,10 +13,12 @@ import {
 import i18n from '@/i18n';
 
 const ANDROID_CHANNEL_ID = 'reminders';
+/** Fixed id for the single weekly-summary notification, rescheduled on each foreground. */
+const WEEKLY_SUMMARY_ID = 'weekly-summary';
 
 /** Data attached to every reminder; a tap reads this to deep-link into Log. */
 export interface ReminderPayload {
-  kind: 'manual' | 'smart' | 'recheck';
+  kind: 'manual' | 'smart' | 'recheck' | 'weekly';
   mealType?: Reading['mealType'];
   mealTiming?: Reading['mealTiming'];
   hoursAfterMeal?: number;
@@ -162,6 +164,30 @@ export async function cancelRemindersForReading(readingId: string): Promise<void
       )
       .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
   );
+}
+
+/**
+ * (Re)schedule the single weekly-summary notification for `fireAt`. Reuses the
+ * fixed {@link WEEKLY_SUMMARY_ID}, so scheduling replaces any existing one —
+ * idempotent, safe to call on every foreground.
+ */
+export async function scheduleWeeklySummary(
+  fireAt: Date,
+  count: number,
+  percentInRange: number,
+): Promise<void> {
+  await schedule(
+    WEEKLY_SUMMARY_ID,
+    i18n.t('reminders.notif.weeklyTitle'),
+    i18n.t('reminders.notif.weeklyBody', { count, percent: percentInRange }),
+    { type: Notifications.SchedulableTriggerInputTypes.DATE, date: fireAt },
+    { kind: 'weekly' },
+  );
+}
+
+/** Cancel the weekly summary (used when the past week has too few readings). */
+export async function cancelWeeklySummary(): Promise<void> {
+  await Notifications.cancelScheduledNotificationAsync(WEEKLY_SUMMARY_ID);
 }
 
 /** For the dev debug panel. */

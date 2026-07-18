@@ -7,6 +7,7 @@ import { analytics } from '@/data/analytics';
 import { generateAndShareCsv, ShareCsvStatus } from '@/data/export/share-csv';
 import { getReadingRepository } from '@/data/repositories/factory';
 import { generateAndSharePdf, SharePdfStatus } from '@/data/report/share-pdf';
+import { maybeRequestReview } from '@/data/review/request-review';
 import { ConditionType } from '@/domain/models/condition';
 import { ExportRangePreset } from '@/domain/models/export';
 import { MealType } from '@/domain/models/meal';
@@ -17,12 +18,14 @@ import { buildReport } from '@/domain/use-cases/build-report';
 import { pregnancyWeek } from '@/domain/use-cases/pregnancy-week';
 import { resolveExportRange } from '@/domain/use-cases/resolve-export-range';
 import { AppText, Button, Card, Chip, SegmentedControl } from '@/ui/components/ui';
+import { FeedbackCard } from '@/ui/components/feedback-card';
 import { ReportPreviewTable } from '@/ui/components/report-preview-table';
 import { useProGate } from '@/ui/hooks/use-pro-gate';
 import { useReadings } from '@/ui/hooks/use-readings';
 import { useSettingsStore } from '@/ui/hooks/use-settings';
 import { radius, spacing, useTheme } from '@/ui/theme';
 import { formatDate, formatValue } from '@/ui/utils/format';
+import { openFeedbackForm } from '@/ui/utils/open-feedback';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -51,6 +54,7 @@ export default function ReportScreen(): ReactElement {
     postMealRange,
     postMeal2hRange,
     reportCount,
+    reviewAskedAt,
     updateSetting,
   } = useSettingsStore();
 
@@ -186,8 +190,15 @@ export default function ReportScreen(): ReactElement {
         },
       });
       if (result.status === SharePdfStatus.Shared) {
-        void updateSetting('reportCount', reportCount + 1);
-        analytics.reportExported(reportCount + 1);
+        const nextReportCount = reportCount + 1;
+        void updateSetting('reportCount', nextReportCount);
+        analytics.reportExported(nextReportCount);
+        // Ask for a store review at this high-satisfaction peak (one-shot).
+        const readingCount = await getReadingRepository().count();
+        void maybeRequestReview(
+          { reviewAskedAt, reportCount: nextReportCount, readingCount },
+          () => updateSetting('reviewAskedAt', Date.now()),
+        );
       } else if (result.status === SharePdfStatus.Unavailable) {
         Alert.alert(t('screens.settings.report.title'), t('screens.settings.report.shareUnavailable'));
       }
@@ -195,6 +206,14 @@ export default function ReportScreen(): ReactElement {
       Alert.alert(t('common.errorTitle'), t('screens.settings.report.failed'));
     } finally {
       setIsSharingPdf(false);
+    }
+  };
+
+  const openFeedback = async (): Promise<void> => {
+    try {
+      await openFeedbackForm();
+    } catch {
+      Alert.alert(t('common.errorTitle'));
     }
   };
 
@@ -222,6 +241,8 @@ export default function ReportScreen(): ReactElement {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      {reportCount >= 1 && <FeedbackCard onPress={() => void openFeedback()} />}
+
       <SegmentedControl
         segments={[
           { value: ReportMode.Pdf, label: t('screens.settings.report.tabs.pdf') },

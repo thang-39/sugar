@@ -29,7 +29,7 @@ export function getSettingsRepository(): SettingsRepository {
  * Expo Go or jest, so dev is the only adapter that works without an EAS build.
  */
 export function getEntitlementRepository(): EntitlementRepository {
-  return new DevEntitlementRepository();
+  return new DevEntitlementRepository(getSettingsRepository());
 }
 
 /** Standard dependency bundle for the reading use cases (create/update/delete). */
