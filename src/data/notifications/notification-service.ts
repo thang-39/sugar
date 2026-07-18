@@ -10,6 +10,7 @@ import {
   recheckFireAt,
   smartAfterMealFireAts,
 } from '@/domain/use-cases/reminder-schedule';
+import type { OgttSchedule } from '@/domain/use-cases/ogtt-schedule';
 import i18n from '@/i18n';
 
 const ANDROID_CHANNEL_ID = 'reminders';
@@ -18,7 +19,7 @@ const WEEKLY_SUMMARY_ID = 'weekly-summary';
 
 /** Data attached to every reminder; a tap reads this to deep-link into Log. */
 export interface ReminderPayload {
-  kind: 'manual' | 'smart' | 'recheck' | 'weekly';
+  kind: 'manual' | 'smart' | 'recheck' | 'weekly' | 'ogtt';
   mealType?: Reading['mealType'];
   mealTiming?: Reading['mealTiming'];
   hoursAfterMeal?: number;
@@ -188,6 +189,43 @@ export async function scheduleWeeklySummary(
 /** Cancel the weekly summary (used when the past week has too few readings). */
 export async function cancelWeeklySummary(): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(WEEKLY_SUMMARY_ID);
+}
+
+/**
+ * Reconcile OGTT reminders against a computed schedule. Cancels every `ogtt:*` id
+ * then schedules the present ones. Idempotent — safe on every foreground.
+ */
+export async function reconcileOgttReminders(plan: OgttSchedule): Promise<void> {
+  const all = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    all
+      .filter((n) => n.identifier.startsWith('ogtt:'))
+      .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+  );
+  const items = plan.yearly ? [...plan.reminders, plan.yearly] : plan.reminders;
+  for (const item of items) {
+    const isYearly = item.id === 'ogtt:yearly';
+    await schedule(
+      item.id,
+      i18n.t(isYearly ? 'reminders.notif.ogttYearlyTitle' : 'reminders.notif.ogttTitle'),
+      i18n.t(isYearly ? 'reminders.notif.ogttYearlyBody' : 'reminders.notif.ogttBody'),
+      { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(item.fireAt) },
+      { kind: 'ogtt' },
+    );
+  }
+}
+
+/**
+ * Cancel every meal-anchored notification (smart after-meal + conditional re-check)
+ * regardless of reading. Used when a mother stops measuring postpartum.
+ */
+export async function cancelAllSmartReminders(): Promise<void> {
+  const all = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    all
+      .filter((n) => n.identifier.startsWith('smart:') || n.identifier.startsWith('recheck:'))
+      .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+  );
 }
 
 /** For the dev debug panel. */
