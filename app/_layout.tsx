@@ -267,6 +267,10 @@ function RootStack(): ReactElement {
         options={{ headerShown: true, title: t('screens.postpartumSetup.title') }}
       />
       <Stack.Screen
+        name="supplies"
+        options={{ headerShown: true, title: t('screens.settings.supplies.title') }}
+      />
+      <Stack.Screen
         name="backup"
         options={{ headerShown: true, title: t('screens.settings.backup.title') }}
       />

@@ -158,7 +158,8 @@
           "reminders": "Nhắc đo đường huyết",
           "pro": "Sugar Pro",
           "analytics": "Chia sẻ dữ liệu ẩn danh",
-          "devPro": "Bật Pro (dev)"
+          "devPro": "Bật Pro (dev)",
+          "supplies": "Vật tư đo đường huyết"
         },
         "proUnlocked": "Đã mở khóa ✓",
         "proPromo": {
@@ -172,6 +173,15 @@
         "trackingModeValues": {
           "gestational": "Thai kỳ",
           "general": "Thường ngày"
+        }
+      },
+      "supplies": {
+        "title": "Vật tư đo đường huyết",
+        "disclosure": "Một số liên kết là link tiếp thị — Sugar nhận hoa hồng nhỏ, giá của mẹ không đổi.",
+        "items": {
+          "strips": { "name": "Que thử đường huyết", "desc": "Accu-Chek, On Call Plus, Sinocare…" },
+          "lancets": { "name": "Kim chích máu", "desc": "Đầu kim vô trùng dùng một lần." },
+          "meter": { "name": "Máy đo đường huyết", "desc": "Máy đo cầm tay tại nhà." }
         }
       },
       "targetRange": {
