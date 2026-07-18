@@ -69,7 +69,14 @@
     "header": {
       "week": "Week {{week}}",
       "dueCountdown": "{{days}} days until your due date",
-      "today": "Today"
+      "today": "Today",
+      "postpartum": "After delivery",
+      "dueDatePassed": "Expected date {{date}} has passed"
+    },
+    "birthPrompt": {
+      "title": "Have you had your baby yet? 🎉",
+      "yes": "Yes",
+      "no": "Not yet"
     },
     "slots": {
       "before": {
@@ -99,6 +106,15 @@
     },
     "history": {
       "title": "History"
+    },
+    "postpartumSetup": {
+      "title": "Congratulations",
+      "congratsTitle": "Congratulations on your baby! 🎉",
+      "congratsSubtitle": "Sugar will remind you to re-check your blood sugar after birth.",
+      "dateLabel": "Date of birth",
+      "keepRemindersLabel": "Keep meal-time reminders?",
+      "keepRemindersHint": "Most mothers stop measuring after birth. You can turn them back on any time.",
+      "save": "Save"
     },
     "readingDetail": {
       "title": "Reading Details"

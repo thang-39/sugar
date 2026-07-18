@@ -69,7 +69,14 @@
     "header": {
       "week": "Tuần {{week}}",
       "dueCountdown": "Còn {{days}} ngày đến ngày dự sinh",
-      "today": "Hôm nay"
+      "today": "Hôm nay",
+      "postpartum": "Sau sinh",
+      "dueDatePassed": "Ngày dự sinh {{date}} đã qua"
+    },
+    "birthPrompt": {
+      "title": "Mẹ sinh bé chưa? 🎉",
+      "yes": "Rồi ạ",
+      "no": "Chưa"
     },
     "slots": {
       "before": {
@@ -99,6 +106,15 @@
     },
     "history": {
       "title": "Lịch sử"
+    },
+    "postpartumSetup": {
+      "title": "Chúc mừng mẹ",
+      "congratsTitle": "Chúc mừng mẹ đã sinh bé! 🎉",
+      "congratsSubtitle": "Sugar sẽ nhắc mẹ kiểm tra đường huyết lại sau sinh.",
+      "dateLabel": "Ngày sinh bé",
+      "keepRemindersLabel": "Tiếp tục nhắc đo theo bữa?",
+      "keepRemindersHint": "Đa số mẹ ngừng đo sau sinh. Mẹ có thể bật lại bất cứ lúc nào.",
+      "save": "Lưu"
     },
     "readingDetail": {
       "title": "Chi tiết chỉ số"
