@@ -51,7 +51,8 @@
       "router": {},
       "eas": {
         "projectId": "f039fdd4-0914-43c3-96a3-ef20ac9d95f3"
-      }
+      },
+      "revenueCat": {}
     },
     "owner": "minhthang_dunia"
   }
