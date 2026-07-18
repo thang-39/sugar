@@ -251,6 +251,7 @@
       "about": {
         "title": "About",
         "version": "Version {{version}}",
+        "website": "Website",
         "privacyPolicy": "Privacy policy",
         "supportCode": "Support code",
         "supportHint": "Send us this code when you need help",
