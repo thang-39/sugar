@@ -423,6 +423,29 @@
     },
     "a11y": {
       "chart": "Blood sugar trend chart. {{count}} points. Average {{avg}} {{unit}}."
+    },
+    "byMeal": {
+      "segment": {
+        "trend": "Trend line",
+        "byMeal": "By meal"
+      },
+      "slots": {
+        "fasting": "Fasting",
+        "afterBreakfast": "After breakfast",
+        "afterLunch": "After lunch",
+        "afterDinner": "After dinner"
+      },
+      "empty": "No readings in this period",
+      "delta": {
+        "improved": "Down {{value}} {{unit}} vs previous period",
+        "worse": "Up {{value}} {{unit}} vs previous period",
+        "none": "No change vs previous period"
+      },
+      "lock": {
+        "title": "Per-meal analysis is a Pro feature",
+        "subtitle": "See the average and in-range % for each meal of the day.",
+        "button": "Unlock Sugar Pro"
+      }
     }
   },
   "readingDetail": {
