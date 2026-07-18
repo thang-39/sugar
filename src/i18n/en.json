@@ -158,7 +158,8 @@
           "reminders": "Measurement reminders",
           "pro": "Sugar Pro",
           "analytics": "Share anonymous data",
-          "devPro": "Enable Pro (dev)"
+          "devPro": "Enable Pro (dev)",
+          "supplies": "Blood-sugar supplies"
         },
         "proUnlocked": "Unlocked ✓",
         "proPromo": {
@@ -172,6 +173,15 @@
         "trackingModeValues": {
           "gestational": "Gestational",
           "general": "Daily"
+        }
+      },
+      "supplies": {
+        "title": "Blood-sugar supplies",
+        "disclosure": "Some links are affiliate links — Sugar earns a small commission at no extra cost to you.",
+        "items": {
+          "strips": { "name": "Test strips", "desc": "Accu-Chek, On Call Plus, Sinocare…" },
+          "lancets": { "name": "Lancets", "desc": "Single-use sterile needles." },
+          "meter": { "name": "Glucose meter", "desc": "Handheld home meter." }
         }
       },
       "targetRange": {
