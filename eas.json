@@ -23,7 +23,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_RC_ANDROID_KEY": "goog_REPLACE_WITH_KEY_FROM_REVENUECAT"
+        "EXPO_PUBLIC_RC_ANDROID_KEY": "goog_pLimcywKISsBEwWtHsEaVEqbmkD"
       }
     }
   },
