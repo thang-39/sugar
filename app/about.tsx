@@ -12,6 +12,8 @@ import { haptics } from '@/ui/utils/haptics';
 
 // Hosted via GitHub Pages (see docs/privacy.html + the Session 14 launch guide).
 const PRIVACY_URL = 'https://thang-39.github.io/sugar/privacy.html';
+// Landing page (docs/index.html), Session 22.
+const WEBSITE_URL = 'https://thang-39.github.io/sugar/';
 
 export default function AboutScreen(): ReactElement {
   const { t } = useTranslation();
@@ -36,10 +38,10 @@ export default function AboutScreen(): ReactElement {
     };
   }, []);
 
-  const openPrivacy = async (): Promise<void> => {
+  const openUrl = async (url: string): Promise<void> => {
     try {
       setIsOpening(true);
-      await Linking.openURL(PRIVACY_URL);
+      await Linking.openURL(url);
     } catch {
       Alert.alert(t('common.errorTitle'));
     } finally {
@@ -103,9 +105,18 @@ export default function AboutScreen(): ReactElement {
 
       <Button
         variant="ghost"
+        label={t('screens.settings.about.website')}
+        icon="globe-outline"
+        onPress={() => void openUrl(WEBSITE_URL)}
+        isLoading={isOpening}
+        accessibilityRole="link"
+      />
+
+      <Button
+        variant="ghost"
         label={t('screens.settings.about.privacyPolicy')}
         icon="shield-checkmark-outline"
-        onPress={() => void openPrivacy()}
+        onPress={() => void openUrl(PRIVACY_URL)}
         isLoading={isOpening}
         accessibilityRole="link"
       />
