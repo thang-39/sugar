@@ -435,6 +435,7 @@
         "afterLunch": "After lunch",
         "afterDinner": "After dinner"
       },
+      "band": "{{hours}}h",
       "empty": "No readings in this period",
       "delta": {
         "improved": "Down {{value}} {{unit}} vs previous period",
