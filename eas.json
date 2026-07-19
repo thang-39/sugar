@@ -9,12 +9,18 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_RC_ANDROID_KEY": "goog_pLimcywKISsBEwWtHsEaVEqbmkD"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_RC_ANDROID_KEY": "goog_pLimcywKISsBEwWtHsEaVEqbmkD"
       }
     },
     "production": {
