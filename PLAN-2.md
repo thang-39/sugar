@@ -271,6 +271,29 @@ If built: `react-native-google-mobile-ads`, exactly **one** adaptive banner at t
 
 **Accept:** app live (or in review) on Google Play AND Apple App Store; sandbox→production IAP works on both; Data Safety / App Privacy accurate; soft-launch cohort invited (if used). This is a manual/admin-heavy session — see `docs/plans/2026-07-12-session-14-launch-guide.md` (extend it with the iOS + Apple steps here). Commit: `chore: production store submission`
 
+**Progress log & remaining tasks (updated 2026-07-19):**
+
+_Done:_
+- Pure RC→domain mappers + tests, `RevenueCatEntitlementRepository`, factory seam wiring, `configureRevenueCat` boot — all committed.
+- Play: in-app product `sugar_pro_lifetime` (149.000₫), license testers added.
+- RevenueCat ↔ Play service-account link. **Fixed:** RC "Could not check / Pub/Sub permission" error — the service account `revenuecat@sugar-play.iam.gserviceaccount.com` had **no IAM role** in the `sugar-play` project. Granted **Pub/Sub Admin** (Admin required — RC must create topic/subscription + set IAM policy; Viewer insufficient). Error cleared.
+- **Root-cause fixed (commit `8dc1b7f`):** the test APK never used RevenueCat — it fell back to `DevEntitlementRepository`. Reason: `EXPO_PUBLIC_RC_ANDROID_KEY` lived **only in the `production` EAS profile**, but Bước 7 builds with `--profile preview`, which had no `env`. The dev adapter fakes purchases and resets `devIsPro` on every launch → "bought" Pro, lost on kill, restored nothing, **0 customers in RC dashboard** (the decisive evidence). Fix: added the key to `preview` + `development` profiles. Rebuilt preview (`eas build … --profile preview`).
+- **expo-doctor cleaned (commit `82aeb0a`):** removed stray direct deps `expo-modules-core` + `@expo/config-plugins` (the latter a major mismatch, 57 vs SDK 54); `expo install --fix` → 54.0.36. Now 18/18, tsc + 282 tests green.
+
+_Remaining (Bước 7 — acceptance on the new preview build, must pass before Bước 8):_
+- [ ] Uninstall the old dev-adapter APK first, install the new preview build.
+- [ ] Buy Pro → confirm **a customer appears in RevenueCat → Customers** (proof the real adapter is live) with entitlement `pro` Active.
+- [ ] Kill app → reopen → **Pro persists** (reads real cached `getCustomerInfo()`).
+- [ ] Offline persistence + reinstall→Restore + mid-flow cancel is clean + stable support code.
+
+_Polish (optional, fold into Bước 7 testing):_
+- [ ] Handle `PRODUCT_ALREADY_PURCHASED_ERROR` in `mapPurchaseError` / `purchasePro`: an already-owning user who taps **Buy** again is **not** double-charged (Google blocks it + RC re-syncs the entitlement), but the app currently shows a generic "Purchase failed". Map it to an "Bạn đã sở hữu Sugar Pro" success + unlock instead.
+
+_Decisions locked:_
+- **Restore button stays in the paywall only** — no separate Settings "Khôi phục" row. Restore is only needed when the app does **not** yet recognize Pro, and in that state the "Upgrade Pro" box (→ paywall → Restore) is always reachable. Once Pro, restore is moot. Restore ≠ refund; it can never grant Pro to a non-payer (Google only returns purchases the account actually owns), so exposing it does **not** reduce revenue — hiding it *costs* revenue via refund/chargeback/support.
+
+_Then Bước 8:_ production `.aab` (`eas build -p android --profile production`) → Play submission. Full manual steps in `docs/plans/2026-07-18-session-23-admin-handoff.md`.
+
 ---
 
 ## Money principles (apply to Sessions 15–19, incl. 17.5)
