@@ -48,6 +48,18 @@ export class RevenueCatEntitlementRepository implements EntitlementRepository {
       };
     } catch (e) {
       const err = e as PurchasesError;
+      // Non-consumable already owned (Google "you already own this item"): the
+      // charge went through on a prior attempt but the entitlement never surfaced
+      // in-app. Self-heal by restoring instead of dead-ending on a generic error.
+      if (err.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR) {
+        const info = await Purchases.restorePurchases();
+        const isPro = isProFromCustomerInfo(info, this.entitlementId);
+        // Only claim success if the entitlement actually surfaced. If it didn't,
+        // RevenueCat hasn't validated the charge yet (Play credentials / mapping)
+        // — surface that instead of a fake success that leaves Pro locked.
+        if (isPro) return { outcome: 'Success', isPro: true };
+        return { outcome: 'Error', isPro: false, errorMessage: err.message };
+      }
       return mapPurchaseError({
         userCancelled: err.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR,
         isPending: err.code === PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR,
