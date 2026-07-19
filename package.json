@@ -7,7 +7,7 @@
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "8.4.4",
     "drizzle-orm": "^0.45.2",
-    "expo": "~54.0.0",
+    "expo": "~54.0.36",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.9",
@@ -18,7 +18,6 @@
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.12",
     "expo-localization": "~17.0.9",
-    "expo-modules-core": "~3.0.30",
     "expo-notifications": "~0.32.17",
     "expo-print": "~15.0.8",
     "expo-router": "~6.0.24",
@@ -45,7 +44,6 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@expo/config-plugins": "^57.0.2",
     "@react-native/jest-preset": "^0.86.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "29.5.14",
