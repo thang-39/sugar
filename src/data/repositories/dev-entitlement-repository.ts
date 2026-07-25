@@ -1,7 +1,6 @@
 import type { ProProduct, PurchaseResult } from '@/domain/models/entitlement';
 import type { EntitlementRepository } from '@/domain/repositories/entitlement-repository';
 import type { SettingsRepository } from '@/domain/repositories/settings-repository';
-import { formatSupportCode } from '@/domain/use-cases/format-support-code';
 
 import { generateId } from '../id';
 
@@ -63,11 +62,12 @@ export class DevEntitlementRepository implements EntitlementRepository {
     if (!this.settingsRepo) {
       throw new Error('DevEntitlementRepository.getAppUserId requires a SettingsRepository');
     }
-    // Generate once, then reuse the persisted code so it stays stable across launches.
+    // Generate once, then reuse the persisted id so it stays stable across launches.
+    // Stored raw (like RevenueCat's appUserID) — the UI formats it for display.
     const existing = await this.settingsRepo.get('supportCode');
     if (existing) return existing;
-    const code = formatSupportCode(this.makeId());
-    await this.settingsRepo.set('supportCode', code);
-    return code;
+    const id = this.makeId();
+    await this.settingsRepo.set('supportCode', id);
+    return id;
   }
 }

@@ -6,11 +6,20 @@ import { useEntitlementStore } from '../use-entitlement';
 const fake = {
   isProValue: false,
   purchaseResult: { outcome: 'Success', isPro: true } as PurchaseResult,
+  /** Simulates an offline `getCustomerInfo()` / `getOfferings()` network failure. */
+  isProThrows: false,
+  productThrows: false,
 };
 
 const mockRepo: EntitlementRepository = {
-  isPro: async () => fake.isProValue,
-  getProProduct: async () => ({ identifier: 'sugar_pro_lifetime', priceString: '149.000 ₫' }),
+  isPro: async () => {
+    if (fake.isProThrows) throw new Error('offline');
+    return fake.isProValue;
+  },
+  getProProduct: async () => {
+    if (fake.productThrows) throw new Error('offline');
+    return { identifier: 'sugar_pro_lifetime', priceString: '149.000 ₫' };
+  },
   purchasePro: async () => fake.purchaseResult,
   restore: async () => fake.isProValue,
   getAppUserId: async () => 'SGR-TEST-0000',
@@ -25,6 +34,8 @@ describe('useEntitlementStore', () => {
   beforeEach(() => {
     fake.isProValue = false;
     fake.purchaseResult = { outcome: 'Success', isPro: true };
+    fake.isProThrows = false;
+    fake.productThrows = false;
     useEntitlementStore.setState({ isPro: false, proProduct: undefined, isInitialized: false });
   });
 
@@ -37,6 +48,28 @@ describe('useEntitlementStore', () => {
     expect(s.isPro).toBe(true);
     expect(s.proProduct?.priceString).toBe('149.000 ₫');
     expect(s.isInitialized).toBe(true);
+  });
+
+  it('keeps pro unlocked when only the product lookup fails (offline)', async () => {
+    fake.isProValue = true;
+    await useEntitlementStore.getState().refresh();
+    fake.productThrows = true;
+
+    await useEntitlementStore.getState().refresh();
+
+    const s = useEntitlementStore.getState();
+    expect(s.isPro).toBe(true);
+    expect(s.proProduct?.priceString).toBe('149.000 ₫'); // last known price survives
+  });
+
+  it('keeps the cached entitlement when the entitlement lookup fails', async () => {
+    fake.isProValue = true;
+    await useEntitlementStore.getState().refresh();
+    fake.isProThrows = true;
+
+    await useEntitlementStore.getState().refresh();
+
+    expect(useEntitlementStore.getState().isPro).toBe(true);
   });
 
   it('purchase unlocks pro on success', async () => {

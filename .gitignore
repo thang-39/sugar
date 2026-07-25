@@ -44,3 +44,6 @@ example
 
 # agent tooling (local skills, not part of the app)
 .agent/
+
+# Claude Code browser-testing harness (local, machine-specific)
+.claude-tools/

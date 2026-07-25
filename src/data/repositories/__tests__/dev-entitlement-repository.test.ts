@@ -65,8 +65,9 @@ describe('DevEntitlementRepository', () => {
     let counter = 0;
     const repo = new DevEntitlementRepository(settings, () => `id-${++counter}`);
 
+    // The port returns the RAW id (formatting for display is the UI's job).
     const first = await repo.getAppUserId();
-    expect(first).toMatch(/^SGR-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+    expect(first).toBe('id-1');
 
     // A second call (even from a fresh instance sharing the store) is stable.
     const again = await new DevEntitlementRepository(settings, () => 'id-999').getAppUserId();

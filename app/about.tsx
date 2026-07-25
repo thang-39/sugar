@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { getEntitlementRepository } from '@/data/repositories/factory';
+import { formatSupportCode } from '@/domain/use-cases/format-support-code';
 import { AppText, Button, Card } from '@/ui/components/ui';
 import { radius, spacing, useTheme } from '@/ui/theme';
 import { haptics } from '@/ui/utils/haptics';
@@ -19,7 +20,11 @@ export default function AboutScreen(): ReactElement {
   const { t } = useTranslation();
   const colors = useTheme();
   const [isOpening, setIsOpening] = useState(false);
-  const [supportCode, setSupportCode] = useState<string | undefined>(undefined);
+  // `appUserId` is the raw store id (RevenueCat's `$RCAnonymousID:…`) — too long to
+  // read but the only value that finds the customer in the RC dashboard, so it is
+  // what the copy button puts on the clipboard. The short code is display-only.
+  const [appUserId, setAppUserId] = useState<string | undefined>(undefined);
+  const supportCode = appUserId === undefined ? undefined : formatSupportCode(appUserId);
   const [isCopied, setIsCopied] = useState(false);
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -27,8 +32,8 @@ export default function AboutScreen(): ReactElement {
     let active = true;
     void getEntitlementRepository()
       .getAppUserId()
-      .then((code) => {
-        if (active) setSupportCode(code);
+      .then((id) => {
+        if (active) setAppUserId(id);
       })
       .catch(() => {
         /* leave the code hidden if it can't be loaded */
@@ -50,8 +55,8 @@ export default function AboutScreen(): ReactElement {
   };
 
   const copyCode = async (): Promise<void> => {
-    if (supportCode === undefined) return;
-    await Clipboard.setStringAsync(supportCode);
+    if (appUserId === undefined) return;
+    await Clipboard.setStringAsync(appUserId);
     void haptics.success();
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 1800);

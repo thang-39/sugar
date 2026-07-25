@@ -16,9 +16,11 @@ export interface EntitlementRepository {
   /** Restore prior purchases. Resolves to `isPro` after restoring. */
   restore(): Promise<boolean>;
   /**
-   * Stable per-install identifier shown to the user as a "support code" so we can
-   * look up their account when they report a problem. Dev returns a locally
-   * persisted code; Session 23's RevenueCat adapter returns `Purchases.getAppUserID()`.
+   * Stable per-install store identifier, **raw** — dev returns a locally persisted
+   * id, the RevenueCat adapter returns `Purchases.getAppUserID()` verbatim so it
+   * can be pasted into the RC dashboard to look the customer up (Session 20's
+   * promotional-Pro flow). Presentation is not this layer's job: run it through
+   * `formatSupportCode()` for the short code shown to the user.
    */
   getAppUserId(): Promise<string>;
 }

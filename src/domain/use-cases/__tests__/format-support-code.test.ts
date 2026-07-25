@@ -14,6 +14,15 @@ describe('formatSupportCode', () => {
     expect(formatSupportCode('')).toBe('SGR-0000-0000');
   });
 
+  it('strips the RevenueCat anonymous prefix so codes stay unique per user', () => {
+    const a = formatSupportCode('$RCAnonymousID:8f3a1c2d4e5f60718293a4b5c6d7e8f9');
+    const b = formatSupportCode('$RCAnonymousID:0011223344556677889900aabbccddee');
+
+    expect(a).toBe('SGR-8F3A-1C2D');
+    expect(b).toBe('SGR-0011-2233');
+    expect(a).not.toBe(b); // would both be SGR-RCAN-ONYM without the strip
+  });
+
   it('is deterministic — same id always yields the same code', () => {
     const id = '3456789abcde-0000';
     expect(formatSupportCode(id)).toBe(formatSupportCode(id));

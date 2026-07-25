@@ -29,8 +29,20 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
   isInitialized: false,
   refresh: async () => {
     const repo = getEntitlementRepository();
-    const [isPro, proProduct] = await Promise.all([repo.isPro(), repo.getProProduct()]);
-    set({ isPro, proProduct, isInitialized: true });
+    // Entitlement and product are resolved independently, never as one Promise.all:
+    // offline, RevenueCat serves `getCustomerInfo()` from its cache while
+    // `getOfferings()` can fail on the network. Coupling them would drop a paying
+    // user back to locked whenever the price lookup fails. Either side failing
+    // keeps its previous value instead of clearing it.
+    const [entitlement, product] = await Promise.allSettled([
+      repo.isPro(),
+      repo.getProProduct(),
+    ]);
+    set((s) => ({
+      isPro: entitlement.status === 'fulfilled' ? entitlement.value : s.isPro,
+      proProduct: product.status === 'fulfilled' ? product.value : s.proProduct,
+      isInitialized: true,
+    }));
   },
   purchase: async () => {
     const result = await getEntitlementRepository().purchasePro();
