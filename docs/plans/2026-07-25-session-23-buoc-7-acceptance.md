@@ -23,18 +23,29 @@ Cả hai đều **nằm đúng trong 4 mục acceptance** — nếu không sửa
 → `tsc` sạch, 285 tests xanh, lint sạch.
 
 **Phải build lại**: repo **không có `expo-updates`**, nên không đẩy được bản sửa JS qua EAS Update.
+
+> ⚠️ **Và phải cài từ Google Play, không sideload.** Play Billing so chữ ký app đang chạy với chứng chỉ
+> app-signing trên Play; APK từ EAS ký bằng *upload key*, bản qua Play do Google ký lại → sideload thì luồng
+> mua ném `DEVELOPER_ERROR`. Nên dùng **AAB → track Internal testing**, đúng đường mà giao dịch trước đã chạy.
+
 ```bash
-eas build -p android --profile preview
+eas build -p android --profile production      # ra .aab; profile này đã có EXPO_PUBLIC_RC_ANDROID_KEY
 ```
+Play Console → Testing → **Internal testing** → Create new release → upload `.aab` → Start rollout.
+`appVersionSource: "remote"` + `autoIncrement` → EAS tự tăng `versionCode`, không phải sửa `app.json`.
+
+**Bản này chính là artifact của Bước 8** — nghiệm thu xong thì Play cho *promote* release từ Internal testing
+lên Production, không build lại lần nữa.
 *(Ghi chú nợ kỹ thuật: `PLAN-2.md` Session 21 ghi "links vật tư cập nhật qua EAS Update (JS-only)" — hiện chưa đúng vì chưa cài `expo-updates`. Không chặn Bước 7/8.)*
 
 ---
 
 ## 1. Chuẩn bị máy
 
-- [ ] **Xoá app cũ** trước khi cài (`adb uninstall io.minhthang.sugar` hoặc gỡ tay) — bản cũ có thể là bản dev-adapter.
-- [ ] Cài APK preview mới.
-- [ ] Máy đăng nhập Google account **là license tester** (Bước 6). Bản preview là **release build** → `__DEV__` false → **không có toggle `devPro`** trong Settings, không có RC debug log. Mọi thứ phải quan sát qua UI.
+- [ ] Đợi Play xử lý bản mới (vài phút) → máy tester update **từ Play Store**, hoặc mở lại link opt-in internal testing.
+- [ ] Nếu máy đang cài bản sideload cũ: **gỡ trước** (`adb uninstall io.minhthang.sugar`) rồi cài từ Play — hai bản khác signing key nên không update chồng nhau được.
+- [ ] Google account trên máy **vừa là internal tester vừa là license tester** (Bước 6) — thiếu license tester thì bị charge tiền thật.
+- [ ] Bản production là **release build** → `__DEV__` false → **không có toggle `devPro`** trong Settings, không có RC debug log. Mọi thứ phải quan sát qua UI.
 
 **Cách đọc trạng thái Pro (không có dev tool):** bất kỳ dấu hiệu nào dưới đây, chọn 1–2 cái nhanh nhất:
 | Nơi | Free | Pro |
@@ -70,7 +81,8 @@ Lưu ý **không phải bug**: user **chưa** Pro mà mở paywall khi offline t
 
 ### 2.3 Cài lại → Restore
 - [ ] Gỡ app (mất hết dữ liệu local + anon ID cũ).
-- [ ] Cài lại, mở → đang **Free** (bình thường: anon ID mới, chưa alias).
+- [ ] **Cài lại từ Play** (link internal testing) — không sideload, nếu không billing/Restore sẽ chết.
+- [ ] Mở → đang **Free** (bình thường: anon ID mới, chưa alias).
 - [ ] Settings → Sugar Pro → paywall → **"Khôi phục giao dịch"** → alert thành công → Pro.
 - [ ] Kiểm RC Dashboard → customer cũ được alias, không sinh giao dịch mới.
 
@@ -81,8 +93,9 @@ Lưu ý: **mã hỗ trợ sẽ đổi sau khi cài lại** (RC sinh anon ID mớ
 Vướng thực tế: license tester **đã sở hữu** `sugar_pro_lifetime` (non-consumable) nên bấm mua lại sẽ ra
 `ITEM_ALREADY_OWNED` → app tự restore (commit `80bb7d7`) chứ không vào được sheet thanh toán. Hai cách:
 
-- **Cách A (khuyến nghị):** dùng **Google account thứ hai** cũng là license tester, chưa mua → máy đổi account
-  hoặc máy khác → mua → bấm back giữa sheet Google.
+- **Cách A (khuyến nghị):** dùng **Google account thứ hai** — phải **vừa là internal tester** (để cài được app)
+  **vừa là license tester** (để không bị charge thật) và chưa mua → máy đổi account hoặc máy khác → mua →
+  bấm back giữa sheet Google.
 - **Cách B:** Play Console → Order management → **refund/void** đơn test → đợi entitlement rớt → mua lại rồi huỷ.
 
 - [ ] Bấm "Mở khóa Sugar Pro" → sheet Google hiện → bấm back.
@@ -103,4 +116,5 @@ Vướng thực tế: license tester **đã sở hữu** `sugar_pro_lifetime` (n
 
 - [ ] Tick 4 checkbox trong `PLAN-2.md` § Session 23 → _Remaining (Bước 7)_ + tick mục _Polish_ `PRODUCT_ALREADY_PURCHASED_ERROR` (đã làm ở commit `80bb7d7`).
 - [ ] Ghi kết quả + bất ngờ gặp phải vào phần progress log của `PLAN-2.md`.
-- [ ] Sang **Bước 8**: `eas build -p android --profile production` → nộp Play. Các bước tay: `docs/plans/2026-07-18-session-23-admin-handoff.md`.
+- [ ] Sang **Bước 8**: Play Console → Internal testing → release vừa nghiệm thu → **Promote release → Production**
+      (không build lại nếu không vá thêm code). Các bước tay: `docs/plans/2026-07-18-session-23-admin-handoff.md`.

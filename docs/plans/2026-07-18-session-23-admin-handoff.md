@@ -110,35 +110,52 @@ Bước này để RevenueCat xác thực được giao dịch mua với Google.
 
 RevenueCat/IAP **không chạy trong Expo Go** — bắt buộc bản build EAS trên máy Android thật, đăng nhập bằng tài khoản license-tester (Bước 6).
 
+> ⚠️ **App phải được cài TỪ Google Play, không sideload.** Google Play Billing so chữ ký của app đang chạy với
+> chứng chỉ app-signing trên Play. APK từ EAS ký bằng *upload key*, còn bản qua Play do Google ký lại bằng
+> *app-signing key* → kéo file `.apk` vào máy thì luồng mua ném `DEVELOPER_ERROR`, không mở được sheet thanh toán.
+> Vì vậy Bước 7 dùng **AAB → track Internal testing**, không dùng `--profile preview`.
+
 1. Build bản test:
    ```bash
-   eas build -p android --profile preview
+   eas build -p android --profile production
    ```
-   Cài file `.apk` lên điện thoại (tài khoản license-tester).
-2. Chạy checklist nghiệm thu (từ `revenuecat-launch.md` Task 7):
+   (`appVersionSource: "remote"` + `autoIncrement` → EAS tự tăng `versionCode`, không phải sửa `app.json`.)
+2. Play Console → **Testing → Internal testing** → Create new release → upload `.aab` → Start rollout.
+   Chờ Play xử lý vài phút → máy tester (tài khoản license-tester, đã có trong danh sách internal tester)
+   update từ Play Store, hoặc mở lại link opt-in internal testing.
+   **Chính bản này là artifact của Bước 8** — nghiệm thu xong thì Play cho *promote* release từ Internal
+   testing lên Production, không cần build lại.
+3. Chạy checklist nghiệm thu (chi tiết + cách quan sát trạng thái Pro khi không có toggle `devPro`:
+   `docs/plans/2026-07-25-session-23-buoc-7-acceptance.md`):
    - [ ] Paywall hiện **giá từ store** (`149.000₫`), không phải giá dev giả.
-   - [ ] Mua Pro thành công (miễn phí vì license-tester) → mọi tính năng Pro mở khoá.
+   - [x] Mua Pro thành công (miễn phí vì license-tester) → mọi tính năng Pro mở khoá.
    - [ ] Tắt/mở lại app + bật chế độ máy bay → vẫn Pro (cache offline).
-   - [ ] Gỡ cài → cài lại → bấm **Khôi phục** → Pro trở lại.
+   - [ ] Gỡ cài → **cài lại từ Play** (link internal testing, không sideload) → bấm **Khôi phục** → Pro trở lại.
    - [ ] Đang mua mà bấm huỷ → không lỗi, không crash, vẫn chưa-Pro.
+         *(License tester đã sở hữu product nên bấm mua lại sẽ ra `ITEM_ALREADY_OWNED` → app tự restore chứ
+         không vào được sheet. Cần account thứ hai — vừa là internal tester vừa là license tester — hoặc
+         refund đơn test trong Order management trước.)*
    - [ ] Đổi giá trên Play/RevenueCat → mở lại app → giá mới hiện ra, **không build lại**.
-   - [ ] Support code trong Settings = ID người dùng RevenueCat, ổn định qua các lần mở.
-3. Nếu bước nào fail → báo lại, mình sẽ debug (lỗi nằm ở adapter/config, **không phải UI** — UI không đổi từ Session 15).
+   - [ ] Support code trong Settings hiện `SGR-XXXX-XXXX`, ổn định qua các lần mở; nút copy đưa **ID
+         RevenueCat thô** vào clipboard (dán vào RC Dashboard tra ra đúng customer).
+4. Nếu bước nào fail → báo lại, mình sẽ debug (lỗi nằm ở adapter/config, **không phải UI** — UI không đổi từ Session 15).
+   Gộp nhiều fix vào **một** vòng build, vì mỗi vòng còn tốn thêm thời gian Play xử lý bản.
 
 ---
 
 ## BƯỚC 8 — Nộp lên Google Play
 
-1. Kiểm tra `app.json`: `expo.version` + `android.versionCode` (EAS `autoIncrement` tự tăng versionCode).
-2. Build production:
+1. **Không cần build lại** nếu bản đã nghiệm thu ở Bước 7 không sửa thêm code: Play Console → Internal
+   testing → release đó → **Promote release → Production**. Chỉ build lại khi có vá code sau nghiệm thu:
    ```bash
    eas build -p android --profile production
    ```
-3. Play Console: upload file `.aab` → điền **Store listing** (ảnh/nội dung theo launch guide Session 14, định vị GDM).
-4. **Data Safety**: khai đúng — có **purchases** (mua hàng); **KHÔNG có cloud/thu thập dữ liệu đường huyết** (dữ liệu chỉ nằm trên máy). Không cần URL xoá tài khoản (app không có tài khoản).
-5. Gắn URL **Privacy Policy** (đã có sẵn từ Session 14).
-6. **(Tuỳ chọn) Soft-launch:** mời 10–15 mẹ vào Internal testing ~1 tuần trước khi công khai (bắt lỗi/copy sớm + pool phỏng vấn).
-7. **Start rollout** lên production.
+   (Kiểm `app.json` → `expo.version`; `versionCode` do EAS `autoIncrement` lo.)
+2. Điền **Store listing** (ảnh/nội dung theo launch guide Session 14, định vị GDM).
+3. **Data Safety**: khai đúng — có **purchases** (mua hàng); **KHÔNG có cloud/thu thập dữ liệu đường huyết** (dữ liệu chỉ nằm trên máy). Không cần URL xoá tài khoản (app không có tài khoản).
+4. Gắn URL **Privacy Policy** (đã có sẵn từ Session 14).
+5. **(Tuỳ chọn) Soft-launch:** mời 10–15 mẹ vào Internal testing ~1 tuần trước khi công khai (bắt lỗi/copy sớm + pool phỏng vấn) — track đã dựng sẵn từ Bước 7, chỉ thêm email tester.
+6. **Start rollout** lên production.
 
 ---
 
