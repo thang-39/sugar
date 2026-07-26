@@ -166,19 +166,19 @@ Sheet thanh toán Google mở ra = revoke đã ăn. Vẫn "Bạn đã sở hữu
 Không mất tiền thật: license tester dùng test payment method, đơn này chỉ là đơn test.
 
 **Rồi test 3 thứ trong một lượt:**
-- [ ] **Restore rỗng:** paywall → "Khôi phục giao dịch" → alert "chưa tìm thấy giao dịch nào", không crash, không tự mở Pro.
-      *Chỉ test được trong cửa sổ chưa-sở-hữu này — mua lại là mất cơ hội.*
+- [x] **Restore rỗng ✅ (26/07):** paywall → "Khôi phục giao dịch" → ra alert "chưa tìm thấy giao dịch nào".
+      Lần duy nhất nút này được test thật — lần cài lại trước RC tự transfer nên app đã Pro sẵn, không bấm được.
 - [x] **Huỷ giữa luồng ✅ (26/07):** bấm "Mở khóa Sugar Pro" → sheet Google hiện → bấm back → thoát bình thường.
       Sheet mở được cũng là bằng chứng revoke phía Google đã ăn.
       (`PURCHASE_CANCELLED_ERROR` → `outcome: 'Cancelled'` → không set state, `isBusy` reset trong `finally`.)
 - [ ] **Mua lại** → Pro về → giao dịch mới hiện trong RC (đóng luôn vòng purchase lần 2).
 
-**Bonus đáng làm — các cửa gate Free chưa từng test với adapter thật** (Session 16 chỉ test bằng dev adapter):
-- [ ] PDF lần 1 xuất được (free), lần 2 → paywall `report_gate`.
-- [ ] PDF free **có** watermark "Tạo bởi app Sugar"; sau khi mua lại thì **không** còn.
-- [ ] Nút CSV khoá → paywall `csv_gate`.
-- [ ] Trends → "Theo bữa" khoá → paywall `charts_gate` (chỉ mode thai kỳ).
-- [ ] Ghi/sửa/xoá chỉ số + nhắc đo **không bao giờ bị khoá** (money-principle #1).
+**Các cửa gate Free ✅ (26/07)** — lần đầu chạy với entitlement thật (Session 16 chỉ test bằng dev adapter):
+- [x] PDF lần 1 xuất được (free), lần 2 → paywall `report_gate`.
+- [x] PDF free **có** watermark "Tạo bởi app Sugar"; sau khi mua lại thì **không** còn.
+- [x] Nút CSV khoá → paywall `csv_gate`.
+- [x] Trends → "Theo bữa" khoá → paywall `charts_gate` (chỉ mode thai kỳ).
+- [x] Ghi/sửa/xoá chỉ số + nhắc đo **không bao giờ bị khoá** (money-principle #1).
 
 ### 2.5 Mã hỗ trợ ✅ (26/07, trên bản đã có fix)
 - [x] Settings → Giới thiệu → thấy **`SGR-E9E2-DFAF`** — khớp 8 hex đầu của `e9e2dfaf…`, không vỡ layout.
@@ -194,6 +194,9 @@ Không mất tiền thật: license tester dùng test payment method, đơn này
 ---
 
 ## 3. Xong thì
+
+> ✅ **Bước 7 hoàn tất 26/07/2026** — mọi mục acceptance pass trên máy thật với adapter RevenueCat thật.
+> **Bản `.aab` nộp Play phải build từ commit `ff00523` trở đi** — bản đã test còn thiếu bản vá lỗi Restore im lặng.
 
 - [ ] Tick 4 checkbox trong `PLAN-2.md` § Session 23 → _Remaining (Bước 7)_ + tick mục _Polish_ `PRODUCT_ALREADY_PURCHASED_ERROR` (đã làm ở commit `80bb7d7`).
 - [ ] Ghi kết quả + bất ngờ gặp phải vào phần progress log của `PLAN-2.md`.
