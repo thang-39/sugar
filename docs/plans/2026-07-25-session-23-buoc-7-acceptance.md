@@ -180,11 +180,14 @@ Không mất tiền thật: license tester dùng test payment method, đơn này
 - [ ] Trends → "Theo bữa" khoá → paywall `charts_gate` (chỉ mode thai kỳ).
 - [ ] Ghi/sửa/xoá chỉ số + nhắc đo **không bao giờ bị khoá** (money-principle #1).
 
-### 2.5 Mã hỗ trợ (mục lỗi #2 vừa sửa)
-- [ ] Settings → Giới thiệu → thấy **`SGR-XXXX-XXXX`** (không phải chuỗi `$RCAnonymousID:...` dài, không vỡ layout).
-- [ ] Bấm copy → dán vào Zalo/notes → phải là **id thô đầy đủ** (`$RCAnonymousID:...`).
-- [ ] Dán id đó vào ô search Customers của RC Dashboard → ra đúng customer.
+### 2.5 Mã hỗ trợ ✅ (26/07, trên bản đã có fix)
+- [x] Settings → Giới thiệu → thấy **`SGR-E9E2-DFAF`** — khớp 8 hex đầu của `e9e2dfaf…`, không vỡ layout.
+- [ ] Bấm copy → dán vào Zalo/notes → phải là **id thô đầy đủ** (`$RCAnonymousID:...`), không phải mã ngắn.
 - [ ] Kill/mở lại → mã **không đổi**.
+
+> **Cách đọc kết quả mục này:** hình dạng đúng chưa đủ. `SGR-RCAN-ONYM` cũng đúng hình dạng — đó là ca hỏng,
+> nghĩa là chưa strip prefix `$RCAnonymousID:` nên **mọi user chung một mã**. Phải đối chiếu 8 ký tự với hex của
+> chính customer đó.
 
 *(Nếu mẹ gõ tay mã ngắn thay vì copy mà RC tìm không ra, bảo mẹ bấm nút copy — đó là lý do clipboard giữ id thô.)*
 

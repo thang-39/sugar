@@ -27,7 +27,8 @@
       "successTitle": "Đã khôi phục",
       "successMessage": "Sugar Pro đã được kích hoạt lại trên máy này.",
       "noneTitle": "Không tìm thấy giao dịch",
-      "noneMessage": "Chưa có giao dịch Sugar Pro nào để khôi phục."
+      "noneMessage": "Chưa có giao dịch Sugar Pro nào để khôi phục.",
+      "errorMessage": "Chưa khôi phục được lúc này. Mẹ kiểm tra kết nối mạng rồi thử lại nhé."
     },
     "success": {
       "title": "Cảm ơn mẹ! 🎉",

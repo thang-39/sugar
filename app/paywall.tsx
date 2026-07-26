@@ -77,6 +77,12 @@ export default function PaywallScreen(): ReactElement {
       } else {
         Alert.alert(t('paywall.restore.noneTitle'), t('paywall.restore.noneMessage'));
       }
+    } catch {
+      // Unlike purchase (the adapter maps every failure to an outcome), restore
+      // surfaces store errors as rejections. Without this the button would spin
+      // and then do nothing at all — the user gets no signal something failed.
+      void haptics.error();
+      Alert.alert(t('paywall.error.title'), t('paywall.restore.errorMessage'));
     } finally {
       setIsBusy(false);
     }

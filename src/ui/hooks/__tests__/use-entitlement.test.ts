@@ -21,7 +21,10 @@ const mockRepo: EntitlementRepository = {
     return { identifier: 'sugar_pro_lifetime', priceString: '149.000 ₫' };
   },
   purchasePro: async () => fake.purchaseResult,
-  restore: async () => fake.isProValue,
+  restore: async () => {
+    if (fake.isProThrows) throw new Error('offline');
+    return fake.isProValue;
+  },
   getAppUserId: async () => 'SGR-TEST-0000',
 };
 
@@ -86,6 +89,16 @@ describe('useEntitlementStore', () => {
 
     expect(result.outcome).toBe('Cancelled');
     expect(useEntitlementStore.getState().isPro).toBe(false);
+  });
+
+  it('restore propagates store failures instead of silently reporting not-pro', async () => {
+    fake.isProValue = true;
+    await useEntitlementStore.getState().refresh();
+    fake.isProThrows = true; // the fake's restore() reads the same flag
+
+    // The paywall relies on this rejecting so it can show an error alert.
+    await expect(useEntitlementStore.getState().restore()).rejects.toThrow('offline');
+    expect(useEntitlementStore.getState().isPro).toBe(true); // untouched
   });
 
   it('restore reflects the restored entitlement', async () => {

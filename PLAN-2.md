@@ -288,9 +288,9 @@ _Remaining (Bước 7 — acceptance on the new preview build, must pass before 
 - [x] Kill app → reopen → **Pro persists** (reads real cached `getCustomerInfo()`). **Verified on device 2026-07-26.**
 - [x] Offline persistence. **Verified on device 2026-07-26** (airplane mode, Pro held). Note: it passed because RC's offerings cache was warm — the code no longer *depends* on that, see the `Promise.allSettled` fix below.
 - [x] Reinstall → Pro returns. **Verified 2026-07-26 — and without tapping Restore:** the Android RC SDK syncs purchases the Play account already owns at `configure()`, aliasing the fresh anonymous id onto the existing customer. Consequence: the paywall's **Restore button itself is still unexercised** — it is only reachable while the app does *not* recognize Pro, so test it with the second (non-owning) account alongside the cancel test: expect the "no purchases found" alert.
-- [x] Mid-flow cancel is clean. **Verified 2026-07-26** after refunding the test purchase (see below): tapping Buy opened the Play payment sheet — itself proof the Google-side revoke worked — and backing out returned to the paywall normally.
+- [x] Mid-flow cancel is clean. **Verified 2026-07-26** after refunding the test purchase (see below): tapping Buy opened the Play payment sheet — itself proof the Google-side revoke worked — backing out showed no alert, and buying again worked immediately (no stuck spinner). Re-purchase also re-verified the whole purchase flow a second time.
 - [ ] Empty Restore — paywall → "Khôi phục giao dịch" while the account owns nothing → expect the "no purchases found" alert. Only testable in this window, before re-purchasing.
-- [ ] Support code renders as `SGR-XXXX-XXXX`. **Known broken on the build tested 2026-07-26** — fixed in code, needs the next build (see below).
+- [x] Support code renders as `SGR-XXXX-XXXX`. **Verified 2026-07-26** on a build carrying the fix: shows `SGR-E9E2-DFAF`, matching the customer's `e9e2dfaf…` hex — i.e. the `$RCAnonymousID:` strip works. (`SGR-RCAN-ONYM` would have been the failure: right shape, same code for every user.)
 
 _Resetting the owned test purchase (2026-07-26) — Play Console alone was not enough:_
 Refunding in Play Console with **☑ Remove entitlement** (that checkbox *is* the revoke) correctly un-owned the
@@ -302,6 +302,13 @@ dashboard as well. **Next time refund from RevenueCat first** (their own recomme
 rather than the other way round.
 Also: RC hides sandbox purchases by default — with the **Sandbox data** toggle off, the profile reads
 "No current entitlements" and the transaction (and its Refund action) is invisible even while Pro is active.
+
+_Fixed 2026-07-26 while testing the Restore path:_ **the Restore button had no error handling.** `onRestore` had
+`try/finally` but no `catch`, and neither the store's `restore()` nor `Purchases.restorePurchases()` catches — so a
+store/network failure left the spinner to stop with **no alert and no state change**, indistinguishable from "nothing
+happened". Purchase never had this hole because the adapter maps every failure to an `outcome`. Now caught with a
+"couldn't restore, check your connection" alert (`paywall.restore.errorMessage`, vi + en), plus a hook test pinning
+that a failing restore rejects rather than silently reporting not-pro.
 
 _Fixed while preparing Bước 7 (commit `ab84733`) — both were on this checklist:_
 - **Entitlement no longer coupled to the price lookup.** `useEntitlementStore.refresh()` fetched `isPro()` + `getProProduct()` in one `Promise.all`, so a failing `getOfferings()` rejected the whole refresh and left `isPro` at its cold-start `false` — a paying user locked out. Now `Promise.allSettled`; either side failing keeps its previous value. (Device testing showed offline passing anyway on a warm offerings cache; the fix removes the dependency rather than a reproduced failure.)

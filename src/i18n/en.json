@@ -27,7 +27,8 @@
       "successTitle": "Restored",
       "successMessage": "Sugar Pro has been reactivated on this device.",
       "noneTitle": "No purchases found",
-      "noneMessage": "There is no Sugar Pro purchase to restore."
+      "noneMessage": "There is no Sugar Pro purchase to restore.",
+      "errorMessage": "Couldn't restore right now. Check your connection and try again."
     },
     "success": {
       "title": "Thank you! 🎉",
