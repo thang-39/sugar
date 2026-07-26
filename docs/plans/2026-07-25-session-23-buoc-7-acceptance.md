@@ -102,18 +102,51 @@ bấm Restore phải ra alert "chưa tìm thấy giao dịch nào", không crash
 Lưu ý: **mã hỗ trợ sẽ đổi sau khi cài lại** (RC sinh anon ID mới) — đúng như thiết kế, không phải lỗi.
 "Stable" ở đây nghĩa là ổn định qua kill/mở lại, không phải qua reinstall.
 
-### 2.4 Huỷ giữa luồng mua → sạch
-Vướng thực tế: license tester **đã sở hữu** `sugar_pro_lifetime` (non-consumable) nên bấm mua lại sẽ ra
-`ITEM_ALREADY_OWNED` → app tự restore (commit `80bb7d7`) chứ không vào được sheet thanh toán. Hai cách:
+### 2.4 Reset trạng thái "đã mua" → huỷ giữa luồng + Restore rỗng
 
-- **Cách A (khuyến nghị):** dùng **Google account thứ hai** — phải **vừa là internal tester** (để cài được app)
-  **vừa là license tester** (để không bị charge thật) và chưa mua → máy đổi account hoặc máy khác → mua →
-  bấm back giữa sheet Google.
-- **Cách B:** Play Console → Order management → **refund/void** đơn test → đợi entitlement rớt → mua lại rồi huỷ.
+Vướng thực tế: account tester **đã sở hữu** `sugar_pro_lifetime` (non-consumable) nên bấm mua lại ra
+`ITEM_ALREADY_OWNED` → app tự restore (commit `80bb7d7`) chứ không vào được sheet thanh toán.
+Phải **refund + revoke** để account thôi sở hữu.
 
-- [ ] Bấm "Mở khóa Sugar Pro" → sheet Google hiện → bấm back.
-- [ ] Kỳ vọng: **không alert lỗi**, vẫn ở paywall, nút mua bấm lại được (không kẹt spinner), app không crash.
-  (`PURCHASE_CANCELLED_ERROR` → `outcome: 'Cancelled'` → không set state, `isBusy` reset trong `finally`.)
+> ⚠️ **Refund mà không revoke = kẹt.** Refund suông qua Play Console vẫn để lại entitlement → Google tiếp tục báo
+> "Bạn đã sở hữu mặt hàng này" và không có đường reset gọn. Luôn dùng đường có revoke.
+
+**Cách A (khuyến nghị — RevenueCat tự revoke):**
+1. RC Dashboard → **Customers** → dán id thô (nút copy ở Settings → Giới thiệu) vào ô search → mở customer.
+2. **Customer History** → click event giao dịch (`Initial purchase`) → nút **Refund** ở góc trên phải → xác nhận.
+3. Không bắt buộc, nhưng muốn sạch hẳn cho lần test sau: **Delete customer** (xoá transaction + metadata sandbox).
+4. Điều kiện: service account RC↔Play phải có quyền **"Manage orders and subscriptions"** — đã cấp ở Session 24
+   lúc chữa credential, nên bấm được ngay.
+
+> **Không dùng "Remove entitlement" thay cho Refund.** Nút đó chỉ sửa sổ sách phía RC: app về Free nhưng **Google
+> vẫn thấy account sở hữu** → bấm Mua vẫn ra `ITEM_ALREADY_OWNED`, và lần RC sync purchase từ Play có thể grant lại.
+> Chỉ Refund (kèm revoke) mới un-own ở phía Google. Refund xong entitlement tự rớt — không cần bấm Remove.
+>
+> **Kiểm dứt điểm:** sau refund, bấm Mua trong app. Sheet thanh toán hiện ra = revoke đã ăn.
+> Vẫn "Bạn đã sở hữu mặt hàng này" = Google còn thấy sở hữu → làm Cách B.
+
+**Cách B (dự phòng, nếu RC không cho refund):** Play Console → **Order management** (menu trái, cấp tài khoản) →
+search theo order id / email tester → chọn đơn → **Refund orders** → **tick tuỳ chọn revoke entitlement** → Refund.
+
+**Sau khi refund:**
+- [ ] Đợi vài phút (RTDN qua Pub/Sub đã cấu hình → RC rớt entitlement) → kill app → mở lại → app về **Free**.
+- [ ] RC → Customers → entitlement `pro` **không còn Active**.
+
+Không mất tiền thật: license tester dùng test payment method, đơn này chỉ là đơn test.
+
+**Rồi test 3 thứ trong một lượt:**
+- [ ] **Restore rỗng:** paywall → "Khôi phục giao dịch" → alert "chưa tìm thấy giao dịch nào", không crash, không tự mở Pro.
+- [ ] **Huỷ giữa luồng:** bấm "Mở khóa Sugar Pro" → sheet Google hiện → bấm back → **không alert lỗi**, vẫn ở paywall,
+      nút mua bấm lại được (không kẹt spinner). (`PURCHASE_CANCELLED_ERROR` → `outcome: 'Cancelled'` → không set state,
+      `isBusy` reset trong `finally`.)
+- [ ] **Mua lại** → Pro về → giao dịch mới hiện trong RC (đóng luôn vòng purchase lần 2).
+
+**Bonus đáng làm — các cửa gate Free chưa từng test với adapter thật** (Session 16 chỉ test bằng dev adapter):
+- [ ] PDF lần 1 xuất được (free), lần 2 → paywall `report_gate`.
+- [ ] PDF free **có** watermark "Tạo bởi app Sugar"; sau khi mua lại thì **không** còn.
+- [ ] Nút CSV khoá → paywall `csv_gate`.
+- [ ] Trends → "Theo bữa" khoá → paywall `charts_gate` (chỉ mode thai kỳ).
+- [ ] Ghi/sửa/xoá chỉ số + nhắc đo **không bao giờ bị khoá** (money-principle #1).
 
 ### 2.5 Mã hỗ trợ (mục lỗi #2 vừa sửa)
 - [ ] Settings → Giới thiệu → thấy **`SGR-XXXX-XXXX`** (không phải chuỗi `$RCAnonymousID:...` dài, không vỡ layout).
