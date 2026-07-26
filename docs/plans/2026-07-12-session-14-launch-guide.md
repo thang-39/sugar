@@ -127,6 +127,9 @@ Ghi đường huyết 2 chạm, nhắc đo sau bữa ăn, xuất báo cáo đưa
 ```
 
 **Mô tả đầy đủ (dán vào "Full description"):**
+
+> Bản dán cuối cùng nằm ở `docs/plans/2026-07-26-session-23-buoc-8-production.md` § 4 — thêm dòng
+> sao lưu và dòng Sugar Pro (minh bạch chuyện mua trong ứng dụng). Bản dưới là bản gốc Session 14.
 ```
 Sugar giúp mẹ bầu và người theo dõi đường huyết ghi lại chỉ số nhanh gọn, đúng lúc, và xuất báo cáo gọn gàng để đưa bác sĩ.
 
@@ -136,7 +139,7 @@ Sugar giúp mẹ bầu và người theo dõi đường huyết ghi lại chỉ 
 • Xuất báo cáo PDF/CSV gọn gàng để gửi bác sĩ qua Zalo hay email.
 • Biểu đồ xu hướng dễ nhìn.
 • Chữ to, thao tác đơn giản — hợp cả người lớn tuổi đo tại nhà.
-• Toàn bộ dữ liệu lưu trên máy của bạn — không thu thập, không gửi đi đâu.
+• Chỉ số đường huyết của bạn chỉ nằm trên máy: app không có tài khoản, không gửi dữ liệu sức khỏe lên máy chủ nào.
 
 Sugar là công cụ ghi chép và theo dõi. Ứng dụng không chẩn đoán, không điều trị và không thay thế tư vấn của bác sĩ.
 ```
@@ -158,8 +161,14 @@ Sugar là công cụ ghi chép và theo dõi. Ứng dụng không chẩn đoán,
 ## BƯỚC 6 — Điền các form khai báo (Play Console → App content)
 
 **a) Data Safety (An toàn dữ liệu):**
-- "Does your app collect or share any user data?" → **No**.
-- Lý do: mọi dữ liệu lưu cục bộ; thông báo là local; không có server. → Không cần khai mục dữ liệu nào.
+
+> ⚠️ **Lạc hậu từ 26/07/2026 — đừng dùng bảng dưới.** Lúc viết mục này app chưa có RevenueCat.
+> Bản build phát hành có `react-native-purchases`, tức **có** dữ liệu rời khỏi máy (lịch sử mua).
+> Bảng khai đúng: `docs/plans/2026-07-26-session-23-buoc-8-production.md` § 2.
+
+- ~~"Does your app collect or share any user data?" → **No**.~~ → Nay là **Yes**, khai
+  **Financial info → Purchase history** (Collected, không Shared, Required, purposes App
+  functionality + Analytics). Dữ liệu đường huyết vẫn khai **không** thu thập — nó không rời thiết bị.
 
 **b) Health apps declaration (nếu Play hỏi):**
 - App **không** kết nối Google Fit / Health Connect.
