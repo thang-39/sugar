@@ -288,8 +288,20 @@ _Remaining (Bước 7 — acceptance on the new preview build, must pass before 
 - [x] Kill app → reopen → **Pro persists** (reads real cached `getCustomerInfo()`). **Verified on device 2026-07-26.**
 - [x] Offline persistence. **Verified on device 2026-07-26** (airplane mode, Pro held). Note: it passed because RC's offerings cache was warm — the code no longer *depends* on that, see the `Promise.allSettled` fix below.
 - [x] Reinstall → Pro returns. **Verified 2026-07-26 — and without tapping Restore:** the Android RC SDK syncs purchases the Play account already owns at `configure()`, aliasing the fresh anonymous id onto the existing customer. Consequence: the paywall's **Restore button itself is still unexercised** — it is only reachable while the app does *not* recognize Pro, so test it with the second (non-owning) account alongside the cancel test: expect the "no purchases found" alert.
-- [ ] Mid-flow cancel is clean — needs a **second Google account that is both internal tester and license tester** (the first one owns the non-consumable, so Buy returns `ITEM_ALREADY_OWNED` and never opens the payment sheet).
+- [x] Mid-flow cancel is clean. **Verified 2026-07-26** after refunding the test purchase (see below): tapping Buy opened the Play payment sheet — itself proof the Google-side revoke worked — and backing out returned to the paywall normally.
+- [ ] Empty Restore — paywall → "Khôi phục giao dịch" while the account owns nothing → expect the "no purchases found" alert. Only testable in this window, before re-purchasing.
 - [ ] Support code renders as `SGR-XXXX-XXXX`. **Known broken on the build tested 2026-07-26** — fixed in code, needs the next build (see below).
+
+_Resetting the owned test purchase (2026-07-26) — Play Console alone was not enough:_
+Refunding in Play Console with **☑ Remove entitlement** (that checkbox *is* the revoke) correctly un-owned the
+product on Google's side — the payment sheet opened again afterwards. But RevenueCat did **not** pick the refund up:
+the customer still read `Sugar Pro · Active · unlimited duration` long after, with no void event in Customer History.
+Since the app derives `isPro` from `getCustomerInfo()`, a stale RC record keeps the app Pro and the paywall in its
+"already unlocked" state — no Buy button, nothing testable. Fix was to refund manually from the **RevenueCat**
+dashboard as well. **Next time refund from RevenueCat first** (their own recommendation) and let it propagate to Play,
+rather than the other way round.
+Also: RC hides sandbox purchases by default — with the **Sandbox data** toggle off, the profile reads
+"No current entitlements" and the transaction (and its Refund action) is invisible even while Pro is active.
 
 _Fixed while preparing Bước 7 (commit `ab84733`) — both were on this checklist:_
 - **Entitlement no longer coupled to the price lookup.** `useEntitlementStore.refresh()` fetched `isPro()` + `getProProduct()` in one `Promise.all`, so a failing `getOfferings()` rejected the whole refresh and left `isPro` at its cold-start `false` — a paying user locked out. Now `Promise.allSettled`; either side failing keeps its previous value. (Device testing showed offline passing anyway on a warm offerings cache; the fix removes the dependency rather than a reproduced failure.)

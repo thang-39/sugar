@@ -111,6 +111,11 @@ Phải **refund + revoke** để account thôi sở hữu.
 > ⚠️ **Refund mà không revoke = kẹt.** Refund suông qua Play Console vẫn để lại entitlement → Google tiếp tục báo
 > "Bạn đã sở hữu mặt hàng này" và không có đường reset gọn. Luôn dùng đường có revoke.
 
+> **Kết quả thật 26/07 — phải làm CẢ HAI.** Play Console revoke đúng ở phía Google (sheet thanh toán mở lại được),
+> nhưng RevenueCat **không tự cập nhật**: customer vẫn `Sugar Pro · Active` rất lâu sau đó, không có event void.
+> Mà app đọc `isPro` từ RC → app vẫn Pro → paywall hiện màn "đã mở khoá", không có nút Mua để test.
+> Phải vào RC refund thủ công nữa mới xong. **Lần sau: refund từ RC trước** (đúng như RC khuyến nghị), đừng làm ngược.
+
 **Cách A (đã dùng 26/07 — Play Console, đủ):** Play Console → **Order management** → tìm đơn
 (`Product name` sẽ ghi "Th.nghiệm: Sugar Pro" = đơn test) → mở đơn → **Refund order** →
 để nguyên ô **☑ Remove entitlement** (đây *là* revoke) → Refund percentage 100 → **Refund**.
@@ -162,9 +167,10 @@ Không mất tiền thật: license tester dùng test payment method, đơn này
 
 **Rồi test 3 thứ trong một lượt:**
 - [ ] **Restore rỗng:** paywall → "Khôi phục giao dịch" → alert "chưa tìm thấy giao dịch nào", không crash, không tự mở Pro.
-- [ ] **Huỷ giữa luồng:** bấm "Mở khóa Sugar Pro" → sheet Google hiện → bấm back → **không alert lỗi**, vẫn ở paywall,
-      nút mua bấm lại được (không kẹt spinner). (`PURCHASE_CANCELLED_ERROR` → `outcome: 'Cancelled'` → không set state,
-      `isBusy` reset trong `finally`.)
+      *Chỉ test được trong cửa sổ chưa-sở-hữu này — mua lại là mất cơ hội.*
+- [x] **Huỷ giữa luồng ✅ (26/07):** bấm "Mở khóa Sugar Pro" → sheet Google hiện → bấm back → thoát bình thường.
+      Sheet mở được cũng là bằng chứng revoke phía Google đã ăn.
+      (`PURCHASE_CANCELLED_ERROR` → `outcome: 'Cancelled'` → không set state, `isBusy` reset trong `finally`.)
 - [ ] **Mua lại** → Pro về → giao dịch mới hiện trong RC (đóng luôn vòng purchase lần 2).
 
 **Bonus đáng làm — các cửa gate Free chưa từng test với adapter thật** (Session 16 chỉ test bằng dev adapter):
