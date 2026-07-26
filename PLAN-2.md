@@ -283,18 +283,27 @@ _Done:_
 - **Code robustness (this session):** `purchasePro` now catches `PRODUCT_ALREADY_PURCHASED_ERROR` → auto-restores; grants Pro only if the entitlement actually surfaces, else returns a real Error (no fake success leaving Pro locked). Independent of the credential fix. (VERBOSE log was used temporarily during debugging then reverted to the `__DEV__ ? DEBUG` gate.) tsc + 282 tests green.
 
 _Remaining (Bước 7 — acceptance on the new preview build, must pass before Bước 8):_
-- [ ] Uninstall the old dev-adapter APK first, install the new preview build.
+- [x] Uninstall the old dev-adapter APK first, install the new preview build.
 - [x] Buy Pro → confirm **a customer appears in RevenueCat → Customers** (proof the real adapter is live) with entitlement `pro` Active. **DONE** (real internal-test purchase succeeded once RC credentials went green).
-- [ ] Kill app → reopen → **Pro persists** (reads real cached `getCustomerInfo()`).
-- [ ] Offline persistence + reinstall→Restore + mid-flow cancel is clean + stable support code.
+- [x] Kill app → reopen → **Pro persists** (reads real cached `getCustomerInfo()`). **Verified on device 2026-07-26.**
+- [x] Offline persistence. **Verified on device 2026-07-26** (airplane mode, Pro held). Note: it passed because RC's offerings cache was warm — the code no longer *depends* on that, see the `Promise.allSettled` fix below.
+- [x] Reinstall → Pro returns. **Verified 2026-07-26 — and without tapping Restore:** the Android RC SDK syncs purchases the Play account already owns at `configure()`, aliasing the fresh anonymous id onto the existing customer. Consequence: the paywall's **Restore button itself is still unexercised** — it is only reachable while the app does *not* recognize Pro, so test it with the second (non-owning) account alongside the cancel test: expect the "no purchases found" alert.
+- [ ] Mid-flow cancel is clean — needs a **second Google account that is both internal tester and license tester** (the first one owns the non-consumable, so Buy returns `ITEM_ALREADY_OWNED` and never opens the payment sheet).
+- [ ] Support code renders as `SGR-XXXX-XXXX`. **Known broken on the build tested 2026-07-26** — fixed in code, needs the next build (see below).
 
-_Polish (optional, fold into Bước 7 testing):_
-- [ ] Handle `PRODUCT_ALREADY_PURCHASED_ERROR` in `mapPurchaseError` / `purchasePro`: an already-owning user who taps **Buy** again is **not** double-charged (Google blocks it + RC re-syncs the entitlement), but the app currently shows a generic "Purchase failed". Map it to an "Bạn đã sở hữu Sugar Pro" success + unlock instead.
+_Fixed while preparing Bước 7 (commit `ab84733`) — both were on this checklist:_
+- **Entitlement no longer coupled to the price lookup.** `useEntitlementStore.refresh()` fetched `isPro()` + `getProProduct()` in one `Promise.all`, so a failing `getOfferings()` rejected the whole refresh and left `isPro` at its cold-start `false` — a paying user locked out. Now `Promise.allSettled`; either side failing keeps its previous value. (Device testing showed offline passing anyway on a warm offerings cache; the fix removes the dependency rather than a reproduced failure.)
+- **Support code was unusable on the RevenueCat adapter.** Only the dev adapter formatted it, so About rendered the raw `$RCAnonymousID:<32 hex>` inside a row laid out for 13 characters. Formatting it naively would have been worse — the shared prefix makes every user `SGR-RCAN-ONYM`. Now: the port returns the **raw** store id (what the RC dashboard needs for lookup), `formatSupportCode()` strips the RC prefix, About **displays** the short code and **copies** the raw id.
+
+_Polish:_
+- [x] Handle `PRODUCT_ALREADY_PURCHASED_ERROR` in `purchasePro`: an already-owning user who taps **Buy** again auto-restores instead of seeing a generic "Purchase failed"; Pro is granted only if the entitlement actually surfaces. **DONE** (commit `80bb7d7`).
 
 _Decisions locked:_
 - **Restore button stays in the paywall only** — no separate Settings "Khôi phục" row. Restore is only needed when the app does **not** yet recognize Pro, and in that state the "Upgrade Pro" box (→ paywall → Restore) is always reachable. Once Pro, restore is moot. Restore ≠ refund; it can never grant Pro to a non-payer (Google only returns purchases the account actually owns), so exposing it does **not** reduce revenue — hiding it *costs* revenue via refund/chargeback/support.
 
-_Then Bước 8:_ production `.aab` (`eas build -p android --profile production`) → Play submission. Full manual steps in `docs/plans/2026-07-18-session-23-admin-handoff.md`.
+_Testing route (corrected 2026-07-26 — do not sideload):_ Play Billing compares the running app's signature against the app-signing certificate on Play. An EAS APK is signed with the **upload key** while the Play copy is re-signed by Google, so a sideloaded build throws `DEVELOPER_ERROR` on purchase. Test through **production `.aab` → Internal testing track → install from Play** — the same route the successful purchase already used. That artifact **is** the Bước 8 artifact: once it passes, Play *promotes* the release to Production, no rebuild.
+
+_Then Bước 8:_ promote the accepted Internal-testing release to Production. Checklist: `docs/plans/2026-07-25-session-23-buoc-7-acceptance.md`; full manual steps: `docs/plans/2026-07-18-session-23-admin-handoff.md`.
 
 ---
 

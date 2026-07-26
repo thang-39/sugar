@@ -62,29 +62,42 @@ lên Production, không build lại lần nữa.
 
 Làm **đúng thứ tự** — mục 2.4 phá trạng thái "đã sở hữu" nên để cuối.
 
-### 2.1 Kill app → mở lại → Pro còn giữ
-- [ ] Xác nhận đang Pro (bảng trên).
-- [ ] Kill hẳn app (swipe khỏi recents, không phải chỉ về home).
-- [ ] Mở lại → vẫn Pro.
+> **Đã xác nhận trên máy thật 26/07/2026 (bản trước fix):** 2.1 kill/mở lại ✅ · 2.2 offline ✅ · 2.3 cài lại ✅.
+> Ba mục này giữ nguyên kết quả cho bản mới (fix không đổi đường code của chúng) — chỉ cần soi lại 2.1 một lần cho chắc.
+> **Còn lại phải test trên bản mới:** 2.4 huỷ giữa luồng (+ nút Restore, xem 2.3) và 2.5 mã hỗ trợ.
+
+### 2.1 Kill app → mở lại → Pro còn giữ ✅ (26/07)
+- [x] Xác nhận đang Pro (bảng trên).
+- [x] Kill hẳn app (swipe khỏi recents, không phải chỉ về home).
+- [x] Mở lại → vẫn Pro.
 
 Đường code: boot → `initEntitlement()` → `Purchases.configure()` → `refresh()` → `getCustomerInfo()`.
 Nếu fail: kiểm mạng lúc mở lại; nếu vẫn fail thì RC entitlement `pro` không Active trong Dashboard → xem Customers.
 
-### 2.2 Offline → Pro còn giữ
-- [ ] Bật chế độ máy bay.
-- [ ] Kill app → mở lại → **vẫn Pro** (đây là mục lỗi #1 vừa sửa).
-- [ ] Mở Báo cáo → nút CSV vẫn mở khoá.
-- [ ] Tắt máy bay, foreground lại → vẫn Pro (`AppState` → `refresh()`).
+### 2.2 Offline → Pro còn giữ ✅ (26/07)
+- [x] Bật chế độ máy bay.
+- [x] Kill app → mở lại → **vẫn Pro**.
+- [x] Mở Báo cáo → nút CSV vẫn mở khoá.
+- [x] Tắt máy bay, foreground lại → vẫn Pro (`AppState` → `refresh()`).
+
+Pass ngay trên bản **trước** fix #1 — vì cache offerings của RC còn nóng nên `getOfferings()` không fail.
+Nghĩa là fix #1 không phải chữa một lỗi đã tái hiện được, mà **bỏ sự phụ thuộc**: `isPro` không còn đi chung
+`Promise.all` với lần lấy giá, nên cold start offline lúc cache nguội cũng không thể khoá user đã trả tiền.
 
 Lưu ý **không phải bug**: user **chưa** Pro mà mở paywall khi offline thì nút mua bị disable vì không lấy được giá
 (`priceString === undefined` → `ctaLoading`). Đúng theo nguyên tắc "giá luôn từ store, không hardcode".
 
-### 2.3 Cài lại → Restore
-- [ ] Gỡ app (mất hết dữ liệu local + anon ID cũ).
-- [ ] **Cài lại từ Play** (link internal testing) — không sideload, nếu không billing/Restore sẽ chết.
-- [ ] Mở → đang **Free** (bình thường: anon ID mới, chưa alias).
-- [ ] Settings → Sugar Pro → paywall → **"Khôi phục giao dịch"** → alert thành công → Pro.
+### 2.3 Cài lại → Pro về ✅ (26/07)
+- [x] Gỡ app (mất hết dữ liệu local + anon ID cũ).
+- [x] Cài lại → mở → **Pro về ngay, không cần bấm "Khôi phục"**.
 - [ ] Kiểm RC Dashboard → customer cũ được alias, không sinh giao dịch mới.
+
+Tự về vì RC SDK trên Android lúc `configure()` sẽ sync các purchase mà account Google đang sở hữu → alias anon ID
+mới vào customer cũ. Kết quả người dùng thấy là đúng cái cần.
+
+**Kéo theo: nút "Khôi phục giao dịch" vẫn chưa bấm thử lần nào** — nó chỉ bấm được khi app *chưa* nhận ra Pro,
+mà account này không tái tạo được trạng thái đó nữa. → Test kèm ở 2.4 bằng account thứ hai (chưa mua):
+bấm Restore phải ra alert "chưa tìm thấy giao dịch nào", không crash, không tự mở Pro.
 
 Lưu ý: **mã hỗ trợ sẽ đổi sau khi cài lại** (RC sinh anon ID mới) — đúng như thiết kế, không phải lỗi.
 "Stable" ở đây nghĩa là ổn định qua kill/mở lại, không phải qua reinstall.
