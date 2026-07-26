@@ -55,9 +55,10 @@ policy nói "không thu thập gì" là tự tạo mâu thuẫn.
 **Việc phải làm:**
 - [ ] `git push` lên `main` — Pages phục vụ từ `main /docs`, chưa push thì URL vẫn trả bản cũ.
 - [ ] Đợi 1–2 phút → mở URL, xác nhận thấy "Cập nhật lần cuối: 26/07/2026" và có mục 5.
-- [ ] Email liên hệ trong policy là `trantruongminhthang@gmail.com` (doc Session 22 tưởng là
-      `thang.tran1@mesoneer.io` — file thực tế là gmail). Điền **cùng** email đó vào ô contact của
-      store listing cho khớp; muốn đổi thì đổi cả hai nơi một lượt.
+- [ ] **Email liên hệ = `trantruongminhthang@gmail.com`** ở cả policy (đã đúng) và **ô contact của
+      store listing** — chốt lại 26/07: app cá nhân thì dùng hộp thư cá nhân, không dùng domain công
+      ty (đổi việc là mất hộp thư, mà đây là địa chỉ nhận yêu cầu xoá dữ liệu ở mục 5 của policy).
+      Ghi chú cũ trong doc Session 22 nói là `thang.tran1@mesoneer.io` đã được đánh dấu lạc hậu.
 
 ---
 

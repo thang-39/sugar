@@ -15,7 +15,8 @@
   - Landing URL when pushed: **`https://thang-39.github.io/sugar/`**
   - Privacy URL: **`https://thang-39.github.io/sugar/privacy.html`**
 - **Privacy language decision:** English default + toggle to Vietnamese.
-- **Contact email:** kept the currently-live `thang.tran1@mesoneer.io` (the Claude Design privacy export had `trantruongminhthang@gmail.com` behind Cloudflare obfuscation — NOT adopted, to avoid silently changing a published contact). Revisit if a switch is wanted.
+- **Contact email:** ~~kept the currently-live `thang.tran1@mesoneer.io` (the Claude Design privacy export had `trantruongminhthang@gmail.com` behind Cloudflare obfuscation — NOT adopted, to avoid silently changing a published contact). Revisit if a switch is wanted.~~
+  **Superseded — the contact is `trantruongminhthang@gmail.com`.** Switched in commit `f015284` (2026-07-18) and re-confirmed at Session 23 Bước 8: Sugar is a personal app, so a personal mailbox is the right support address — an employer domain would be lost with a job change. Use this same address in the Play listing contact field. Session 10's older draft (`2026-07-06-session-10-build-store-prep.md`) still shows the mesoneer address in a superseded HTML snippet; ignore it.
 
 ---
 
@@ -29,7 +30,7 @@
    - Verified: `node --check` on the script → JS OK; no leftover DC refs.
 2. **`docs/privacy.html`** — replaced old VI-only stacked page:
    - English default + "Tiếng Việt" toggle button (localStorage-persisted).
-   - Removed Cloudflare `email-protection` obfuscation + `email-decode.min.js` script (would 404 outside Cloudflare); plain `mailto:thang.tran1@mesoneer.io`.
+   - Removed Cloudflare `email-protection` obfuscation + `email-decode.min.js` script (would 404 outside Cloudflare); plain `mailto:` link (address now `trantruongminhthang@gmail.com`, see the decision above).
    - Added `← Sugar` back-link to `./index.html`.
 3. **`app/about.tsx`** — added a "Website" link:
    - New `WEBSITE_URL = 'https://thang-39.github.io/sugar/'` const.
