@@ -52,11 +52,13 @@ policy nói "không thu thập gì" là tự tạo mâu thuẫn.
   vì chưa nối dịch vụ phân tích nào.
 - Mục 7 quyền: thêm quyền thanh toán của Play. Ngày cập nhật → 26/07/2026.
 
-**Việc phải làm:**
-- [ ] `git push` lên `main` — Pages phục vụ từ `main /docs`, chưa push thì URL vẫn trả bản cũ.
-- [ ] Đợi 1–2 phút → mở URL, xác nhận thấy "Cập nhật lần cuối: 26/07/2026" và có mục 5.
-- [ ] **Email liên hệ = `trantruongminhthang@gmail.com`** ở cả policy (đã đúng) và **ô contact của
-      store listing** — chốt lại 26/07: app cá nhân thì dùng hộp thư cá nhân, không dùng domain công
+**Việc phải làm:** ✅ **XONG 26/07** — bản live đã kiểm chứng: "Cập nhật lần cuối: 26/07/2026",
+có mục 5 (RevenueCat), email `trantruongminhthang@gmail.com`; `main` đã đồng bộ với `origin/main`.
+- [x] `git push` lên `main` — Pages phục vụ từ `main /docs`, chưa push thì URL vẫn trả bản cũ.
+- [x] Đợi 1–2 phút → mở URL, xác nhận thấy "Cập nhật lần cuối: 26/07/2026" và có mục 5.
+- [x] Policy dùng **`trantruongminhthang@gmail.com`** — đã live đúng.
+- [ ] **Ô contact của store listing** phải điền cùng email đó (làm ở mục 4) —
+      chốt lại 26/07: app cá nhân thì dùng hộp thư cá nhân, không dùng domain công
       ty (đổi việc là mất hộp thư, mà đây là địa chỉ nhận yêu cầu xoá dữ liệu ở mục 5 của policy).
       Ghi chú cũ trong doc Session 22 nói là `thang.tran1@mesoneer.io` đã được đánh dấu lạc hậu.
 
@@ -150,12 +152,17 @@ Sugar là công cụ ghi chép và theo dõi. Ứng dụng không chẩn đoán,
 > ⚠️ Không dùng từ "chẩn đoán / điều trị / chữa" như một tuyên bố về app.
 > ⚠️ Không ghi giá cứng trong mô tả, không dựng giá gạch ngang giả — giá luôn để store tự hiện.
 
-**Đồ hoạ bắt buộc:**
-- [ ] App icon 512×512 (`assets/images/icon.png`)
-- [ ] Feature graphic 1024×500
+**Đồ hoạ bắt buộc** — vật liệu + hướng dẫn ở `store/play/README.md`:
+- [x] App icon 512×512 → `store/play/icon-512.png`. **Không dùng thẳng `assets/images/icon.png`**:
+      bản đó 1024px và góc trong suốt, mà Play cấm icon trong suốt + tự áp mask bo góc (nộp bản
+      trong suốt sẽ bị bo hai lần). File mới đã composite lên nền brand `#0FA36B`, không alpha.
+- [x] Feature graphic 1024×500 → `store/play/feature-graphic-1024x500.png` (sRGB, đã kiểm màu).
 - [ ] Screenshot dọc — Play cần tối thiểu 2, chuẩn bị 6 theo danh sách màn ở Session 14 Bước 4
-      (Báo cáo PDF · Log · Nhắc đo · Hôm nay · Trends · chia sẻ qua Zalo)
-- [ ] Email liên hệ = email trong privacy policy (mục 1)
+      (Báo cáo PDF · Log · Nhắc đo · Hôm nay · Trends · chia sẻ qua Zalo).
+      **Kịch bản chụp chi tiết — §3 của `store/play/README.md`.** Hai điều dễ hỏng: phải chụp bằng
+      account **đã có Pro** (không thì PDF dính watermark) và phải bật **chế độ Thai kỳ** (giao diện
+      Rose) cho khớp tiêu đề listing.
+- [ ] Email liên hệ = `trantruongminhthang@gmail.com` (đúng email trong privacy policy, mục 1)
 
 ---
 
