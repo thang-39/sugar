@@ -129,23 +129,34 @@ Quá ~10 phút mà RC vẫn Active thì RTDN chưa tới → lúc đó mới và
    lúc chữa credential, nên bấm được ngay.
 5. Muốn sạch hẳn cho lần test sau: **Delete customer** trong RC (xoá transaction + metadata sandbox).
 
+**⚠️ Bật toggle "Sandbox data" (góc trên phải) trước khi đọc bất cứ thứ gì trong RC.**
+Giao dịch license tester là **sandbox**, mà mặc định RC ẩn dữ liệu sandbox. Tắt toggle thì Customer profile ghi
+"**No current entitlements**" và Customer history không có transaction — **kể cả khi Pro đang Active**. Dấu hiệu nhận
+biết đang bị ẩn: banner "This Customer has sandbox purchases" + nút "Show sandbox data". Nút **Refund** nằm trên
+chính event giao dịch, nên toggle tắt cũng không thấy nút.
+Hệ quả cho bước verify: phải bật sandbox rồi ghi nhận `pro` Active **trước** khi refund, refund xong xem lại — chứ
+"No current entitlements" ở cả hai lượt thì không kết luận được gì.
+
 **Tìm customer trong RC — đừng tra bằng mã hỗ trợ (kinh nghiệm 26/07):**
-- Ô filter tên là "**Original app user ID**". Sau khi cài lại app, máy có anon ID **mới** và RC transfer/alias giao dịch
-  về customer gốc → tra ID hiện tại **không khớp dòng nào**. Danh sách hiện ID *gốc*.
+- Ô filter tên là "**Original app user ID**". Sau khi cài lại app, máy có anon ID **mới**; với
+  `Transfer Behavior: Transfer to new App User ID` thì RC gắn nó làm **Alias #1** của customer gốc.
+  Danh sách chỉ hiện ID **gốc** → tra ID hiện tại **không khớp dòng nào**.
+  *(Thực tế 26/07: About hiện `e9e2dfaf…b51ef9`, danh sách hiện `$RCA••••f3f6`; mở customer ra thì `…1ef9` nằm ở
+  mục **App User IDs → Alias #1**.)*
 - Nếu mã trong About là **UUID có gạch** (`e9e2df-…`) và không có prefix `$RCAnonymousID:` thì đó là id của
   **dev adapter** (`randomUUID()` lưu ở settings key `supportCode`) — tức đang mở Expo Go / APK cũ, RC không hề biết id đó.
   RC anon id là `$RCAnonymousID:` + 32 hex liền, không gạch.
-- Cách nhanh: lọc theo **cờ quốc gia** (máy VN → các dòng cờ Việt Nam), mở từng dòng, xem **Customer History** —
-  dòng nào có transaction `sugar_pro_lifetime` là customer cần tìm.
-- **Đừng tìm bằng cột `Spent` / `Latest Purchase`**: giao dịch license tester là sandbox nên các cột đó là `-` và
-  Total revenue `$0` ở mọi dòng. Phải mở vào trong customer mới thấy transaction.
+- Cách nhanh: lọc theo **cờ quốc gia** (máy VN → các dòng cờ Việt Nam), mở từng dòng, xem **App User IDs** có alias
+  khớp mã hiện tại không.
+- **Đừng tìm bằng cột `Spent` / `Latest Purchase`**: sandbox nên các cột đó là `-`, `Total Spent USD 0` và
+  Total revenue `$0` ở mọi dòng — không phản ánh việc đã có giao dịch.
 
 **Kiểm dứt điểm (áp dụng cho cả hai cách):** sau refund, bấm Mua trong app.
 Sheet thanh toán Google mở ra = revoke đã ăn. Vẫn "Bạn đã sở hữu mặt hàng này" = Google còn thấy sở hữu.
 
 **Sau khi refund:**
 - [ ] Đợi vài phút (RTDN qua Pub/Sub đã cấu hình → RC rớt entitlement) → kill app → mở lại → app về **Free**.
-- [ ] RC → Customers → entitlement `pro` **không còn Active**.
+- [ ] RC → customer → **bật Sandbox data** → entitlement `pro` **không còn Active**.
 
 Không mất tiền thật: license tester dùng test payment method, đơn này chỉ là đơn test.
 
