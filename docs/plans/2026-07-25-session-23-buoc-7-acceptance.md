@@ -111,22 +111,37 @@ Phải **refund + revoke** để account thôi sở hữu.
 > ⚠️ **Refund mà không revoke = kẹt.** Refund suông qua Play Console vẫn để lại entitlement → Google tiếp tục báo
 > "Bạn đã sở hữu mặt hàng này" và không có đường reset gọn. Luôn dùng đường có revoke.
 
-**Cách A (khuyến nghị — RevenueCat tự revoke):**
-1. RC Dashboard → **Customers** → dán id thô (nút copy ở Settings → Giới thiệu) vào ô search → mở customer.
+**Cách A (đã dùng 26/07 — Play Console, đủ):** Play Console → **Order management** → tìm đơn
+(`Product name` sẽ ghi "Th.nghiệm: Sugar Pro" = đơn test) → mở đơn → **Refund order** →
+để nguyên ô **☑ Remove entitlement** (đây *là* revoke) → Refund percentage 100 → **Refund**.
+Đơn license tester không có tiền thật, con số 149.000₫ chỉ là sổ sách.
+
+> Đừng lẫn hai nút cùng tên: "Remove entitlement" **trong Play Console** revoke ở phía Google — đúng cái cần.
+> "Remove entitlement" **trong RC Dashboard** chỉ sửa sổ sách RC, Google vẫn thấy account sở hữu → không dùng thay.
+
+Sau đó Google đẩy `VOIDED_PURCHASE` qua Pub/Sub (đã cấu hình ở Session 24) → RC rớt entitlement trong vài phút.
+Quá ~10 phút mà RC vẫn Active thì RTDN chưa tới → lúc đó mới vào RC refund để đồng bộ hai bên.
+
+**Cách B (nếu Play Console không cho refund — RevenueCat tự revoke):**
+1. RC Dashboard → **Customers** → mở customer (cách tìm: xem ghi chú dưới).
 2. **Customer History** → click event giao dịch (`Initial purchase`) → nút **Refund** ở góc trên phải → xác nhận.
-3. Không bắt buộc, nhưng muốn sạch hẳn cho lần test sau: **Delete customer** (xoá transaction + metadata sandbox).
 4. Điều kiện: service account RC↔Play phải có quyền **"Manage orders and subscriptions"** — đã cấp ở Session 24
    lúc chữa credential, nên bấm được ngay.
+5. Muốn sạch hẳn cho lần test sau: **Delete customer** trong RC (xoá transaction + metadata sandbox).
 
-> **Không dùng "Remove entitlement" thay cho Refund.** Nút đó chỉ sửa sổ sách phía RC: app về Free nhưng **Google
-> vẫn thấy account sở hữu** → bấm Mua vẫn ra `ITEM_ALREADY_OWNED`, và lần RC sync purchase từ Play có thể grant lại.
-> Chỉ Refund (kèm revoke) mới un-own ở phía Google. Refund xong entitlement tự rớt — không cần bấm Remove.
->
-> **Kiểm dứt điểm:** sau refund, bấm Mua trong app. Sheet thanh toán hiện ra = revoke đã ăn.
-> Vẫn "Bạn đã sở hữu mặt hàng này" = Google còn thấy sở hữu → làm Cách B.
+**Tìm customer trong RC — đừng tra bằng mã hỗ trợ (kinh nghiệm 26/07):**
+- Ô filter tên là "**Original app user ID**". Sau khi cài lại app, máy có anon ID **mới** và RC transfer/alias giao dịch
+  về customer gốc → tra ID hiện tại **không khớp dòng nào**. Danh sách hiện ID *gốc*.
+- Nếu mã trong About là **UUID có gạch** (`e9e2df-…`) và không có prefix `$RCAnonymousID:` thì đó là id của
+  **dev adapter** (`randomUUID()` lưu ở settings key `supportCode`) — tức đang mở Expo Go / APK cũ, RC không hề biết id đó.
+  RC anon id là `$RCAnonymousID:` + 32 hex liền, không gạch.
+- Cách nhanh: lọc theo **cờ quốc gia** (máy VN → các dòng cờ Việt Nam), mở từng dòng, xem **Customer History** —
+  dòng nào có transaction `sugar_pro_lifetime` là customer cần tìm.
+- **Đừng tìm bằng cột `Spent` / `Latest Purchase`**: giao dịch license tester là sandbox nên các cột đó là `-` và
+  Total revenue `$0` ở mọi dòng. Phải mở vào trong customer mới thấy transaction.
 
-**Cách B (dự phòng, nếu RC không cho refund):** Play Console → **Order management** (menu trái, cấp tài khoản) →
-search theo order id / email tester → chọn đơn → **Refund orders** → **tick tuỳ chọn revoke entitlement** → Refund.
+**Kiểm dứt điểm (áp dụng cho cả hai cách):** sau refund, bấm Mua trong app.
+Sheet thanh toán Google mở ra = revoke đã ăn. Vẫn "Bạn đã sở hữu mặt hàng này" = Google còn thấy sở hữu.
 
 **Sau khi refund:**
 - [ ] Đợi vài phút (RTDN qua Pub/Sub đã cấu hình → RC rớt entitlement) → kill app → mở lại → app về **Free**.
