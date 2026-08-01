@@ -47,3 +47,6 @@ example
 
 # Claude Code browser-testing harness (local, machine-specific)
 .claude-tools/
+
+# Giấy tờ xác minh danh tính cho Play Console — KHÔNG bao giờ commit (repo này public)
+store/verify-account/
