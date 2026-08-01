@@ -157,6 +157,45 @@ Safety không cần release mới** — không phải chờ build.
 
 ## 4. Store listing — nội dung dán
 
+> **Chốt 01/08: ngôn ngữ mặc định của listing là `en-US`.** Bản `vi-VN` thêm vào sau như một
+> localization, không phải bản chính. Kéo theo: 6–7 ảnh chụp phải là **giao diện tiếng Anh**, và
+> app phải mở ra bằng tiếng Anh trên máy tiếng Anh — đó là lý do có build #9 (xem §0b).
+
+### 4a. Bản en-US (mặc định — dán bản này trước)
+
+Tiêu đề (28/30 ký tự):
+
+```
+Sugar – Gestational Diabetes
+```
+
+Mô tả ngắn (69/80 ký tự):
+
+```
+Log blood sugar in 2 taps, after-meal reminders, doctor-ready reports
+```
+
+Mô tả đầy đủ:
+
+```
+Sugar helps you log blood sugar quickly, at the right moment, and hand your doctor a clean report.
+
+• Log a reading in 2 taps — the time and meal are filled in for you.
+• Smart after-meal reminders: log a before-meal reading and Sugar reminds you to measure again 1 or 2 hours later, following your doctor's protocol.
+• The Today screen lays out the day's measurements around your own rhythm.
+• Export tidy PDF or CSV reports to send your doctor by email or chat.
+• Clear trend charts.
+• Large text and simple steps — it works for older people measuring at home too.
+• Back up to a file to keep yourself or move to a new phone — your data stays yours.
+• Your blood sugar readings stay on your phone: no account, and no health data is sent to any server.
+
+Sugar Pro (one-time purchase, no subscription) adds: unlimited PDF reports with no watermark, CSV export, and per-meal analysis.
+
+Sugar is a logging and tracking tool. It does not diagnose, does not treat, and is not a substitute for your doctor's advice.
+```
+
+### 4b. Bản vi-VN (thêm sau, dùng nguyên văn bản Session 14 dưới đây)
+
 Tiêu đề + mô tả ngắn giữ nguyên bản Session 14:
 
 ```
@@ -194,8 +233,18 @@ Sugar là công cụ ghi chép và theo dõi. Ứng dụng không chẩn đoán,
       bản đó 1024px và góc trong suốt, mà Play cấm icon trong suốt + tự áp mask bo góc (nộp bản
       trong suốt sẽ bị bo hai lần). File mới đã composite lên nền brand `#0FA36B`, không alpha.
 - [x] Feature graphic 1024×500 → `store/play/feature-graphic-1024x500.png` (sRGB, đã kiểm màu).
-- [ ] Screenshot dọc — Play cần tối thiểu 2, chuẩn bị 6: Báo cáo PDF · Hôm nay · Log · Nhắc đo ·
-      Trends · Lịch sử (chốt 01/08, bỏ ảnh chia sẻ Zalo — không cần cài Zalo chỉ để chụp).
+- [ ] Screenshot dọc — Play cần tối thiểu 2, chuẩn bị 7: Báo cáo PDF · Hôm nay · Log · Nhắc đo ·
+      Trends · Lịch sử · Settings (chốt 01/08, bỏ ảnh chia sẻ Zalo — không cần cài Zalo chỉ để chụp).
+      **Giao diện phải là tiếng Anh** (listing mặc định en-US).
+      **Lượt chụp thứ hai (01/08, 15:54–15:55, Android bản production, 1080×2340) — gần đạt.**
+      Đạt: Android production (hết khối `DEV ·`), Rose, ảnh Settings ghi "Sugar Pro — Unlocked ✓"
+      (⇒ PDF không watermark), 96 chỉ số nên bảng PDF kín 7 dòng, giờ khớp bữa ở màn Log.
+      Còn phải chụp lại sau khi cài #9:
+      1. **Nhắc đo** — nhãn còn tiếng Việt ("Đo lúc đói"…) giữa màn tiếng Anh; đã sửa bằng
+         `build-demo-backup.js --lang en` (mặc định en) → nhãn thành `Fasting check / After lunch / Before bed`.
+      2. **Báo cáo** — nút "Send feedback →" bị cắt đôi ở mép trên, phải cuộn lên đầu màn.
+      3. **Cả bộ** — status bar còn icon thông báo và **pin 16%**: bật Không làm phiền, xoá thông báo, sạc ≥80%.
+      4. Tỉ lệ 2340/1080 = **2.1666 > 2:1** → tôi pad về 1170×2340 sau khi nhận ảnh cuối.
       **Kịch bản chụp chi tiết — §3 của `store/play/README.md`.**
       **Bộ ảnh 01/08 đã bị loại, phải chụp lại.** Lý do, để không lặp lại:
       1. chụp trên **iPhone** (1242×2688) chứ không phải build #7 Android;
