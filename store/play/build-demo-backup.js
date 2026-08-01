@@ -25,6 +25,24 @@ fs.mkdirSync(TMP, { recursive: true });
 
 const DAYS = 28;
 
+/**
+ * Ngôn ngữ của bộ ảnh sắp chụp: `--lang en` (mặc định, listing en-US) hoặc `--lang vi`.
+ * Nhãn nhắc đo hiện nguyên văn trên màn Nhắc đo, nên nhãn tiếng Việt nằm giữa màn tiếng Anh
+ * là lộ ngay trong ảnh store.
+ */
+const LANG = process.argv.includes('--lang')
+  ? process.argv[process.argv.indexOf('--lang') + 1]
+  : 'en';
+if (LANG !== 'en' && LANG !== 'vi') {
+  console.error(`--lang chỉ nhận "en" hoặc "vi", nhận được: ${LANG}`);
+  process.exit(1);
+}
+
+const REMINDER_LABELS = {
+  en: ['Fasting check', 'After lunch', 'Before bed'],
+  vi: ['Đo lúc đói', 'Sau bữa trưa', 'Trước khi ngủ'],
+};
+
 /** Ngưỡng thai kỳ — phải khớp CONDITION_PRESETS.gestational trong src/domain/models/condition.ts. */
 const FASTING = { low: 70, high: 95 };
 const POST_MEAL = { low: 70, high: 140 };
@@ -97,7 +115,7 @@ const dueDate = startOfDay(-70).getTime();
 
 const settings = {
   preferredUnit: 'mmol/L',
-  preferredLanguage: 'vi',
+  preferredLanguage: LANG,
   fastingRange: FASTING,
   postMealRange: POST_MEAL,
   alertsEnabled: true,
@@ -107,9 +125,9 @@ const settings = {
   afterMealProtocol: '1h',
   postMeal2hRange: POST_MEAL_2H,
   manualReminders: [
-    { id: 'demo-r1', label: 'Đo lúc đói', time: '06:30', enabled: true, repeat: 'daily' },
-    { id: 'demo-r2', label: 'Sau bữa trưa', time: '13:00', enabled: true, repeat: 'daily' },
-    { id: 'demo-r3', label: 'Trước khi ngủ', time: '21:30', enabled: true, repeat: 'daily' },
+    { id: 'demo-r1', label: REMINDER_LABELS[LANG][0], time: '06:30', enabled: true, repeat: 'daily' },
+    { id: 'demo-r2', label: REMINDER_LABELS[LANG][1], time: '13:00', enabled: true, repeat: 'daily' },
+    { id: 'demo-r3', label: REMINDER_LABELS[LANG][2], time: '21:30', enabled: true, repeat: 'daily' },
   ],
   smartAfterMeal: { enabled: true, offset: '1h' },
   reportCount: 3,

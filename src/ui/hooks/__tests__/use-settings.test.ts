@@ -2,6 +2,9 @@ import { useSettingsStore } from '../use-settings';
 import { Unit } from '@/domain/models/unit';
 import { Language } from '@/domain/models/settings';
 import i18n from '@/i18n';
+import { resolveDeviceLanguage } from '@/i18n/device-language';
+import { getDb } from '@/data/db/client';
+import { appSettings } from '@/data/db/schema';
 
 // Mock the db client module to return a fresh in-memory test database for the settings repository.
 jest.mock('@/data/db/client', () => {
@@ -19,8 +22,15 @@ jest.mock('@/i18n', () => ({
   changeLanguage: jest.fn().mockResolvedValue(undefined),
 }));
 
+// Device language is a native read; drive it per-test.
+jest.mock('@/i18n/device-language', () => ({
+  resolveDeviceLanguage: jest.fn(() => 'en'),
+}));
+
 describe('useSettingsStore', () => {
   beforeEach(() => {
+    // Wipe the persisted rows so every test starts from a fresh install.
+    getDb().delete(appSettings).run();
     // Reset Zustand store state before each test
     useSettingsStore.setState({
       preferredUnit: Unit.MgDl,
@@ -42,6 +52,39 @@ describe('useSettingsStore', () => {
 
     expect(useSettingsStore.getState().isInitialized).toBe(true);
     expect(useSettingsStore.getState().preferredUnit).toBe(Unit.MgDl);
+  });
+
+  /**
+   * The app used to hard-code Vietnamese for everyone, so anyone installing from
+   * the English store listing opened a Vietnamese app. On a fresh install the
+   * device decides; once the user has chosen, their choice is untouchable.
+   */
+  it('chưa từng chọn ngôn ngữ → lấy theo ngôn ngữ máy', async () => {
+    (resolveDeviceLanguage as jest.Mock).mockReturnValue(Language.English);
+
+    await useSettingsStore.getState().initialize();
+
+    expect(useSettingsStore.getState().preferredLanguage).toBe(Language.English);
+    // ...and persisted, so it survives the next boot without re-reading the device.
+    const row = getDb().select().from(appSettings).all();
+    expect(row.some((r) => r.key === 'preferredLanguage')).toBe(true);
+  });
+
+  it('máy tiếng Việt → app tiếng Việt', async () => {
+    (resolveDeviceLanguage as jest.Mock).mockReturnValue(Language.Vietnamese);
+
+    await useSettingsStore.getState().initialize();
+
+    expect(useSettingsStore.getState().preferredLanguage).toBe(Language.Vietnamese);
+  });
+
+  it('đã chọn ngôn ngữ rồi → ngôn ngữ máy không được ghi đè', async () => {
+    (resolveDeviceLanguage as jest.Mock).mockReturnValue(Language.English);
+    await useSettingsStore.getState().updateSetting('preferredLanguage', Language.Vietnamese);
+    useSettingsStore.setState({ isInitialized: false });
+
+    await useSettingsStore.getState().initialize();
+
     expect(useSettingsStore.getState().preferredLanguage).toBe(Language.Vietnamese);
   });
 

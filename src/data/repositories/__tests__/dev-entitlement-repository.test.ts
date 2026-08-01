@@ -13,6 +13,9 @@ function fakeSettingsRepo(): SettingsRepository {
     async get<K extends keyof AppSettings>(key: K): Promise<AppSettings[K]> {
       return (store.has(key) ? store.get(key) : null) as AppSettings[K];
     },
+    async has<K extends keyof AppSettings>(key: K): Promise<boolean> {
+      return store.has(key);
+    },
     async set<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {
       store.set(key, value);
     },

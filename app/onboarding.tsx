@@ -76,7 +76,9 @@ export default function OnboardingScreen(): ReactElement {
   };
 
   const skip = async (): Promise<void> => {
-    await updateSetting('preferredLanguage', Language.Vietnamese);
+    // Deliberately does NOT touch preferredLanguage: it is already seeded from the
+    // device at boot, and overwriting it here dropped English users into a
+    // Vietnamese app the moment they tapped Skip.
     await updateSetting('preferredUnit', Unit.MgDl);
     await finishGeneral();
   };

@@ -13,6 +13,11 @@ export class SqliteSettingsRepository implements SettingsRepository {
     return JSON.parse(row.value) as AppSettings[K];
   }
 
+  async has<K extends keyof AppSettings>(key: K): Promise<boolean> {
+    const row = this.db.select().from(appSettings).where(eq(appSettings.id, key)).get();
+    return row !== undefined;
+  }
+
   async set<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {
     const serialized = JSON.stringify(value);
     const now = Date.now();

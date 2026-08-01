@@ -50,6 +50,9 @@ class FakeSettingsRepository implements SettingsRepository {
       ? (this.store.get(key) as AppSettings[K])
       : DEFAULT_SETTINGS[key];
   }
+  async has<K extends keyof AppSettings>(key: K): Promise<boolean> {
+    return this.store.has(key);
+  }
   async set<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {
     this.store.set(key, value);
   }

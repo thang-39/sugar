@@ -5,6 +5,7 @@ import { SqliteSettingsRepository } from '@/data/repositories/sqlite-settings-re
 import { getDb } from '@/data/db/client';
 import { setAnalyticsEnabled } from '@/data/analytics';
 import i18n from '@/i18n';
+import { resolveDeviceLanguage } from '@/i18n/device-language';
 
 // Built lazily: the DB is opened asynchronously at boot (see initDatabase), so the
 // repository can only be constructed once `getDb()` is valid — which is guaranteed
@@ -105,6 +106,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   initialize: async () => {
     if (get().isInitialized) return;
     await load(set);
+    // First run only: nobody has picked a language yet, so follow the device
+    // instead of forcing Vietnamese on the whole world. `has()` is what makes
+    // this safe — a stored "vi" is a real choice and must never be re-derived.
+    if (!(await getSettingsRepo().has('preferredLanguage'))) {
+      await get().updateSetting('preferredLanguage', resolveDeviceLanguage());
+    }
   },
   rehydrate: async () => {
     await load(set);
@@ -141,7 +148,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     });
   },
   resetToDefaults: () => {
-    set({ ...DEFAULT_SETTINGS });
-    void i18n.changeLanguage(DEFAULT_SETTINGS.preferredLanguage);
+    // Wiping the rows puts us back at "never chosen", so the device decides again
+    // — same rule as first run, instead of snapping everyone to Vietnamese.
+    const language = resolveDeviceLanguage();
+    set({ ...DEFAULT_SETTINGS, preferredLanguage: language });
+    void i18n.changeLanguage(language);
   },
 }));
