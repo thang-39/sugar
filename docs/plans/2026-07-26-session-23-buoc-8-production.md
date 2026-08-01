@@ -24,26 +24,38 @@ Các bước tay chi tiết hơn (tạo app, IAP, license tester): `2026-07-18-s
 > `eas.json` để `appVersionSource: remote` + `autoIncrement` nên versionCode tự lên 8.
 > Ghi chú cũ giữ lại bên dưới để biết #7 từ đâu ra:
 
-**Build #8 — đã xong 01/08, đây là bản nộp Play:**
+**Build #9 — đã xong 01/08, đây là bản nộp Play:**
 
 | Build | versionCode | Commit | Tình trạng |
 |---|---|---|---|
-| **#8 ← nộp bản này** | 8 | `864d1b0` = HEAD, chứa `3e18eb7` (fix Khôi phục) | finished, 01/08 15:59 |
+| **#9 ← nộp bản này** | 9 | `816b885` (fix locale) | finished, 01/08 |
+| #8 | 8 | `864d1b0` (fix Khôi phục) | thay bằng #9 — thiếu fix locale |
 | #7 | 7 | `1dc26e1` | loại — Khôi phục không chọn được file lưu trong máy |
 
-URL bản #8: `https://expo.dev/artifacts/eas/bTG3ySt951ejzXgC7puXckLrierQ8ecDbtztTOkGIb8.aab`
-Trang build: `https://expo.dev/accounts/minhthang_dunia/projects/sugar/builds/fa35df38-e976-47ed-92d8-4672a67b5c6f`
+URL bản #9: `https://expo.dev/artifacts/eas/CQ4-_tc5lf4cZMskmVBShPIN_xYmdTMRUdBIUlLxFps.aab`
+Trang build: `https://expo.dev/accounts/minhthang_dunia/projects/sugar/builds/5235f9b7-b48d-4156-9a1b-d334120d9a56`
 
-**Smoke cho #8** (upload lên Internal testing trước, cài từ Play):
-- [ ] **Sao lưu → lưu file vào máy → Khôi phục → chọn được đúng file đó.** ← chính thứ vừa sửa, bắt buộc tự tay xác nhận
-- [ ] Khôi phục `sugar-demo-backup.json` → báo 96 chỉ số, giao diện thành Rose + tiếng Việt + Tuần 30
+**Vì sao có #9:** listing đổi sang mặc định **en-US** (§4), mà app khi đó luôn khởi động bằng
+tiếng Việt — `src/i18n/index.ts` đặt cứng `lng: 'vi'` và không chỗ nào đọc locale máy, dù
+`expo-localization` đã cài sẵn. Tệ hơn, nút **Skip** trong onboarding ghi đè `preferredLanguage`
+thành Vietnamese. Người tải từ listing tiếng Anh sẽ mở ra một app tiếng Việt.
+Sửa ở `816b885`: gieo ngôn ngữ theo máy **một lần** lúc cài mới, khoá bằng `SettingsRepository.has()`
+(vì `get()` trả default khi thiếu row nên không phân biệt được "đã chọn vi" với "chưa chọn");
+lựa chọn đã lưu không bao giờ bị suy diễn lại. Skip không đụng ngôn ngữ nữa.
+
+**Smoke cho #9** (upload lên Internal testing trước, cài từ Play):
+- [ ] **Máy để tiếng Anh, cài mới → app mở ra tiếng Anh.** ← fix của #9
+- [ ] Onboarding → bấm **Skip** → vẫn tiếng Anh (trước đây rơi về tiếng Việt)
+- [ ] Đổi Settings → Language → VI → thoát app → mở lại → **vẫn VI** (lựa chọn người dùng thắng máy)
+- [ ] **Sao lưu → lưu file vào máy → Khôi phục → chọn được đúng file đó.** ← fix của #8
+- [ ] Khôi phục `sugar-demo-backup.json` → báo 96 chỉ số, Rose + Tuần 30, nhắc đo nhãn tiếng Anh
 - [ ] Mở app → Pro vẫn nhận đúng (Settings → hàng "Sugar Pro" ghi đã mở khoá)
 - [ ] Paywall hiện giá **149.000₫** lấy từ store
 - [ ] Bằng account **chưa mua**: paywall → "Khôi phục giao dịch" → ra alert (không im lặng)
-- [ ] Play Console → release details ghi **versionCode 8**
+- [ ] Play Console → release details ghi **versionCode 9**
 
-Delta #7 → #8 chỉ là một dòng trong `import-backup.ts` + test; đường mua/persist/gate không đổi,
-nên không cần chạy lại cả checklist Bước 7.
+Delta #7 → #9 chỉ gồm: một dòng lọc MIME trong `import-backup.ts`, phần chọn ngôn ngữ theo máy,
+và test. Đường mua/persist/gate không đổi, nên không cần chạy lại cả checklist Bước 7.
 
 ### (cũ) Artifact: dùng build #7 — KHÔNG build lại
 
