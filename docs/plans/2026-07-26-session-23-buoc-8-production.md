@@ -8,7 +8,23 @@ Các bước tay chi tiết hơn (tạo app, IAP, license tester): `2026-07-18-s
 
 ---
 
-## 0. Artifact: dùng build #7 — KHÔNG build lại
+## 0. Artifact: build **#8** — #7 đã bị loại (01/08)
+
+> **Cập nhật 01/08.** Mục này ban đầu chốt "dùng #7, không build lại". **Không còn đúng.**
+> Lúc dựng cảnh chụp screenshot, phát hiện **Khôi phục không chọn được file backup** trên chính
+> build #7: picker mở với đúng một filter `application/json`, mà Android gán
+> `application/octet-stream` cho file khi người dùng lưu nó vào máy từ share sheet → SAF làm mờ
+> chính file app vừa xuất ra. Kiểm chứng: cùng file đó để trên Google Drive thì chọn được, để
+> trong Downloads thì không.
+> Sửa: `src/data/backup/import-backup.ts` bỏ lọc MIME (`parseBackup` mới là cửa kiểm tra thật, và
+> đã có alert "file không hợp lệ" cho file lạ) + test hồi quy `src/data/backup/__tests__/`.
+> Vì sao không hoãn: mô tả store quảng cáo thẳng tính năng sao lưu, app **không có `expo-updates`**
+> nên vá sau vẫn tốn nguyên một vòng build + duyệt, mà lúc đó đã lỡ phát hành bản gãy.
+> **Mọi chỗ ghi "#7 / versionCode 7" bên dưới đọc thành "#8 / versionCode 8".**
+> `eas.json` để `appVersionSource: remote` + `autoIncrement` nên versionCode tự lên 8.
+> Ghi chú cũ giữ lại bên dưới để biết #7 từ đâu ra:
+
+### (cũ) Artifact: dùng build #7 — KHÔNG build lại
 
 `eas build:list` (26/07):
 
@@ -157,11 +173,21 @@ Sugar là công cụ ghi chép và theo dõi. Ứng dụng không chẩn đoán,
       bản đó 1024px và góc trong suốt, mà Play cấm icon trong suốt + tự áp mask bo góc (nộp bản
       trong suốt sẽ bị bo hai lần). File mới đã composite lên nền brand `#0FA36B`, không alpha.
 - [x] Feature graphic 1024×500 → `store/play/feature-graphic-1024x500.png` (sRGB, đã kiểm màu).
-- [ ] Screenshot dọc — Play cần tối thiểu 2, chuẩn bị 6 theo danh sách màn ở Session 14 Bước 4
-      (Báo cáo PDF · Log · Nhắc đo · Hôm nay · Trends · chia sẻ qua Zalo).
-      **Kịch bản chụp chi tiết — §3 của `store/play/README.md`.** Hai điều dễ hỏng: phải chụp bằng
-      account **đã có Pro** (không thì PDF dính watermark) và phải bật **chế độ Thai kỳ** (giao diện
-      Rose) cho khớp tiêu đề listing.
+- [ ] Screenshot dọc — Play cần tối thiểu 2, chuẩn bị 6: Báo cáo PDF · Hôm nay · Log · Nhắc đo ·
+      Trends · Lịch sử (chốt 01/08, bỏ ảnh chia sẻ Zalo — không cần cài Zalo chỉ để chụp).
+      **Kịch bản chụp chi tiết — §3 của `store/play/README.md`.**
+      **Bộ ảnh 01/08 đã bị loại, phải chụp lại.** Lý do, để không lặp lại:
+      1. chụp trên **iPhone** (1242×2688) chứ không phải build #7 Android;
+      2. là **bản dev** — ảnh Nhắc đo lộ khối `DEV · scheduled (3) / manual:m178…` (gate `__DEV__`,
+         `app/reminders.tsx:218`), bản production không có;
+      3. giao diện **tiếng Anh** trong khi listing tiếng Việt (Settings → Ngôn ngữ);
+      4. tỉ lệ 2.16:1 > mức 2:1;
+      5. chỉ 10 chỉ số / 2 ngày → bảng PDF 2 dòng, Trends nguệch ngoạc, in-range 60–70%.
+      Ảnh cũ để tạm ở `store/play/.tmp/ios-cu/`. Đạt sẵn: Rose đúng, status bar sạch, PDF không watermark.
+- [x] Dữ liệu mẫu để dựng cảnh: `node store/play/build-demo-backup.js` → 96 chỉ số / 28 ngày,
+      91% trong ngưỡng, kèm settings Thai kỳ + tiếng Việt + mmol/L + ngày dự sinh + 3 mốc nhắc đo.
+      Khôi phục trên máy thay cho nhập tay ~100 lần (đã kiểm bằng `parseBackup`/`applyBackup` thật:
+      restored 96, skipped 0). **Sao lưu dữ liệu thật trước khi khôi phục — restore xoá sạch máy.**
 - [ ] Email liên hệ = `trantruongminhthang@gmail.com` (đúng email trong privacy policy, mục 1)
 
 ---
