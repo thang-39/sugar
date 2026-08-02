@@ -1,0 +1,26 @@
+Copyright (c) 2026 Trần Trương Minh Thắng. All rights reserved.
+
+This repository and the Sugar application are proprietary. The source code,
+design assets, and written content are made publicly viewable for transparency
+and for review by app-store operators; that visibility does not grant a licence.
+
+You may not copy, modify, merge, publish, distribute, sublicense, sell, or
+create derivative works from any part of this repository without prior written
+permission from the copyright holder. Reading the code and referring to it are
+permitted; reusing it is not.
+
+The app is distributed to end users through Google Play under the purchase terms
+published at https://thang-39.github.io/sugar/privacy.html — a personal,
+non-transferable right to use the application.
+
+Third-party open source components bundled in the application remain under their
+own licences (MIT, Apache-2.0, SIL OFL 1.1). Those licences are listed in the app
+under Settings → About → Open source licences, and in
+src/config/open-source-licenses.ts. Nothing in this notice limits the rights
+those licences grant you in respect of those components.
+
+SUGAR IS NOT A MEDICAL DEVICE. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY
+ARISING FROM THE USE OF THE SOFTWARE.

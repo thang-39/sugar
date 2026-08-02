@@ -2,6 +2,7 @@
   "name": "sugar",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "license": "UNLICENSED",
   "dependencies": {
     "@expo-google-fonts/nunito": "^0.4.2",
     "@expo/vector-icons": "^15.0.2",
