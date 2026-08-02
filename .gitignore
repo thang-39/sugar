@@ -50,3 +50,6 @@ example
 
 # Giấy tờ xác minh danh tính cho Play Console — KHÔNG bao giờ commit (repo này public)
 store/verify-account/
+
+# Ảnh tham khảo thiết kế của bên thứ ba — KHÔNG commit (repo này public, rủi ro bản quyền)
+image/
