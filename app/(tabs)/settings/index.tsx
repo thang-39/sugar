@@ -254,12 +254,13 @@ export default function SettingsScreen(): ReactElement {
           }
           onPress={() => router.push('/backup')}
         />
-        <SettingRow
-          icon="cart"
-          iconColor={colors.accentAmber}
-          label={t('screens.settings.index.rows.supplies')}
-          onPress={() => router.push('/supplies')}
-        />
+        {/*
+          Lối vào màn "Vật tư" tạm ẩn khỏi bản production: 3 link affiliate trong
+          `src/config/supplies.ts` còn là placeholder, và phần mô tả liệt kê nhãn hiệu
+          máy đo (Accu-Chek, On Call Plus, Sinocare) ngay cạnh link ăn hoa hồng.
+          Route `/supplies` vẫn sống — bật lại bằng cách khôi phục SettingRow này, sau khi
+          đã thay link thật và bỏ liệt kê nhãn hiệu trong i18n.
+        */}
         <SettingRow
           icon="chatbox-ellipses"
           iconColor={colors.accentBlue}
