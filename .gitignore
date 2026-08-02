@@ -53,3 +53,6 @@ store/verify-account/
 
 # Ảnh tham khảo thiết kế của bên thứ ba — KHÔNG commit (repo này public, rủi ro bản quyền)
 image/
+
+# nguồn HTML + bản chụp 2x của ảnh OG — tái tạo bằng docs/build-og.js
+docs/.tmp/
