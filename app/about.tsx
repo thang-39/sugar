@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { useEffect, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -19,6 +20,7 @@ const WEBSITE_URL = 'https://thang-39.github.io/sugar/';
 export default function AboutScreen(): ReactElement {
   const { t } = useTranslation();
   const colors = useTheme();
+  const router = useRouter();
   const [isOpening, setIsOpening] = useState(false);
   // `appUserId` is the raw store id (RevenueCat's `$RCAnonymousID:…`) — too long to
   // read but the only value that finds the customer in the RC dashboard, so it is
@@ -124,6 +126,13 @@ export default function AboutScreen(): ReactElement {
         onPress={() => void openUrl(PRIVACY_URL)}
         isLoading={isOpening}
         accessibilityRole="link"
+      />
+
+      <Button
+        variant="ghost"
+        label={t('screens.settings.about.licenses')}
+        icon="document-text-outline"
+        onPress={() => router.push('/licenses')}
       />
     </ScrollView>
   );

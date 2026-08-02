@@ -256,7 +256,12 @@
         "privacyPolicy": "Privacy policy",
         "supportCode": "Support code",
         "supportHint": "Send us this code when you need help",
-        "copied": "Copied"
+        "copied": "Copied",
+        "licenses": "Open source licenses"
+      },
+      "licenses": {
+        "title": "Open source licenses",
+        "intro": "Sugar is built with the open source software below. Tap an entry to read its full licence text."
       },
       "backup": {
         "title": "Data backup",

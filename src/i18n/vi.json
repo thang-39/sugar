@@ -256,7 +256,12 @@
         "privacyPolicy": "Chính sách bảo mật",
         "supportCode": "Mã hỗ trợ",
         "supportHint": "Gửi mã này cho chúng tôi khi cần hỗ trợ",
-        "copied": "Đã sao chép"
+        "copied": "Đã sao chép",
+        "licenses": "Giấy phép nguồn mở"
+      },
+      "licenses": {
+        "title": "Giấy phép nguồn mở",
+        "intro": "Sugar được xây dựng trên các phần mềm nguồn mở dưới đây. Chạm vào từng mục để đọc toàn văn giấy phép."
       },
       "backup": {
         "title": "Sao lưu dữ liệu",

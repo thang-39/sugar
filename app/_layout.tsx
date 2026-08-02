@@ -264,6 +264,10 @@ function RootStack(): ReactElement {
         options={{ headerShown: true, title: t('screens.settings.about.title') }}
       />
       <Stack.Screen
+        name="licenses"
+        options={{ headerShown: true, title: t('screens.settings.licenses.title') }}
+      />
+      <Stack.Screen
         name="postpartum-setup"
         options={{ headerShown: true, title: t('screens.postpartumSetup.title') }}
       />
